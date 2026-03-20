@@ -1,0 +1,1579 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Aufgabe 2 – AcI markieren</title>
+    <style>
+      /* ==========================================================================
+   1. VARIABLEN & BASIS-SETUP
+   ========================================================================== */
+      :root {
+        --bg: #f6f7fb;
+        --card: #ffffff;
+        --text: #1f2937;
+        --muted: #6b7280;
+        --border: #e5e7eb;
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        --blue: #1976d2;
+        --blue-dark: #135aa3;
+        --tile: #ffffff;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family:
+          system-ui,
+          -apple-system,
+          Segoe UI,
+          Roboto,
+          Arial,
+          sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+
+      body.popup-open {
+        overflow: hidden;
+      }
+
+      html {
+        scrollbar-gutter: stable;
+      }
+
+      /* ==========================================================================
+   2. LAYOUT-STRUKTUR
+   ========================================================================== */
+      .page {
+        max-width: 1100px;
+        margin: 28px auto;
+        padding: 0 18px;
+      }
+
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 22px;
+      }
+
+      .task-title {
+        margin: 0 0 14px 0;
+        font-size: 20px;
+        font-weight: 650;
+        line-height: 1.25;
+      }
+
+      .task-sub {
+        display: block;
+        margin-top: 6px;
+        color: var(--muted);
+        font-weight: 500;
+        font-size: 14px;
+      }
+
+      .bottombar {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 14px;
+        margin-top: 10px;
+      }
+
+      .right {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 8px;
+        flex-shrink: 0;
+      }
+
+      @media (max-width: 900px) {
+        .bottombar {
+          flex-direction: column;
+          align-items: center;
+        }
+        .right {
+          order: 2;
+          align-items: center;
+        }
+      }
+
+      /* ==========================================================================
+   3. BUTTONS & INTERAKTIONS-ELEMENTE
+   ========================================================================== */
+      .btn-group {
+        display: flex;
+        gap: 12px;
+      }
+
+      button {
+        cursor: pointer;
+        transition: all 0.14s ease;
+      }
+
+      .primary {
+        background: var(--blue);
+        border: 1px solid var(--blue);
+        color: #fff;
+        font-weight: 700;
+        border-radius: 10px;
+        padding: 12px 18px;
+        min-width: 110px;
+      }
+
+      .primary:hover {
+        background: var(--blue-dark);
+        border-color: var(--blue-dark);
+      }
+
+      /* Versuche-Anzeige (Dots) */
+      .tries {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 110px;
+        font-size: 12px;
+        color: var(--muted);
+        gap: 6px;
+      }
+
+      .dots {
+        display: flex;
+        gap: 6px;
+      }
+
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        border: 1px solid var(--border);
+        background: #fff;
+        transition: background 0.2s ease;
+      }
+
+      .dot.is-on {
+        background: black;
+      }
+
+      .feedback {
+        margin: 14px 0 0;
+        color: var(--muted);
+        min-height: 1.2em;
+      }
+
+      /* ==========================================================================
+   4. AUFGABENSPEZIFISCH: MARKIER-AREA (AcI)
+   ========================================================================== */
+      .mark-area {
+        margin: 22px 0 18px;
+        padding: 18px 14px;
+        border-radius: 12px;
+        background: #fbfbfd;
+        border: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      /* Einzelne Satz-Kacheln */
+      .mark-item {
+        background: var(--tile);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 14px 16px;
+        font-size: 1.05rem;
+        line-height: 2;
+        overflow: visible;
+        transition:
+          border-color 0.14s ease,
+          background 0.14s ease,
+          box-shadow 0.14s ease;
+        position: relative;
+      }
+
+      .mark-item.is-correct {
+        border-color: #3bd668 !important;
+        background: #f0fdf4 !important;
+      }
+
+      .mark-item.is-wrong {
+        border-color: #feda31 !important;
+        background: #fffbeb !important;
+      }
+
+      /* Status-Icon rechts oben auf der Satz-Kachel */
+      .mark-item.is-correct::after,
+      .mark-item.is-wrong::after {
+        content: " ";
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: block;
+        font-size: 14px;
+        font-weight: bold;
+        color: white;
+        line-height: 24px;
+        text-align: center;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        z-index: 2;
+      }
+
+      .mark-item.is-correct::after {
+        content: "✓";
+        background: #4bd668;
+      }
+
+      .mark-item.is-wrong::after {
+        content: " ";
+        background-color: #fcde01;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='10' cy='10' r='6'/%3E%3Cline x1='14.5' y1='14.5' x2='20' y2='20'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: 14px 14px;
+      }
+
+      .sentence-num {
+        display: block;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 6px;
+      }
+
+      .sentence-translation {
+        display: block;
+        margin-top: 6px;
+        margin-left: 3px;
+        font-size: 0.88rem;
+        font-style: italic;
+        color: var(--muted);
+      }
+
+      /* Einzelne Wörter */
+      .word {
+        display: inline-block;
+        cursor: pointer;
+        border-radius: 4px;
+        padding: 2px 3px;
+        position: relative;
+        transition:
+          background 0.15s ease,
+          outline 0.15s ease,
+          transform 0.15s ease;
+      }
+
+      .word:hover {
+        outline: 2px dashed #bbb;
+      }
+
+      /* Highlight-Farben */
+      .word[data-color="pink"] {
+        background: #ffd6e7;
+      }
+      .word[data-color="blue"] {
+        background: #cce3ff;
+      }
+      .word[data-color="green"] {
+        background: #c8f5d4;
+      }
+
+      /* Nach Prüfung: falsch markierte Wörter gelb umrandet */
+      .word.is-wrong-mark {
+        outline: 2px solid #f59e0b !important;
+        outline-offset: 1px;
+        position: relative;
+      }
+
+      /* Nach Prüfung: korrekt markierte Wörter grün umrandet */
+      .word.is-correct-mark {
+        outline: 2px solid #22c55e !important;
+        outline-offset: 1px;
+      }
+
+      /* Tooltip bei Klick auf falsch markiertes Wort */
+      .word-tooltip {
+        position: absolute;
+        bottom: calc(100% + 8px);
+        left: 50%;
+        transform: translateX(-50%);
+        background: #1f2937;
+        color: #fff;
+        font-size: 12px;
+        font-weight: 600;
+        padding: 5px 10px;
+        border-radius: 8px;
+        white-space: nowrap;
+        pointer-events: none;
+        z-index: 100;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+      }
+
+      .word-tooltip::after {
+        content: "";
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border: 5px solid transparent;
+        border-top-color: #1f2937;
+      }
+
+      .sentence-translation {
+        display: block;
+        margin-top: 6px;
+        font-style: italic;
+        font-size: 0.88rem;
+        color: var(--muted);
+      }
+
+      /* ==========================================================================
+   ========================================================================== */
+      .colorbar {
+        background: var(--tile);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 14px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 4px;
+      }
+
+      .colorbar-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .colorbar-tools {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .color-btn {
+        background: none;
+        border: 2px solid transparent;
+        border-radius: 50%;
+        padding: 3px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition:
+          border-color 0.15s ease,
+          transform 0.12s ease;
+      }
+
+      .color-btn:hover {
+        transform: scale(1.14);
+      }
+
+      .color-btn.is-active {
+        border-color: #555;
+      }
+
+      .swatch {
+        display: block;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        border: 1.5px solid rgba(0, 0, 0, 0.1);
+      }
+
+      .swatch-pink {
+        background: #ffd6e7;
+      }
+      .swatch-blue {
+        background: #cce3ff;
+      }
+      .swatch-green {
+        background: #c8f5d4;
+      }
+      .swatch-clear {
+        background: #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.82rem;
+        color: #888;
+        border-radius: 50%;
+        width: 28px;
+        height: 28px;
+        border: 1.5px solid rgba(0, 0, 0, 0.1);
+      }
+
+      .active-tool-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text);
+        margin-left: 4px;
+      }
+
+      /* Legende */
+      .legend {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-left: auto;
+        flex-wrap: wrap;
+      }
+
+      .legend-item {
+        font-size: 12px;
+        color: #555;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .swatch-mini {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border-radius: 3px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+      }
+
+      .swatch-mini.swatch-pink {
+        background: #ffd6e7;
+      }
+      .swatch-mini.swatch-blue {
+        background: #cce3ff;
+      }
+      .swatch-mini.swatch-green {
+        background: #c8f5d4;
+      }
+
+      /* ==========================================================================
+   6. TIPPS & HILFE-SYSTEM
+   ========================================================================== */
+      .hint-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        align-self: flex-start;
+        min-width: 260px;
+        max-width: min(100%, 780px);
+      }
+
+      .hint-box {
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 16px 18px;
+        color: #4b5563;
+        line-height: 1.55;
+      }
+
+      .hint-title {
+        display: block;
+        font-weight: 700;
+        color: #374151;
+        margin-bottom: 8px;
+      }
+
+      .hint-btn {
+        width: fit-content;
+        border: 1px solid var(--border);
+        background: #fff;
+        border-radius: 12px;
+        padding: 12px 14px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      @media (max-width: 900px) {
+        .hint-stack {
+          width: 100%;
+          align-items: center;
+        }
+        .hint-btn {
+          margin: 0 auto;
+        }
+      }
+
+      /* ==========================================================================
+   7. LÖSUNGSANZEIGE
+   ========================================================================== */
+      .solution-explanation {
+        margin-top: 20px;
+        padding: 20px;
+        color: black;
+        animation: snapIn 0.4s ease-out;
+      }
+
+      .solution-explanation h3 {
+        margin-top: 0;
+        font-size: 18px;
+        color: black;
+      }
+
+      .solution-explanation ul {
+        margin-bottom: 0;
+        padding-left: 20px;
+      }
+
+      .solution-explanation li {
+        margin-bottom: 8px;
+      }
+
+      /* ==========================================================================
+   8. RESULT-POPUP
+   ========================================================================== */
+      .result-popup {
+        position: fixed;
+        inset: 0;
+        z-index: 50;
+      }
+
+      .result-popup[hidden] {
+        display: none;
+      }
+
+      .result-popup__backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(17, 24, 39, 0.5);
+      }
+
+      .result-popup__panel {
+        position: relative;
+        z-index: 1;
+        width: min(420px, calc(100% - 32px));
+        margin: 120px auto 0;
+        border-radius: 28px;
+        padding: 28px 24px 24px;
+        text-align: center;
+        color: #fff;
+        box-shadow: 0 18px 50px rgba(0, 0, 0, 0.25);
+      }
+
+      .result-popup__panel.is-success {
+        background: #76c800;
+      }
+      .result-popup__panel.is-failure {
+        background: #ff983e;
+      }
+
+      .result-popup__badge {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 14px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-size: 32px;
+        font-weight: 900;
+        background: rgba(255, 255, 255, 0.2);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+      }
+
+      .result-popup__title {
+        margin: 0;
+        font-size: 28px;
+        line-height: 1.1;
+      }
+
+      .result-popup__mascot {
+        font-size: 64px;
+        margin: 12px 0 18px;
+      }
+
+      .result-popup__actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .result-popup__next {
+        font-size: 18px;
+        padding: 14px 22px;
+        border-radius: 12px;
+      }
+
+      .result-popup__solution {
+        border: none;
+        background: transparent;
+        color: #fff;
+        font-size: 15px;
+      }
+
+      /* ==========================================================================
+   9. TOP-NAVIGATION
+   ========================================================================== */
+      .top-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .btn-overview {
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 8px 16px;
+        font-weight: 600;
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .btn-overview:hover {
+        background: #f0f2f5;
+        border-color: #d1d5db;
+      }
+
+      @media (max-width: 400px) {
+        .page {
+          padding: 0 8px;
+          margin: 10px auto;
+        }
+        .card {
+          padding: 12px;
+        }
+        .top-nav {
+          margin-bottom: 12px;
+        }
+        .btn-overview {
+          font-size: 14px;
+          padding: 6px 12px;
+        }
+      }
+
+      /* ==========================================================================
+   10. ANIMATIONEN
+   ========================================================================== */
+      @keyframes snapIn {
+        0% {
+          transform: translateY(10px) scale(0.985);
+          opacity: 0.75;
+        }
+        70% {
+          transform: translateY(-2px) scale(1.01);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(0) scale(1);
+          opacity: 1;
+        }
+      }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    #codeScreen { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; background:radial-gradient(ellipse at 50% 30%,rgba(25,118,210,0.06) 0%,transparent 65%),#f6f7fb; font-family:DM Sans,system-ui,sans-serif; }
+    .code-card { width:min(420px,100%); background:#fff; border:1px solid #e5e7eb; border-radius:20px; padding:40px 36px; box-shadow:0 12px 40px rgba(0,0,0,0.08); text-align:center; }
+    .code-card .icon { font-size:48px; margin-bottom:16px; }
+    .code-card h1 { font-size:22px; font-weight:700; margin-bottom:8px; color:#1f2937; }
+    .code-card p { color:#6b7280; font-size:14px; margin-bottom:28px; line-height:1.5; }
+    .code-input { width:100%; background:#f6f7fb; border:2px solid #e5e7eb; border-radius:12px; padding:14px 16px; font-size:20px; font-weight:700; text-align:center; letter-spacing:0.1em; color:#1f2937; outline:none; transition:border-color 0.15s; text-transform:uppercase; font-family:DM Sans,monospace; }
+    .code-input:focus { border-color:#1976d2; }
+    .code-input.error { border-color:#dc2626; }
+    .btn-enter { margin-top:16px; width:100%; background:#1976d2; border:none; border-radius:12px; padding:14px; color:#fff; font-size:16px; font-weight:700; cursor:pointer; font-family:DM Sans,sans-serif; transition:background 0.15s; }
+    .btn-enter:hover { background:#135aa3; }
+    .btn-enter:disabled { opacity:0.6; cursor:not-allowed; }
+    .code-error { color:#dc2626; font-size:13px; margin-top:12px; min-height:18px; }
+    .code-hint { font-size:12px; color:#6b7280; margin-top:20px; }
+    #welcomeBanner { background:#fff; border-bottom:1px solid #e5e7eb; padding:10px 20px; display:none; align-items:center; justify-content:space-between; font-size:14px; font-family:DM Sans,sans-serif; }
+    .welcome-name { font-weight:700; color:#1f2937; }
+    .welcome-task { color:#6b7280; }
+    #teacherCommentBox { max-width:1100px; margin:16px auto 0; padding:0 18px; display:none; }
+    .teacher-comment { background:#fffbeb; border:1px solid #fbbf24; border-radius:12px; padding:14px 18px; font-size:14px; color:#78350f; line-height:1.55; }
+    .teacher-comment strong { display:block; margin-bottom:4px; font-size:12px; text-transform:uppercase; letter-spacing:0.05em; color:#b45309; }
+    .spinner-overlay { position:fixed; inset:0; background:rgba(246,247,251,0.85); display:flex; align-items:center; justify-content:center; z-index:200; font-size:14px; color:#6b7280; flex-direction:column; gap:12px; font-family:DM Sans,sans-serif; }
+    .spinner-overlay.hidden { display:none; }
+    .spin { width:32px; height:32px; border:3px solid #e5e7eb; border-top-color:#1976d2; border-radius:50%; animation:spin2 0.7s linear infinite; }
+    @keyframes spin2 { to { transform:rotate(360deg); } }
+  </style>
+</head>
+  <body>
+
+<div class="spinner-overlay" id="codeSpinner"><div class="spin"></div><span>Wird geladen…</span></div>
+
+<div id="codeScreen" style="display:none;">
+  <div class="code-card">
+    <div class="icon">📚</div>
+    <h1>Aufgabe öffnen</h1>
+    <p>Gib deinen persönlichen Zugangscode ein, den du von deiner Lehrkraft erhalten hast.</p>
+    <input type="text" class="code-input" id="codeInput" placeholder="ABC-123-XYZ" maxlength="11" autocomplete="off" spellcheck="false"/>
+    <button class="btn-enter" onclick="submitCode()">Aufgabe öffnen →</button>
+    <div class="code-error" id="codeError"></div>
+    <p class="code-hint">Keinen Code? Wende dich an deine Lehrkraft.</p>
+  </div>
+</div>
+
+<div id="welcomeBanner">
+  <div><span class="welcome-name" id="welcomeName"></span><span class="welcome-task" id="welcomeTask"></span></div>
+</div>
+<div id="teacherCommentBox">
+  <div class="teacher-comment"><strong>💬 Kommentar deiner Lehrkraft</strong><span id="teacherCommentText"></span></div>
+</div>
+
+<div id="taskWrapper" style="display:none;">
+
+    <div class="page">
+      <!-- Top-Navigation -->
+      <header class="top-nav">
+        <button type="button" class="btn-overview">Übersicht</button>
+        <button type="button" class="btn-overview">Abmelden</button>
+      </header>
+
+      <!-- Haupt-Card -->
+      <main class="card">
+        <section id="task2" aria-label="Aufgabe 2">
+          <h1 class="task-title">
+            Markiere die AcI-Bestandteile.
+            <span class="task-sub"> </span>
+          </h1>
+
+          <!-- Farbauswahl -->
+          <div class="colorbar" id="colorbar" aria-label="Farbauswahl">
+            <div class="colorbar-label">
+              <span class="active-tool-label" id="activeToolLabel"
+                >Signalverb</span
+              >
+            </div>
+            <div class="colorbar-tools">
+              <button
+                class="color-btn is-active"
+                data-color="pink"
+                aria-label="Signalverb (rosa)"
+              >
+                <span class="swatch swatch-pink"></span>
+              </button>
+              <button
+                class="color-btn"
+                data-color="blue"
+                aria-label="Subjektsakkusativ (blau)"
+              >
+                <span class="swatch swatch-blue"></span>
+              </button>
+              <button
+                class="color-btn"
+                data-color="green"
+                aria-label="Infinitiv (grün)"
+              >
+                <span class="swatch swatch-green"></span>
+              </button>
+              <button
+                class="color-btn"
+                data-color="clear"
+                aria-label="Markierung entfernen"
+              >
+                <span class="swatch swatch-clear">✕</span>
+              </button>
+
+              <div class="legend">
+                <span class="legend-item"
+                  ><span class="swatch-mini swatch-pink"></span>
+                  Signalverb</span
+                >
+                <span class="legend-item"
+                  ><span class="swatch-mini swatch-blue"></span>
+                  Subjektsakkusativ</span
+                >
+                <span class="legend-item"
+                  ><span class="swatch-mini swatch-green"></span>
+                  Infinitiv</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Satzliste -->
+          <div
+            class="mark-area"
+            id="markArea"
+            aria-label="Sätze zum Markieren"
+          ></div>
+
+          <!-- Lösungstext -->
+          <div id="solutionText2" class="solution-explanation" hidden></div>
+
+          <!-- Bottombar: Tipps links, Prüfen rechts -->
+          <footer class="bottombar">
+            <div
+              class="hint-stack"
+              id="hintStack2"
+              aria-label="Tipps Aufgabe 2"
+            ></div>
+
+            <div class="right">
+              <div class="btn-group">
+                <button id="checkBtn2" class="primary" type="button">
+                  Überprüfen
+                </button>
+              </div>
+              <div class="tries">
+                Versuche:
+                <span class="dots" aria-label="Versuche-Anzeige Aufgabe 2">
+                  <span class="dot"></span>
+                  <span class="dot"></span>
+                  <span class="dot"></span>
+                </span>
+              </div>
+              <p
+                id="feedback2"
+                class="feedback"
+                role="status"
+                aria-live="polite"
+              ></p>
+            </div>
+          </footer>
+        </section>
+      </main>
+
+      <!-- Result-Popup -->
+      <div class="result-popup" id="resultPopup" hidden aria-hidden="true">
+        <div class="result-popup__backdrop" data-close-popup></div>
+        <div
+          class="result-popup__panel"
+          id="resultPopupPanel"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="resultPopupTitle"
+        >
+          <div class="result-popup__badge" id="resultPopupBadge">!</div>
+          <h2 class="result-popup__title" id="resultPopupTitle">
+            Alles richtig gemacht
+          </h2>
+          <div class="result-popup__mascot" aria-hidden="true">🎉</div>
+          <div class="result-popup__actions">
+            <a href="aufgabe3.html">
+              <button
+                type="button"
+                class="primary result-popup__next"
+                id="resultPopupNext"
+              >
+                Zur nächsten Aufgabe
+              </button>
+            </a>
+            <button
+              type="button"
+              class="result-popup__solution"
+              id="resultPopupSolution"
+            >
+              Schau dir die Lösung an.
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- /.page -->
+
+    <script>
+      /* ==========================================================================
+   1. KONFIGURATION & DATEN
+   ========================================================================== */
+
+      /**
+       * Jeder Satz besteht aus einem Array von Token-Objekten.
+       * { w: "Wort", role: "signal"|"subj"|"inf"|null }
+       *
+       * role-Werte:
+       *   "signal" → Signalverb  (rosa)
+       *   "subj"   → Subjektsakkusativ (blau)
+       *   "inf"    → Infinitiv   (grün)
+       *   null     → kein AcI-Bestandteil
+       */
+      const sentences = [
+        {
+          id: 1,
+          translation: "Caesar sagt, dass die Römer tapfer sind.",
+          tokens: [
+            { w: "Caesar", role: null },
+            { w: "dicit", role: "signal" },
+            { w: "Romanos", role: "subj" },
+            { w: "esse", role: "inf" },
+            { w: "fortes", role: null },
+            { w: ".", role: null, isPunct: true },
+          ],
+        },
+        {
+          id: 2,
+          translation: "Der Vater glaubt, dass der Sohn morgen kommt.",
+          tokens: [
+            { w: "Pater", role: null },
+            { w: "putat", role: "signal" },
+            { w: "filium", role: "subj" },
+            { w: "venire", role: "inf" },
+            { w: "cras", role: null },
+            { w: ".", role: null, isPunct: true },
+          ],
+        },
+        {
+          id: 3,
+          translation: "Der Senat hört, dass die Feinde sich der Stadt nähern.",
+          tokens: [
+            { w: "Senatus", role: null },
+            { w: "audit", role: "signal" },
+            { w: "hostes", role: "subj" },
+            { w: "appropinquare", role: "inf" },
+            { w: "urbem", role: null },
+            { w: ".", role: null, isPunct: true },
+          ],
+        },
+        {
+          id: 4,
+          translation: "Der Lehrer glaubt, dass die Schüler fleißig arbeiten.",
+          tokens: [
+            { w: "Magister", role: null },
+            { w: "credit", role: "signal" },
+            { w: "discipulos", role: "subj" },
+            { w: "laborare", role: "inf" },
+            { w: "diligenter", role: null },
+            { w: ".", role: null, isPunct: true },
+          ],
+        },
+      ];
+
+      /* Welche CSS-data-color entspricht welcher Rolle? */
+      const roleToColor = { signal: "pink", subj: "blue", inf: "green" };
+      const colorToRole = { pink: "signal", blue: "subj", green: "inf" };
+
+      const colorTitles = {
+        pink: "Signalverb",
+        blue: "Subjektsakkusativ",
+        green: "Infinitiv",
+        clear: "Radierer",
+      };
+
+      const hintsByTask = {
+        2: [
+          "Das Signalverb ist ein Verb des Sagens, Denkens oder Wahrnehmens (z. B. dicit, putat, audit).",
+          "Der Subjektsakkusativ steht im Akkusativ und ist das 'Subjekt' des Infinitivs.",
+          "Der Infinitiv steht immer am Ende des AcI-Satzes und ist nicht konjugiert.",
+        ],
+      };
+
+      const explanations = [
+        "Caesar <b>dicit</b> (Signalverb) <span style='background:#cce3ff;border-radius:3px;padding:1px 3px'>Romanos</span> (Subjektsakkusativ) <span style='background:#c8f5d4;border-radius:3px;padding:1px 3px'>esse</span> fortes. – Caesar sagt, dass die Römer tapfer sind.",
+        "Pater <b>putat</b> (Signalverb) <span style='background:#cce3ff;border-radius:3px;padding:1px 3px'>filium</span> (Subjektsakkusativ) <span style='background:#c8f5d4;border-radius:3px;padding:1px 3px'>venire</span> cras. – Der Vater glaubt, dass der Sohn morgen kommt.",
+        "Senatus <b>audit</b> (Signalverb) <span style='background:#cce3ff;border-radius:3px;padding:1px 3px'>hostes</span> (Subjektsakkusativ) <span style='background:#c8f5d4;border-radius:3px;padding:1px 3px'>appropinquare</span> urbem. – Der Senat hört, dass die Feinde sich der Stadt nähern.",
+        "Magister <b>credit</b> (Signalverb) <span style='background:#cce3ff;border-radius:3px;padding:1px 3px'>discipulos</span> (Subjektsakkusativ) <span style='background:#c8f5d4;border-radius:3px;padding:1px 3px'>laborare</span> diligenter. – Der Lehrer glaubt, dass die Schüler fleißig arbeiten.",
+      ];
+
+      /* ==========================================================================
+   2. STATE
+   ========================================================================== */
+      let activeColor = "pink";
+      let triesLeft = 3;
+      let isSolved = false;
+      let reviewMode = false;
+      const hintState = { 2: 0 };
+
+      /* ==========================================================================
+   3. DOM-REFERENZEN
+   ========================================================================== */
+      const markArea = document.getElementById("markArea");
+      const feedback2 = document.getElementById("feedback2");
+      const checkBtn2 = document.getElementById("checkBtn2");
+      const solutionText2 = document.getElementById("solutionText2");
+      const activeToolLbl = document.getElementById("activeToolLabel");
+
+      const resultPopup = document.getElementById("resultPopup");
+      const resultPopupPanel = document.getElementById("resultPopupPanel");
+      const resultPopupBadge = document.getElementById("resultPopupBadge");
+      const resultPopupTitle = document.getElementById("resultPopupTitle");
+      const resultPopupNext = document.getElementById("resultPopupNext");
+      const resultPopupSolution = document.getElementById(
+        "resultPopupSolution",
+      );
+
+      /* ==========================================================================
+   4. HILFSFUNKTIONEN
+   ========================================================================== */
+      function escapeHtml(str) {
+        return String(str)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;");
+      }
+
+      function feedbackMsg(text, tone) {
+        feedback2.textContent = text;
+        feedback2.style.color =
+          tone === "good" ? "#166534" : tone === "bad" ? "#991b1b" : "#6b7280";
+      }
+
+      function updateTriesUI() {
+        const dots = document.querySelectorAll("#task2 .dot");
+        const failedCount = Math.max(0, Math.min(3, 3 - triesLeft));
+        dots.forEach((d, i) => d.classList.toggle("is-on", i < failedCount));
+      }
+
+      /* ==========================================================================
+   5. SÄTZE RENDERN
+   ========================================================================== */
+      function buildMarkArea() {
+        markArea.innerHTML = "";
+
+        sentences.forEach((s) => {
+          const item = document.createElement("div");
+          item.className = "mark-item";
+          item.dataset.sentenceId = s.id;
+
+          const numSpan = document.createElement("span");
+          numSpan.className = "sentence-num";
+          numSpan.textContent = `Satz ${s.id}`;
+          item.appendChild(numSpan);
+
+          // Text-Container (inline)
+          const textLine = document.createElement("span");
+
+          s.tokens.forEach((tok, idx) => {
+            if (tok.isPunct) {
+              textLine.append(".");
+              return;
+            }
+
+            // Leerzeichen vor dem Wort (außer nach sentence-num)
+            if (idx > 0 && !s.tokens[idx - 1].isPunct) {
+              textLine.append(" ");
+            }
+
+            const span = document.createElement("span");
+            span.className = "word";
+            span.textContent = tok.w;
+            span.dataset.color = "";
+            span.dataset.sentenceId = s.id;
+            span.dataset.tokenIdx = idx;
+
+            span.addEventListener("click", () => {
+              if (reviewMode || isSolved) return;
+              if (activeColor === "clear") {
+                span.dataset.color = "";
+              } else if (span.dataset.color === activeColor) {
+                span.dataset.color = "";
+              } else {
+                span.dataset.color = activeColor;
+              }
+              saveResult2({answers:collectAnswers2(),tries_used:3-triesLeft,tries_left:triesLeft,is_solved:false});
+            });
+
+            textLine.appendChild(span);
+          });
+
+          item.appendChild(textLine);
+
+          if (s.translation) {
+            const transEl = document.createElement("span");
+            transEl.className = "sentence-translation";
+            transEl.textContent = s.translation;
+            item.appendChild(transEl);
+          }
+
+          markArea.appendChild(item);
+        });
+      }
+
+      /* ==========================================================================
+   6. FARBAUSWAHL-LEISTE
+   ========================================================================== */
+      const colorBtns = document.querySelectorAll(".color-btn");
+
+      colorBtns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          if (reviewMode) return;
+          colorBtns.forEach((b) => b.classList.remove("is-active"));
+          btn.classList.add("is-active");
+          activeColor = btn.dataset.color;
+          activeToolLbl.textContent = colorTitles[activeColor] ?? "";
+        });
+      });
+
+      /* ==========================================================================
+   7. TIPPS-SYSTEM
+   ========================================================================== */
+      function renderHintStack(taskNumber) {
+        const stack = document.getElementById(`hintStack${taskNumber}`);
+        const hints = hintsByTask[taskNumber];
+        if (!stack || !Array.isArray(hints)) return;
+
+        const openedCount = Math.min(hintState[taskNumber] || 0, hints.length);
+        stack.innerHTML = "";
+
+        for (let i = 0; i < openedCount; i++) {
+          const box = document.createElement("div");
+          box.className = "hint-box";
+          box.innerHTML = `
+      <span class="hint-title">${i + 1}. Tipp</span>
+      <span>${escapeHtml(hints[i])}</span>
+    `;
+          stack.appendChild(box);
+        }
+
+        if (openedCount < hints.length) {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "hint hint-btn";
+          btn.dataset.task = String(taskNumber);
+          btn.textContent = `💡 ${openedCount + 1}. Tipp anzeigen`;
+          stack.appendChild(btn);
+        }
+      }
+
+      function revealNextHint(taskNumber) {
+        const hints = hintsByTask[taskNumber];
+        if (!Array.isArray(hints)) return;
+        hintState[taskNumber] = Math.min(
+          (hintState[taskNumber] || 0) + 1,
+          hints.length,
+        );
+        renderHintStack(taskNumber);
+      }
+
+      Object.keys(hintsByTask).forEach((num) => {
+        renderHintStack(num);
+        const stack = document.getElementById(`hintStack${num}`);
+        if (!stack) return;
+        stack.addEventListener("click", (e) => {
+          const btn = e.target.closest(".hint-btn");
+          if (!btn) return;
+          revealNextHint(Number(num));
+        });
+      });
+
+      /* ==========================================================================
+   8. PRÜFUNG
+   ========================================================================== */
+
+      /**
+       * Für jeden Satz: für jedes relevante Token (role != null)
+       * prüfen, ob colorToRole[span.dataset.color] === token.role.
+       * Ein Satz gilt als korrekt, wenn ALLE Pflicht-Token richtig markiert sind
+       * UND kein falsches Token markiert wurde.
+       */
+      function checkTask() {
+        if (triesLeft <= 0 || isSolved) return;
+
+        // Alle Word-Spans einsammeln
+        const allWordSpans = markArea.querySelectorAll(".word");
+
+        // Prüfe, ob überhaupt etwas markiert wurde
+        const anyMarked = [...allWordSpans].some((s) => s.dataset.color !== "");
+        if (!anyMarked) {
+          feedbackMsg("Markiere erst die AcI-Bestandteile.", "bad");
+          return;
+        }
+
+        let totalCorrect = 0;
+        let totalRequired = 0;
+        let anyError = false;
+
+        sentences.forEach((s) => {
+          const item = markArea.querySelector(
+            `.mark-item[data-sentence-id="${s.id}"]`,
+          );
+
+          s.tokens.forEach((tok, idx) => {
+            if (tok.isPunct) return;
+
+            const span = markArea.querySelector(
+              `.word[data-sentence-id="${s.id}"][data-token-idx="${idx}"]`,
+            );
+            if (!span) return;
+
+            const markedRole = colorToRole[span.dataset.color] ?? null;
+
+            if (tok.role !== null) {
+              // Pflicht-Token
+              totalRequired++;
+              if (markedRole === tok.role) {
+                totalCorrect++;
+              } else {
+                anyError = true;
+              }
+            } else {
+              // Sollte NICHT markiert sein
+              if (markedRole !== null) {
+                anyError = true;
+              }
+            }
+          });
+        });
+
+        const isFullSuccess = !anyError && totalCorrect === totalRequired;
+
+        if (isFullSuccess) {
+          isSolved = true;
+          applyStatusToItems(true);
+          feedbackMsg("Alles richtig!", "good");
+          saveResult2({answers:collectAnswers2(),tries_used:3-triesLeft,tries_left:triesLeft,is_solved:true});
+          openResultPopup("success");
+        } else {
+          triesLeft--;
+          updateTriesUI();
+
+          if (triesLeft > 0) {
+            feedbackMsg("Das ist noch nicht richtig.", "bad");
+            saveResult2({answers:collectAnswers2(),tries_used:3-triesLeft,tries_left:triesLeft,is_solved:false});
+          } else {
+            applyStatusToItems(false);
+            feedbackMsg("Keine Versuche mehr.", "bad");
+            saveResult2({answers:collectAnswers2(),tries_used:3,tries_left:0,is_solved:false});
+            checkBtn2.disabled = true;
+            openResultPopup("failure");
+          }
+        }
+      }
+
+      /** Setzt is-correct / is-wrong auf die Satz-Kacheln + Wort-Umrandungen */
+      function applyStatusToItems(allCorrect) {
+        sentences.forEach((s) => {
+          const item = markArea.querySelector(
+            `.mark-item[data-sentence-id="${s.id}"]`,
+          );
+          if (!item) return;
+
+          if (allCorrect) {
+            item.classList.add("is-correct");
+            // Alle Pflicht-Tokens grün markieren
+            s.tokens.forEach((tok, idx) => {
+              if (tok.isPunct || tok.role === null) return;
+              const span = markArea.querySelector(
+                `.word[data-sentence-id="${s.id}"][data-token-idx="${idx}"]`,
+              );
+              if (span) span.classList.add("is-correct-mark");
+            });
+            return;
+          }
+
+          // Prüfe diesen Satz einzeln
+          let sentenceOk = true;
+          s.tokens.forEach((tok, idx) => {
+            if (tok.isPunct) return;
+            const span = markArea.querySelector(
+              `.word[data-sentence-id="${s.id}"][data-token-idx="${idx}"]`,
+            );
+            if (!span) return;
+            const correctColor = tok.role ? roleToColor[tok.role] : "";
+            const userColor = span.dataset.color || "";
+            const markedRole = colorToRole[span.dataset.color] ?? null;
+
+            if (tok.role !== null && markedRole !== tok.role)
+              sentenceOk = false;
+            if (tok.role === null && markedRole !== null) sentenceOk = false;
+
+            // Wort-Umrandung setzen
+            if (tok.role !== null || userColor !== "") {
+              if (userColor === correctColor) {
+                span.classList.add("is-correct-mark");
+              } else {
+                span.classList.add("is-wrong-mark");
+                attachTooltip(span, tok);
+              }
+            }
+          });
+
+          item.classList.toggle("is-correct", sentenceOk);
+          item.classList.toggle("is-wrong", !sentenceOk);
+        });
+      }
+
+      /** Hängt einen Klick-Tooltip an ein falsch markiertes Wort */
+      function attachTooltip(span, tok) {
+        // Welche Rolle hätte das Wort haben sollen?
+        const correctRole = tok.role; // null = sollte gar nicht markiert sein
+        const label = correctRole
+          ? colorTitles[roleToColor[correctRole]]
+          : "Nicht markieren";
+
+        span.addEventListener(
+          "click",
+          function onTooltipClick(e) {
+            // Kein Markieren mehr im Review-Modus
+            e.stopPropagation();
+            // Alten Tooltip entfernen
+            document
+              .querySelectorAll(".word-tooltip")
+              .forEach((t) => t.remove());
+            const tip = document.createElement("span");
+            tip.className = "word-tooltip";
+            tip.textContent = label;
+            span.appendChild(tip);
+            // Tooltip nach 2,5 s ausblenden
+            setTimeout(() => tip.remove(), 2500);
+          },
+          { once: false },
+        );
+      }
+
+      checkBtn2.addEventListener("click", () => {
+        if (checkBtn2.textContent.trim() === "Weiter") {
+          window.location.href = "aufgabe3.html";
+          return;
+        }
+        checkTask();
+      });
+
+      /* ==========================================================================
+   9. POPUP-HANDLING
+   ========================================================================== */
+      function openResultPopup(status) {
+        const isSuccess = status === "success";
+        const mascotEl = document.querySelector(".result-popup__mascot");
+
+        resultPopup.hidden = false;
+        resultPopup.setAttribute("aria-hidden", "false");
+        resultPopupPanel.classList.toggle("is-success", isSuccess);
+        resultPopupPanel.classList.toggle("is-failure", !isSuccess);
+        resultPopupBadge.textContent = isSuccess ? "✓" : "!";
+        resultPopupTitle.textContent = isSuccess
+          ? "Alles richtig gemacht"
+          : "Du hast Fehler gemacht.";
+        if (mascotEl) mascotEl.textContent = isSuccess ? "🎉" : "🔍";
+        document.body.classList.add("popup-open");
+      }
+
+      function closeResultPopup() {
+        resultPopup.hidden = true;
+        resultPopup.setAttribute("aria-hidden", "true");
+        document.body.classList.remove("popup-open");
+      }
+
+      resultPopupNext.addEventListener("click", closeResultPopup);
+
+      resultPopup.addEventListener("click", (e) => {
+        if (e.target.hasAttribute("data-close-popup")) {
+          resultPopupSolution.click();
+        }
+      });
+
+      /* ==========================================================================
+   10. LÖSUNGSMODUS
+   ========================================================================== */
+      resultPopupSolution.addEventListener("click", () => {
+        isSolved = true;
+        reviewMode = true;
+
+        closeResultPopup();
+
+        // Farbauswahl deaktivieren
+        colorBtns.forEach((b) => {
+          b.disabled = true;
+          b.style.opacity = "0.45";
+        });
+        activeToolLbl.textContent = "–";
+
+        // Wort-Markierungen setzen (ergänzt bereits gesetzte aus checkTask)
+        sentences.forEach((s) => {
+          const item = markArea.querySelector(
+            `.mark-item[data-sentence-id="${s.id}"]`,
+          );
+
+          // Prüfe, ob dieser Satz vollständig korrekt war
+          let sentenceWasCorrect = true;
+          s.tokens.forEach((tok, idx) => {
+            if (tok.isPunct) return;
+            const span = markArea.querySelector(
+              `.word[data-sentence-id="${s.id}"][data-token-idx="${idx}"]`,
+            );
+            if (!span) return;
+            const correctColor = tok.role ? roleToColor[tok.role] : "";
+            const userColor = span.dataset.color || "";
+            if (userColor !== correctColor) sentenceWasCorrect = false;
+          });
+
+          s.tokens.forEach((tok, idx) => {
+            if (tok.isPunct) return;
+            const span = markArea.querySelector(
+              `.word[data-sentence-id="${s.id}"][data-token-idx="${idx}"]`,
+            );
+            if (!span) return;
+
+            const correctColor = tok.role ? roleToColor[tok.role] : "";
+            const userColor = span.dataset.color || "";
+
+            // Ursprüngliche Nutzer-Markierung NICHT überschreiben
+            // Klassen nur setzen falls noch nicht vorhanden (z.B. bei letztem Versuch bereits gesetzt)
+            if (
+              !span.classList.contains("is-correct-mark") &&
+              !span.classList.contains("is-wrong-mark")
+            ) {
+              if (tok.role !== null || userColor !== "") {
+                if (userColor === correctColor) {
+                  span.classList.add("is-correct-mark");
+                } else {
+                  span.classList.add("is-wrong-mark");
+                  attachTooltip(span, tok);
+                }
+              }
+            }
+          });
+
+          // Satz-Kachel-Status: grün wenn alles stimmte, gelb wenn Fehler
+          if (item) {
+            item.classList.remove("is-correct", "is-wrong");
+            if (sentenceWasCorrect) {
+              item.classList.add("is-correct");
+            } else {
+              item.classList.add("is-wrong");
+            }
+          }
+        });
+
+        // Lösungstext einblenden
+        solutionText2.innerHTML = `
+    <h3>Lösungsweg:</h3>
+    <ul>
+      ${explanations.map((e) => `<li>${e}</li>`).join("")}
+    </ul>
+  `;
+        solutionText2.hidden = false;
+
+        checkBtn2.textContent = "Weiter";
+        checkBtn2.disabled = false;
+      });
+
+      /* ==========================================================================
+   11. INITIALISIERUNG
+   ========================================================================== */
+      buildMarkArea();
+      updateTriesUI();
+    </script>
+  </div><!-- /taskWrapper -->
+<script>
+/* ── SUPABASE AUTH LAYER ─────────────────────────────── */
+const SUPA_URL_KEY = 'lk_supa_url';
+const SUPA_KEY_KEY = 'lk_supa_key';
+let supaUrl = localStorage.getItem(SUPA_URL_KEY) || 'https://jwvdyuvzapkiivsvkeis.supabase.co';
+let supaKey = localStorage.getItem(SUPA_KEY_KEY) || 'sb_publishable_DiTHFK_HaV9jN40fkLKHDA_PrzS8oKc';
+let sb2 = null;
+let currentStudent = null;
+let currentResult  = null;
+
+function initSb2() {
+  if (!supaUrl || !supaKey) return;
+  sb2 = {
+    url: supaUrl.replace(/\/+$/, ''), key: supaKey,
+    h: {'apikey':supaKey,'Authorization':'Bearer '+supaKey,'Content-Type':'application/json','Prefer':'return=representation'},
+    async get(t,q){const r=await fetch(this.url+'/rest/v1/'+t+'?'+q,{headers:this.h});if(!r.ok)throw new Error(await r.text());return r.json();},
+    async upsert(t,d){const h={...this.h,'Prefer':'return=representation,resolution=merge-duplicates'};const r=await fetch(this.url+'/rest/v1/'+t,{method:'POST',headers:h,body:JSON.stringify(d)});if(!r.ok)throw new Error(await r.text());return r.json();},
+    async patch(t,m,d){const q=Object.entries(m).map(([k,v])=>k+'=eq.'+encodeURIComponent(v)).join('&');const r=await fetch(this.url+'/rest/v1/'+t+'?'+q,{method:'PATCH',headers:this.h,body:JSON.stringify(d)});if(!r.ok)throw new Error(await r.text());return r.json();}
+  };
+}
+
+window.addEventListener('DOMContentLoaded',()=>{
+  initSb2();
+  const params=new URLSearchParams(window.location.search);
+  const code=params.get('code');
+  if(code){document.getElementById('codeInput').value=code.toUpperCase();authenticateCode2(code.toUpperCase());}
+  else{document.getElementById('codeSpinner').classList.add('hidden');document.getElementById('codeScreen').style.display='flex';}
+  document.getElementById('codeInput').addEventListener('keydown',e=>{if(e.key==='Enter')submitCode();});
+});
+
+function submitCode(){const code=document.getElementById('codeInput').value.trim().toUpperCase();if(code)authenticateCode2(code);}
+
+async function authenticateCode2(code){
+  document.getElementById('codeSpinner').classList.remove('hidden');
+  document.getElementById('codeScreen').style.display='none';
+  if(!sb2){
+    currentStudent={id:'demo',name:'Demo-Schüler',code,task_id:'aci'};
+    currentResult={id:null,tries_used:0,tries_left:3,is_solved:false,answers:null,teacher_comment:null};
+    startTask2();return;
+  }
+  try{
+    const rows=await sb2.get('students','code=eq.'+encodeURIComponent(code));
+    if(!rows||!rows.length){
+      document.getElementById('codeSpinner').classList.add('hidden');
+      document.getElementById('codeScreen').style.display='flex';
+      document.getElementById('codeInput').classList.add('error');
+      document.getElementById('codeError').textContent='Ungültiger Code. Bitte überprüfe die Eingabe.';
+      return;
+    }
+    currentStudent=rows[0];
+    const res=await sb2.get('results','student_id=eq.'+currentStudent.id+'&task_id=eq.'+currentStudent.task_id);
+    currentResult=(res&&res.length)?res[0]:{id:null,tries_used:0,tries_left:3,is_solved:false,answers:null,teacher_comment:null};
+    startTask2();
+  }catch(e){
+    document.getElementById('codeSpinner').classList.add('hidden');
+    document.getElementById('codeScreen').style.display='flex';
+    document.getElementById('codeError').textContent='Verbindungsfehler: '+e.message;
+  }
+}
+
+function startTask2(){
+  document.getElementById('codeSpinner').classList.add('hidden');
+  document.getElementById('welcomeName').textContent=(currentStudent.name||'')+' · ';
+  document.getElementById('welcomeTask').textContent='AcI-Bestandteile markieren';
+  document.getElementById('welcomeBanner').style.display='flex';
+  if(currentResult.teacher_comment){
+    document.getElementById('teacherCommentText').textContent=currentResult.teacher_comment;
+    document.getElementById('teacherCommentBox').style.display='block';
+  }
+  document.getElementById('taskWrapper').style.display='block';
+  // Restore state
+  if(currentResult){
+    triesLeft=currentResult.tries_left??3;
+    isSolved=currentResult.is_solved??false;
+    if(currentResult.tries_used){
+      const fc=Math.max(0,Math.min(3,currentResult.tries_used));
+      document.querySelectorAll('#task2 .dot').forEach((d,i)=>d.classList.toggle('is-on',i<fc));
+    }
+    if(currentResult.answers){
+      restoreAnswers2(currentResult.answers);
+    }
+    if(isSolved){feedbackMsg('Bereits gelöst! ✓','good');checkBtn2.textContent='Weiter';}
+    if(triesLeft===0&&!isSolved){checkBtn2.disabled=true;feedbackMsg('Keine Versuche mehr.','bad');}
+  }
+}
+
+function restoreAnswers2(answers){
+  sentences.forEach(s=>{
+    const sentAnswers=answers[s.id];
+    if(!sentAnswers)return;
+    s.tokens.forEach((tok,idx)=>{
+      if(tok.isPunct)return;
+      const saved=sentAnswers.find(a=>a.idx===idx);
+      if(!saved||!saved.color)return;
+      const span=markArea.querySelector('.word[data-sentence-id="'+s.id+'"][data-token-idx="'+idx+'"]');
+      if(span)span.dataset.color=saved.color;
+    });
+  });
+}
+
+function collectAnswers2(){
+  const answers={};
+  sentences.forEach(s=>{
+    answers[s.id]=s.tokens.map((tok,idx)=>{
+      if(tok.isPunct)return null;
+      const span=markArea.querySelector('.word[data-sentence-id="'+s.id+'"][data-token-idx="'+idx+'"]');
+      const color=span?span.dataset.color:'';
+      const correctColor=tok.role?roleToColor[tok.role]:'';
+      return{idx,text:tok.w,color,correct:color&&correctColor?color===correctColor:null};
+    }).filter(Boolean);
+  });
+  return answers;
+}
+
+async function saveResult2(data){
+  if(!sb2||!currentStudent)return;
+  try{
+    const payload={student_id:currentStudent.id,task_id:currentStudent.task_id||'aci',updated_at:new Date().toISOString(),...data};
+    if(currentResult&&currentResult.id){await sb2.patch('results',{id:currentResult.id},payload);}
+    else{payload.submitted_at=new Date().toISOString();const rows=await sb2.upsert('results',payload);if(rows&&rows[0])currentResult=rows[0];}
+  }catch(e){console.warn('Speichern fehlgeschlagen:',e.message);}
+}
+</script>
+
+</body>
+</html>
