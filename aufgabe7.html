@@ -1,0 +1,1350 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Aufgabe 7 – Singular oder Plural</title>
+    <style>
+      /* ==========================================================================
+   1. VARIABLEN & BASIS-SETUPS
+   ========================================================================== */
+      :root {
+        --bg: #f6f7fb;
+        --card: #ffffff;
+        --text: #1f2937;
+        --muted: #6b7280;
+        --border: #e5e7eb;
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        --blue: #1976d2;
+        --blue-dark: #135aa3;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family:
+          system-ui,
+          -apple-system,
+          Segoe UI,
+          Roboto,
+          Arial,
+          sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+
+      body.popup-open {
+        overflow: hidden;
+      }
+
+      html {
+        scrollbar-gutter: stable;
+      }
+
+      /* ==========================================================================
+   2. LAYOUT-STRUKTUR (Container, Cards, Footer)
+   ========================================================================== */
+      .page {
+        max-width: 1100px;
+        margin: 28px auto;
+        padding: 0 18px;
+      }
+
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 22px;
+      }
+
+      .task-title {
+        margin: 0 0 14px 0;
+        font-size: 20px;
+        font-weight: 650;
+        line-height: 1.25;
+      }
+
+      .task-sub {
+        display: block;
+        margin-top: 6px;
+        color: var(--muted);
+        font-weight: 500;
+        font-size: 14px;
+      }
+
+      .bottombar {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 14px;
+        margin-top: 10px;
+      }
+
+      .right {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 8px;
+        flex-shrink: 0;
+      }
+
+      @media (max-width: 900px) {
+        .bottombar {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        .right {
+          align-items: center;
+        }
+      }
+
+      /* ==========================================================================
+   3. BUTTONS & INTERAKTIONS-ELEMENTE
+   ========================================================================== */
+      .btn-group {
+        display: flex;
+        gap: 12px;
+      }
+
+      button {
+        cursor: pointer;
+        transition: all 0.14s ease;
+      }
+
+      .primary {
+        background: var(--blue);
+        border: 1px solid var(--blue);
+        color: #fff;
+        font-weight: 700;
+        border-radius: 10px;
+        padding: 12px 18px;
+        min-width: 110px;
+      }
+
+      .primary:hover {
+        background: var(--blue-dark);
+        border-color: var(--blue-dark);
+      }
+
+      .primary:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+      }
+
+      /* Versuche-Anzeige (Dots) */
+      .tries {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 110px;
+        font-size: 12px;
+        color: var(--muted);
+        gap: 6px;
+      }
+
+      .dots {
+        display: flex;
+        gap: 6px;
+      }
+
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        border: 1px solid var(--border);
+        background: #fff;
+      }
+
+      .dot.is-on {
+        background: black;
+        border-color: black;
+      }
+
+      .feedback {
+        margin: 14px 0 0;
+        color: var(--muted);
+        min-height: 1.2em;
+      }
+
+      /* ==========================================================================
+   4. AUFGABENSPEZIFISCH: TASK 7 (Singular / Plural)
+   ========================================================================== */
+      .task7-area {
+        margin: 22px 0 18px;
+        padding: 18px 10px;
+        border-radius: 12px;
+        background: #fbfbfd;
+        border: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .task7-zones {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 26px;
+        padding: 8px 0 4px;
+      }
+
+      .zone-circle {
+        width: 160px;
+        height: 160px;
+        border-radius: 999px;
+        border: 2px solid rgba(0, 0, 0, 0.06);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        display: grid;
+        place-items: center;
+        font-weight: 650;
+        font-size: 17px;
+        cursor: pointer;
+        background: #fff;
+        transition:
+          transform 0.08s ease,
+          box-shadow 0.12s ease,
+          outline 0.12s ease,
+          opacity 0.12s ease;
+      }
+
+      .zone-circle:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.13);
+      }
+
+      .zone-sing {
+        background: rgba(153, 246, 228, 0.45);
+      }
+
+      .zone-plur {
+        background: rgba(216, 180, 254, 0.45);
+      }
+
+      .zone-circle:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        box-shadow: none;
+        transform: none;
+      }
+
+      /* Review-Modus: Kreis aufleuchten */
+      .zone-circle.is-review-target {
+        outline: 4px solid rgba(25, 118, 210, 0.55);
+        outline-offset: 2px;
+        opacity: 1 !important;
+        transform: scale(1.06);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+        color: black;
+      }
+
+      /* Review-Modus: nicht-relevanter Kreis ausgrauen */
+      .zone-circle.is-review-muted {
+        opacity: 0.3 !important;
+        transform: none;
+        box-shadow: none;
+      }
+
+      .task7-words {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 14px;
+        padding: 14px 6px 8px;
+      }
+
+      /* Word-Chips – analog zu .item aus aufgabe01 */
+      .word-chip {
+        position: relative;
+        border: 1px solid var(--border);
+        background: #fff;
+        border-radius: 10px;
+        padding: 14px 18px;
+        min-height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: var(--muted);
+        font-size: 15px;
+        user-select: none;
+        transition:
+          transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+          border-color 0.14s ease,
+          background 0.14s ease,
+          box-shadow 0.14s ease,
+          opacity 0.18s ease,
+          filter 0.18s ease;
+      }
+
+      .word-chip:hover {
+        border-color: rgba(25, 118, 210, 0.4);
+        transform: translateY(-4px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+      }
+
+      .word-chip.is-focused {
+        border-color: rgba(25, 118, 210, 0.65);
+        background: rgba(222, 222, 222, 0.06);
+        transform: translateY(-4px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+        color: var(--text);
+      }
+
+      .word-chip.is-singular {
+        background: rgba(153, 246, 228, 0.45);
+        border-color: rgba(13, 148, 136, 0.55);
+        color: #0f172a;
+      }
+
+      .word-chip.is-plural {
+        background: rgba(216, 180, 254, 0.45);
+        border-color: rgba(147, 51, 234, 0.45);
+        color: #0f172a;
+      }
+
+      /* Status-Farben (Richtig/Falsch) */
+      .word-chip.is-correct {
+        border-color: #3bd668 !important;
+        background: #f0fdf4 !important;
+        color: #0f172a;
+      }
+
+      .word-chip.is-wrong {
+        border-color: #feda31 !important;
+        background: #fffbeb !important;
+        color: #0f172a;
+      }
+
+      /* Badge-Icons oben rechts */
+      .word-chip.is-correct::after,
+      .word-chip.is-wrong::after {
+        content: "";
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: bold;
+        color: white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        z-index: 2;
+      }
+
+      .word-chip.is-correct::after {
+        content: "✓";
+        background: #4bd668;
+      }
+
+      .word-chip.is-wrong::after {
+        content: "";
+        background-color: #fcde01;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='10' cy='10' r='6'/%3E%3Cline x1='14.5' y1='14.5' x2='20' y2='20'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: 16px 16px;
+      }
+
+      /* Review-Modus: ausgewählter Chip */
+      .word-chip.is-review-selected {
+        transform: scale(1.06) !important;
+        box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.35);
+        z-index: 5;
+      }
+
+      /* Review-Modus: andere Chips ausgrauen */
+      .word-chip.is-review-muted {
+        opacity: 0.22;
+        filter: saturate(0.4);
+      }
+
+      .word-chip.is-review-muted:hover {
+        transform: none;
+        border-color: var(--border);
+      }
+
+      @media (max-width: 820px) {
+        .zone-circle {
+          width: 140px;
+          height: 140px;
+          font-size: 15px;
+        }
+      }
+
+      @media (max-width: 520px) {
+        .task7-zones {
+          gap: 14px;
+        }
+        .zone-circle {
+          width: 120px;
+          height: 120px;
+          font-size: 14px;
+        }
+      }
+
+      /* ==========================================================================
+   5. TIPPS & HILFE-SYSTEM
+   ========================================================================== */
+      .hint-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        align-self: flex-start;
+        min-width: 260px;
+        max-width: min(100%, 780px);
+      }
+
+      .hint-box {
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 16px 18px;
+        color: #4b5563;
+        line-height: 1.55;
+      }
+
+      .hint-title {
+        display: block;
+        font-weight: 700;
+        color: #374151;
+        margin-bottom: 8px;
+      }
+
+      .hint-btn {
+        width: fit-content;
+        min-height: 5px;
+        border: 1px solid var(--border);
+        background: #fff;
+        border-radius: 12px;
+        padding: 12px 14px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .hint-btn:hover {
+        background: #f9f9f9;
+      }
+
+      @media (max-width: 900px) {
+        .bottombar {
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .hint-stack {
+          width: 100%;
+          align-items: center;
+        }
+
+        .right {
+          order: 2;
+          align-items: center;
+        }
+
+        .hint-btn {
+          margin: 0 auto;
+        }
+      }
+
+      /* ==========================================================================
+   6. RESULTATE & LÖSUNGSANZEIGE
+   ========================================================================== */
+      .solution-explanation {
+        margin-top: 20px;
+        margin-left: 22px;
+        margin-right: 22px;
+        padding: 20px;
+        color: black;
+        animation: pairSnapIn 0.4s ease-out;
+      }
+
+      .solution-explanation h3 {
+        margin-top: 0;
+        font-size: 18px;
+        color: black;
+      }
+
+      .solution-explanation ul {
+        margin-bottom: 0;
+        padding-left: 20px;
+      }
+
+      .solution-explanation li {
+        margin-bottom: 8px;
+      }
+
+      /* Result Popup */
+      .result-popup {
+        position: fixed;
+        inset: 0;
+        z-index: 50;
+      }
+
+      .result-popup[hidden] {
+        display: none;
+      }
+
+      .result-popup__backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(17, 24, 39, 0.5);
+      }
+
+      .result-popup__panel {
+        position: relative;
+        z-index: 1;
+        width: min(420px, calc(100% - 32px));
+        margin: 120px auto 0;
+        border-radius: 28px;
+        padding: 28px 24px 24px;
+        text-align: center;
+        color: #fff;
+        box-shadow: 0 18px 50px rgba(0, 0, 0, 0.25);
+      }
+
+      .result-popup__panel.is-success {
+        background: #76c800;
+      }
+
+      .result-popup__panel.is-failure {
+        background: #ff983e;
+      }
+
+      .result-popup__badge {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 14px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-size: 32px;
+        font-weight: 900;
+        background: rgba(255, 255, 255, 0.2);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+      }
+
+      .result-popup__title {
+        margin: 0;
+        font-size: 28px;
+        line-height: 1.1;
+      }
+
+      .result-popup__mascot {
+        font-size: 64px;
+        margin: 12px 0 18px;
+      }
+
+      .result-popup__actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .result-popup__next {
+        font-size: 18px;
+        padding: 14px 22px;
+        border-radius: 12px;
+      }
+
+      .result-popup__solution {
+        border: none;
+        background: transparent;
+        color: #fff;
+        font-size: 15px;
+      }
+
+      .result-popup__solution:hover {
+        text-decoration: none;
+      }
+
+      /* ==========================================================================
+   7. ANIMATIONEN
+   ========================================================================== */
+      @keyframes pairSnapIn {
+        0% {
+          transform: translateY(10px) scale(0.985);
+          opacity: 0.75;
+        }
+        70% {
+          transform: translateY(-2px) scale(1.01);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(0) scale(1);
+          opacity: 1;
+        }
+      }
+
+      /* ==========================================================================
+   8. TOP-NAVIGATION
+   ========================================================================== */
+      .top-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .btn-overview {
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 8px 16px;
+        font-weight: 600;
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .btn-overview:hover {
+        background: #f0f2f5;
+        border-color: #d1d5db;
+      }
+
+      @media (max-width: 400px) {
+        .page {
+          padding: 0 8px;
+          margin: 10px auto;
+        }
+
+        .card {
+          padding: 12px;
+        }
+
+        .top-nav {
+          margin-bottom: 12px;
+        }
+
+        .btn-overview {
+          font-size: 14px;
+          padding: 6px 12px;
+        }
+      }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    /* ── CODE SCREEN ─────────────────────────────────────── */
+    #codeScreen {
+      min-height: 100vh; display: flex; align-items: center;
+      justify-content: center; padding: 20px;
+      background: radial-gradient(ellipse at 50% 30%, rgba(25,118,210,0.06) 0%, transparent 65%), #f6f7fb;
+      font-family: DM Sans, system-ui, sans-serif;
+    }
+    .code-card { width: min(420px,100%); background: #fff; border: 1px solid #e5e7eb; border-radius: 20px; padding: 40px 36px; box-shadow: 0 12px 40px rgba(0,0,0,0.08); text-align: center; }
+    .code-card .icon { font-size: 48px; margin-bottom: 16px; }
+    .code-card h1 { font-size: 22px; font-weight: 700; margin-bottom: 8px; color: #1f2937; }
+    .code-card p { color: #6b7280; font-size: 14px; margin-bottom: 28px; line-height: 1.5; }
+    .code-input { width: 100%; background: #f6f7fb; border: 2px solid #e5e7eb; border-radius: 12px; padding: 14px 16px; font-size: 20px; font-weight: 700; text-align: center; letter-spacing: 0.1em; color: #1f2937; outline: none; transition: border-color 0.15s; text-transform: uppercase; font-family: DM Sans, monospace; }
+    .code-input:focus { border-color: #1976d2; }
+    .code-input.error { border-color: #dc2626; }
+    .btn-enter { margin-top: 16px; width: 100%; background: #1976d2; border: none; border-radius: 12px; padding: 14px; color: #fff; font-size: 16px; font-weight: 700; cursor: pointer; font-family: DM Sans, sans-serif; transition: background 0.15s; }
+    .btn-enter:hover { background: #135aa3; }
+    .btn-enter:disabled { opacity: 0.6; cursor: not-allowed; }
+    .code-error { color: #dc2626; font-size: 13px; margin-top: 12px; min-height: 18px; }
+    .code-hint { font-size: 12px; color: #6b7280; margin-top: 20px; }
+    #welcomeBanner { background: #fff; border-bottom: 1px solid #e5e7eb; padding: 10px 20px; display: none; align-items: center; justify-content: space-between; font-size: 14px; font-family: DM Sans, sans-serif; }
+    .welcome-name { font-weight: 700; color: #1f2937; }
+    .welcome-task { color: #6b7280; }
+    #teacherCommentBox { max-width: 1100px; margin: 16px auto 0; padding: 0 18px; display: none; }
+    .teacher-comment { background: #fffbeb; border: 1px solid #fbbf24; border-radius: 12px; padding: 14px 18px; font-size: 14px; color: #78350f; line-height: 1.55; }
+    .teacher-comment strong { display: block; margin-bottom: 4px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: #b45309; }
+    .spinner-overlay { position: fixed; inset: 0; background: rgba(246,247,251,0.85); display: flex; align-items: center; justify-content: center; z-index: 200; font-size: 14px; color: #6b7280; flex-direction: column; gap: 12px; font-family: DM Sans, sans-serif; }
+    .spinner-overlay.hidden { display: none; }
+    .spin { width: 32px; height: 32px; border: 3px solid #e5e7eb; border-top-color: #1976d2; border-radius: 50%; animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+  <body>
+
+<!-- Spinner -->
+<div class="spinner-overlay" id="spinnerOverlay">
+  <div class="spin"></div>
+  <span>Wird geladen…</span>
+</div>
+
+<!-- Code Screen -->
+<div id="codeScreen" style="display:none;">
+  <div class="code-card">
+    <div class="icon">📚</div>
+    <h1>Aufgabe öffnen</h1>
+    <p>Gib deinen persönlichen Zugangscode ein, den du von deiner Lehrkraft erhalten hast.</p>
+    <input type="text" class="code-input" id="codeInput" placeholder="ABC-123-XYZ" maxlength="11" autocomplete="off" spellcheck="false" />
+    <button class="btn-enter" onclick="submitCode()">Aufgabe öffnen →</button>
+    <div class="code-error" id="codeError"></div>
+    <p class="code-hint">Keinen Code? Wende dich an deine Lehrkraft.</p>
+  </div>
+</div>
+
+<!-- Welcome Banner -->
+<div id="welcomeBanner">
+  <div>
+    <span class="welcome-name" id="welcomeName"></span>
+    <span class="welcome-task" id="welcomeTask"></span>
+  </div>
+</div>
+
+<!-- Teacher Comment -->
+<div id="teacherCommentBox">
+  <div class="teacher-comment">
+    <strong>💬 Kommentar deiner Lehrkraft</strong>
+    <span id="teacherCommentText"></span>
+  </div>
+</div>
+
+<!-- Task wrapper (hidden until auth) -->
+<div id="taskWrapper" style="display:none;">
+
+    
+      <header class="top-nav">
+        <button type="button" class="btn-overview">Übersicht</button>
+        <button type="button" class="btn-overview">Abmelden</button>
+      </header>
+
+      <main class="card">
+        <section id="task7" class="task is-visible" aria-label="Aufgabe 7">
+          <h1 class="task-title">
+            Gib an, ob die Formen im Singular oder im Plural stehen.
+            <span class="task-sub"></span>
+          </h1>
+
+          <div class="task7-area">
+            <div class="task7-zones" aria-label="Auswahlzonen">
+              <button
+                id="t7ZoneSing"
+                class="zone-circle zone-sing"
+                type="button"
+              >
+                <span>Singular</span>
+              </button>
+              <button
+                id="t7ZonePlur"
+                class="zone-circle zone-plur"
+                type="button"
+              >
+                <span>Plural</span>
+              </button>
+            </div>
+
+            <div class="task7-words" id="task7Words" aria-label="Wörter"></div>
+
+            <div id="solutionText7" class="solution-explanation" hidden></div>
+          </div>
+
+          <footer class="bottombar">
+            <div
+              class="hint-stack"
+              id="hintStack7"
+              aria-label="Tipps Aufgabe 7"
+            ></div>
+
+            <div class="right">
+              <div class="btn-group">
+                <button id="checkBtn7" class="primary" type="button">
+                  Überprüfen
+                </button>
+              </div>
+
+              <div class="tries">
+                Versuche:
+                <span class="dots" aria-label="Versuche-Anzeige Aufgabe 7">
+                  <span class="dot"></span>
+                  <span class="dot"></span>
+                  <span class="dot"></span>
+                </span>
+              </div>
+
+              <p
+                id="feedback7"
+                class="feedback"
+                role="status"
+                aria-live="polite"
+              ></p>
+            </div>
+          </footer>
+        </section>
+      </main>
+
+      <div class="result-popup" id="resultPopup" hidden aria-hidden="true">
+        <div class="result-popup__backdrop" data-close-popup></div>
+        <div
+          class="result-popup__panel"
+          id="resultPopupPanel"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="resultPopupTitle"
+        >
+          <div class="result-popup__badge" id="resultPopupBadge">!</div>
+          <h2 class="result-popup__title" id="resultPopupTitle">
+            Alles richtig gemacht
+          </h2>
+          <div class="result-popup__mascot" aria-hidden="true">🎉</div>
+          <div class="result-popup__actions">
+            <a href="aufgabe08.html">
+              <button
+                type="button"
+                class="primary result-popup__next"
+                id="resultPopupNext"
+              >
+                Zur nächsten Aufgabe
+              </button>
+            </a>
+            <button
+              type="button"
+              class="result-popup__solution"
+              id="resultPopupSolution"
+            >
+              Schau dir die Lösung an.
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      /* ==========================================================================
+   1. KONFIGURATION & DATEN (Aufgabeninhalte)
+   ========================================================================== */
+      const task7WordsData = [
+        { id: "oratori", label: "oratori", solution: "sing" },
+        { id: "oratores", label: "oratores", solution: "plur" },
+        { id: "princeps", label: "princeps", solution: "sing" },
+        { id: "corporibus", label: "corporibus", solution: "plur" },
+        { id: "nationibus", label: "nationibus", solution: "plur" },
+        { id: "solis", label: "solis", solution: "sing" },
+        { id: "militum", label: "militum", solution: "plur" },
+        { id: "lege", label: "lege", solution: "sing" },
+        { id: "virtutes", label: "virtutes", solution: "plur" },
+        { id: "vocem", label: "vocem", solution: "sing" },
+      ];
+
+      const hintsByTask = {
+        7: [
+          "Plural-Hinweise: oft -es, -ibus, -um (Genitiv Plural), -tes.",
+          "Singular-Hinweise: oft -i, -e, -em oder -is, je nach Deklination.",
+          "Wenn du unsicher bist, prüfe typische Endungen der 3. Deklination.",
+        ],
+      };
+
+      const explanation7 = {
+        oratori: "oratori: Dativ/Ablativ Singular (o-Dekl.).",
+        oratores: "oratores: Nominativ/Akkusativ Plural (3. Dekl.).",
+        princeps: "princeps: Nominativ Singular (3. Dekl.).",
+        corporibus: "corporibus: Dativ/Ablativ Plural (3. Dekl.).",
+        nationibus: "nationibus: Dativ/Ablativ Plural (3. Dekl.).",
+        solis: "solis: Genitiv Singular (3. Dekl.).",
+        militum: "militum: Genitiv Plural (3. Dekl.).",
+        lege: "lege: Ablativ Singular (3. Dekl.).",
+        virtutes: "virtutes: Nominativ/Akkusativ Plural (3. Dekl.).",
+        vocem: "vocem: Akkusativ Singular (3. Dekl.).",
+      };
+
+      /* ==========================================================================
+   2. STATE (Zustandsverwaltung)
+   ========================================================================== */
+      const hintState = { 7: 0 };
+      let triesLeft7 = 3;
+      let activeWordId7 = null;
+      let isSolved7 = false;
+      let isChecked7 = false;
+      let reviewSelectedId7 = null;
+      let reviewSelectedZone7 = null;
+      const assignments7 = {};
+
+      /* ==========================================================================
+   3. DOM-ELEMENTE
+   ========================================================================== */
+      const task7WordsEl = document.getElementById("task7Words");
+      const t7ZoneSing = document.getElementById("t7ZoneSing");
+      const t7ZonePlur = document.getElementById("t7ZonePlur");
+      const feedback7 = document.getElementById("feedback7");
+      const checkBtn7 = document.getElementById("checkBtn7");
+      const solutionText7 = document.getElementById("solutionText7");
+
+      const resultPopup = document.getElementById("resultPopup");
+      const resultPopupPanel = document.getElementById("resultPopupPanel");
+      const resultPopupBadge = document.getElementById("resultPopupBadge");
+      const resultPopupTitle = document.getElementById("resultPopupTitle");
+      const resultPopupNext = document.getElementById("resultPopupNext");
+      const resultPopupSolution = document.getElementById(
+        "resultPopupSolution",
+      );
+
+      /* ==========================================================================
+   4. HILFSFUNKTIONEN (Utility)
+   ========================================================================== */
+      function escapeHtml(str) {
+        return String(str)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      function feedbackMsg7(text, tone) {
+        feedback7.textContent = text;
+        feedback7.style.color =
+          tone === "good" ? "#166534" : tone === "bad" ? "#991b1b" : "#6b7280";
+      }
+
+      /* ==========================================================================
+   5. RENDERING-LOGIK (UI-Updates)
+   ========================================================================== */
+      function renderTask7() {
+        task7WordsEl.innerHTML = task7WordsData
+          .map((word) => {
+            const assignedClass =
+              assignments7[word.id] === "sing"
+                ? "is-singular"
+                : assignments7[word.id] === "plur"
+                  ? "is-plural"
+                  : "";
+
+            const focusedClass =
+              !isChecked7 && activeWordId7 === word.id ? "is-focused" : "";
+
+            const statusClass =
+              word._status === "correct"
+                ? "is-correct"
+                : word._status === "wrong"
+                  ? "is-wrong"
+                  : "";
+
+            let reviewClass = "";
+            if (isChecked7 && reviewSelectedId7) {
+              reviewClass =
+                reviewSelectedId7 === word.id
+                  ? "is-review-selected"
+                  : "is-review-muted";
+            } else if (isChecked7 && reviewSelectedZone7) {
+              reviewClass =
+                word.solution === reviewSelectedZone7
+                  ? "is-review-selected"
+                  : "is-review-muted";
+            }
+
+            return `
+        <button
+          type="button"
+          class="word-chip ${assignedClass} ${focusedClass} ${statusClass} ${reviewClass}"
+          data-id="${escapeHtml(word.id)}"
+        >
+          ${escapeHtml(word.label)}
+        </button>
+      `;
+          })
+          .join("");
+
+        renderZoneReview();
+      }
+
+      function renderZoneReview() {
+        t7ZoneSing.classList.remove("is-review-target", "is-review-muted");
+        t7ZonePlur.classList.remove("is-review-target", "is-review-muted");
+
+        if (!isChecked7) return;
+
+        if (reviewSelectedId7) {
+          const word = task7WordsData.find((w) => w.id === reviewSelectedId7);
+          if (!word) return;
+          if (word.solution === "sing") {
+            t7ZoneSing.classList.add("is-review-target");
+            t7ZonePlur.classList.add("is-review-muted");
+          } else {
+            t7ZonePlur.classList.add("is-review-target");
+            t7ZoneSing.classList.add("is-review-muted");
+          }
+        } else if (reviewSelectedZone7) {
+          if (reviewSelectedZone7 === "sing") {
+            t7ZoneSing.classList.add("is-review-target");
+            t7ZonePlur.classList.add("is-review-muted");
+          } else {
+            t7ZonePlur.classList.add("is-review-target");
+            t7ZoneSing.classList.add("is-review-muted");
+          }
+        }
+      }
+
+      function updateTriesUI7() {
+        const failedCount = Math.max(0, Math.min(3, 3 - triesLeft7));
+        document.querySelectorAll("#task7 .dot").forEach((dot, index) => {
+          dot.classList.toggle("is-on", index < failedCount);
+        });
+      }
+
+      /* ==========================================================================
+   6. TIPPS-SYSTEM
+   ========================================================================== */
+      function renderHintStack(taskNumber) {
+        const stack = document.getElementById(`hintStack${taskNumber}`);
+        const hints = hintsByTask[taskNumber];
+        if (!stack || !Array.isArray(hints)) return;
+
+        const openedCount = Math.min(hintState[taskNumber] || 0, hints.length);
+        stack.innerHTML = "";
+
+        for (let i = 0; i < openedCount; i++) {
+          const box = document.createElement("div");
+          box.className = "hint-box";
+          box.innerHTML = `
+      <span class="hint-title">${i + 1}. Tipp</span>
+      <span>${escapeHtml(hints[i])}</span>
+    `;
+          stack.appendChild(box);
+        }
+
+        if (openedCount < hints.length) {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "hint hint-btn";
+          btn.dataset.task = String(taskNumber);
+          btn.textContent = `💡 ${openedCount + 1}. Tipp anzeigen`;
+          stack.appendChild(btn);
+        }
+      }
+
+      function revealNextHint(taskNumber) {
+        const hints = hintsByTask[taskNumber];
+        if (!Array.isArray(hints)) return;
+        hintState[taskNumber] = Math.min(
+          (hintState[taskNumber] || 0) + 1,
+          hints.length,
+        );
+        renderHintStack(taskNumber);
+      }
+
+      /* ==========================================================================
+   7. INTERAKTION (Click-Handler)
+   ========================================================================== */
+      task7WordsEl.addEventListener("click", (e) => {
+        const chip = e.target.closest(".word-chip");
+        if (!chip) return;
+
+        const id = chip.dataset.id;
+
+        if (isChecked7) {
+          reviewSelectedZone7 = null;
+          reviewSelectedId7 = reviewSelectedId7 === id ? null : id;
+          renderTask7();
+          return;
+        }
+
+        if (isSolved7 || triesLeft7 <= 0) return;
+
+        if (activeWordId7 === id) {
+          setActiveWord7(null);
+          return;
+        }
+
+        setActiveWord7(id);
+      });
+
+      t7ZoneSing.addEventListener("click", () => {
+        if (isChecked7) {
+          reviewSelectedId7 = null;
+          reviewSelectedZone7 = reviewSelectedZone7 === "sing" ? null : "sing";
+          renderTask7();
+          return;
+        }
+        pickZone7("sing");
+      });
+
+      t7ZonePlur.addEventListener("click", () => {
+        if (isChecked7) {
+          reviewSelectedId7 = null;
+          reviewSelectedZone7 = reviewSelectedZone7 === "plur" ? null : "plur";
+          renderTask7();
+          return;
+        }
+        pickZone7("plur");
+      });
+
+      function setActiveWord7(wordIdOrNull) {
+        activeWordId7 = wordIdOrNull;
+        setZonesEnabled7(Boolean(activeWordId7));
+        renderTask7();
+      }
+
+      function setZonesEnabled7(enabled) {
+        t7ZoneSing.disabled = !enabled;
+        t7ZonePlur.disabled = !enabled;
+        t7ZoneSing.classList.toggle("is-active-zone", enabled);
+        t7ZonePlur.classList.toggle("is-active-zone", enabled);
+      }
+
+      function pickZone7(zone) {
+        if (!activeWordId7) return;
+        assignments7[activeWordId7] = zone;
+        setActiveWord7(null);
+      }
+
+      /* ==========================================================================
+   8. PRÜFUNG & RESULTATE
+   ========================================================================== */
+      checkBtn7.addEventListener("click", () => {
+        if (checkBtn7.textContent.trim() === "Weiter") {
+          window.location.href = "aufgabe08.html";
+          return;
+        }
+
+        if (isSolved7 || triesLeft7 <= 0) return;
+
+        const allAssigned = task7WordsData.every(
+          (word) => assignments7[word.id],
+        );
+
+        if (!allAssigned) {
+          feedbackMsg7("Ordne erst alle Wörter zu.", "bad");
+          return;
+        }
+
+        let correctCount = 0;
+        const total = task7WordsData.length;
+
+        for (const word of task7WordsData) {
+          if (assignments7[word.id] === word.solution) correctCount++;
+        }
+
+        const isFullSuccess = correctCount === total;
+
+        if (isFullSuccess) {
+          isSolved7 = true;
+          isChecked7 = true;
+          task7WordsData.forEach((w) => (w._status = "correct"));
+          renderTask7();
+          feedbackMsg7("Alles richtig!", "good");
+          setZonesEnabled7(false);
+          setActiveWord7(null);
+          saveResult7({answers: assignments7, tries_used: 3-triesLeft7, tries_left: triesLeft7, is_solved: true});
+          openResultPopup("success");
+        } else {
+          triesLeft7--;
+          updateTriesUI7();
+
+          if (triesLeft7 > 0) {
+            feedbackMsg7(
+              "Das ist noch nicht richtig. Versuch es nochmal.",
+              "bad",
+            );
+            saveResult7({answers: assignments7, tries_used: 3-triesLeft7, tries_left: triesLeft7, is_solved: false});
+          } else {
+            isChecked7 = true;
+            task7WordsData.forEach((word) => {
+              word._status =
+                assignments7[word.id] === word.solution ? "correct" : "wrong";
+            });
+            renderTask7();
+            feedbackMsg7("Keine Versuche mehr.", "bad");
+            saveResult7({answers: assignments7, tries_used: 3, tries_left: 0, is_solved: false});
+            checkBtn7.disabled = true;
+            setZonesEnabled7(false);
+            setActiveWord7(null);
+            openResultPopup("failure");
+          }
+        }
+      });
+
+      /* Popup Handling */
+      function openResultPopup(status) {
+        const isSuccess = status === "success";
+        const mascotEl = document.querySelector(".result-popup__mascot");
+
+        resultPopup.hidden = false;
+        resultPopup.setAttribute("aria-hidden", "false");
+        resultPopupPanel.classList.toggle("is-success", isSuccess);
+        resultPopupPanel.classList.toggle("is-failure", !isSuccess);
+
+        resultPopupBadge.textContent = isSuccess ? "✓" : "!";
+        resultPopupTitle.textContent = isSuccess
+          ? "Alles richtig gemacht"
+          : "Du hast Fehler gemacht.";
+
+        if (mascotEl) {
+          mascotEl.textContent = isSuccess ? "🎉" : "🔍";
+        }
+
+        document.body.classList.add("popup-open");
+      }
+
+      function closeResultPopup() {
+        resultPopup.hidden = true;
+        resultPopup.setAttribute("aria-hidden", "true");
+        document.body.classList.remove("popup-open");
+      }
+
+      resultPopupNext.addEventListener("click", closeResultPopup);
+
+      resultPopupSolution.addEventListener("click", () => {
+        isSolved7 = true;
+        isChecked7 = true;
+
+        task7WordsData.forEach((word) => {
+          word._status =
+            assignments7[word.id] === word.solution ? "correct" : "wrong";
+        });
+
+        renderTask7();
+        setZonesEnabled7(false);
+        setActiveWord7(null);
+
+        checkBtn7.textContent = "Weiter";
+        checkBtn7.disabled = false;
+
+        solutionText7.innerHTML = `
+    <h3>Lösungsweg:</h3>
+    <ul>
+      ${Object.values(explanation7)
+        .map((txt) => `<li>${escapeHtml(txt)}</li>`)
+        .join("")}
+    </ul>
+  `;
+        solutionText7.hidden = false;
+
+        closeResultPopup();
+      });
+
+      resultPopup.addEventListener("click", (e) => {
+        if (e.target.hasAttribute("data-close-popup")) {
+          resultPopupSolution.click();
+        }
+      });
+
+      /* ==========================================================================
+   9. INITIALISIERUNG
+   ========================================================================== */
+      Object.keys(hintsByTask).forEach((taskNumber) => {
+        renderHintStack(taskNumber);
+        const stack = document.getElementById(`hintStack${taskNumber}`);
+        if (!stack) return;
+        stack.addEventListener("click", (e) => {
+          const btn = e.target.closest(".hint-btn");
+          if (!btn) return;
+          revealNextHint(Number(taskNumber));
+        });
+      });
+
+      renderTask7();
+      updateTriesUI7();
+      setZonesEnabled7(false);
+    </script>
+  </div><!-- /taskWrapper -->
+
+<script>
+/* ── SUPABASE AUTH LAYER ─────────────────────────────── */
+const SUPA_URL_KEY = 'lk_supa_url';
+const SUPA_KEY_KEY = 'lk_supa_key';
+let supaUrl = localStorage.getItem(SUPA_URL_KEY) || '';
+let supaKey = localStorage.getItem(SUPA_KEY_KEY) || '';
+let sb = null;
+let currentStudent = null;
+let currentResult  = null;
+
+function initSb() {
+  if (!supaUrl || !supaKey) return;
+  sb = {
+    url: supaUrl.replace(/\/$/, ''), key: supaKey,
+    h: { 'apikey': supaKey, 'Authorization': 'Bearer ' + supaKey, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
+    async get(table, q) { const r = await fetch(this.url+'/rest/v1/'+table+'?'+q, {headers:this.h}); if(!r.ok) throw new Error(await r.text()); return r.json(); },
+    async upsert(table, data) { const h={...this.h,'Prefer':'return=representation,resolution=merge-duplicates'}; const r = await fetch(this.url+'/rest/v1/'+table, {method:'POST',headers:h,body:JSON.stringify(data)}); if(!r.ok) throw new Error(await r.text()); return r.json(); },
+    async patch(table, match, data) { const q=Object.entries(match).map(([k,v])=>k+'=eq.'+encodeURIComponent(v)).join('&'); const r=await fetch(this.url+'/rest/v1/'+table+'?'+q,{method:'PATCH',headers:this.h,body:JSON.stringify(data)}); if(!r.ok) throw new Error(await r.text()); return r.json(); }
+  };
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  initSb();
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('code');
+  if (code) { document.getElementById('codeInput').value = code.toUpperCase(); authenticateCode(code.toUpperCase()); }
+  else { document.getElementById('spinnerOverlay').classList.add('hidden'); document.getElementById('codeScreen').style.display = 'flex'; }
+  document.getElementById('codeInput').addEventListener('keydown', e => { if(e.key==='Enter') submitCode(); });
+});
+
+function submitCode() {
+  const code = document.getElementById('codeInput').value.trim().toUpperCase();
+  if (!code) return;
+  authenticateCode(code);
+}
+
+async function authenticateCode(code) {
+  document.getElementById('spinnerOverlay').classList.remove('hidden');
+  document.getElementById('codeScreen').style.display = 'none';
+  if (!sb) {
+    currentStudent = {id:'demo', name:'Demo-Schüler', code, task_id:'singular_plural'};
+    currentResult  = {id:null, tries_used:0, tries_left:3, is_solved:false, answers:null, teacher_comment:null};
+    startTask(); return;
+  }
+  try {
+    const rows = await sb.get('students', 'code=eq.'+encodeURIComponent(code));
+    if (!rows || !rows.length) {
+      document.getElementById('spinnerOverlay').classList.add('hidden');
+      document.getElementById('codeScreen').style.display = 'flex';
+      document.getElementById('codeInput').classList.add('error');
+      document.getElementById('codeError').textContent = 'Ungültiger Code. Bitte überprüfe die Eingabe.';
+      return;
+    }
+    currentStudent = rows[0];
+    const res = await sb.get('results', 'student_id=eq.'+currentStudent.id+'&task_id=eq.'+currentStudent.task_id);
+    currentResult = (res && res.length) ? res[0] : {id:null, tries_used:0, tries_left:3, is_solved:false, answers:null, teacher_comment:null};
+    startTask();
+  } catch(e) {
+    document.getElementById('spinnerOverlay').classList.add('hidden');
+    document.getElementById('codeScreen').style.display = 'flex';
+    document.getElementById('codeError').textContent = 'Verbindungsfehler: ' + e.message;
+  }
+}
+
+function startTask() {
+  document.getElementById('spinnerOverlay').classList.add('hidden');
+  document.getElementById('welcomeName').textContent = (currentStudent.name || '') + ' · ';
+  document.getElementById('welcomeTask').textContent = 'Singular oder Plural';
+  document.getElementById('welcomeBanner').style.display = 'flex';
+  if (currentResult.teacher_comment) {
+    document.getElementById('teacherCommentText').textContent = currentResult.teacher_comment;
+    document.getElementById('teacherCommentBox').style.display = 'block';
+  }
+  document.getElementById('taskWrapper').style.display = 'block';
+  // Restore state from saved result
+  if (currentResult) {
+    triesLeft7 = currentResult.tries_left ?? 3;
+    if (currentResult.tries_used) {
+      const failedCount = Math.max(0, Math.min(3, currentResult.tries_used));
+      document.querySelectorAll('#task7 .dot').forEach((d,i) => d.classList.toggle('is-on', i < failedCount));
+    }
+    isSolved7 = currentResult.is_solved ?? false;
+    if (currentResult.answers) {
+      Object.assign(assignments7, currentResult.answers);
+      renderTask7();
+    }
+    if (isSolved7) { feedbackMsg7('Bereits gelöst! ✓', 'good'); checkBtn7.textContent = 'Weiter'; }
+    if (triesLeft7 === 0 && !isSolved7) { checkBtn7.disabled = true; feedbackMsg7('Keine Versuche mehr.', 'bad'); isChecked7 = true; task7WordsData.forEach(w => { w._status = assignments7[w.id] === w.solution ? 'correct' : 'wrong'; }); renderTask7(); setZonesEnabled7(false); }
+  }
+}
+
+async function saveResult7(data) {
+  if (!sb || !currentStudent) return;
+  try {
+    const payload = { student_id: currentStudent.id, task_id: currentStudent.task_id || 'singular_plural', updated_at: new Date().toISOString(), ...data };
+    if (currentResult && currentResult.id) {
+      await sb.patch('results', {id: currentResult.id}, payload);
+    } else {
+      payload.submitted_at = new Date().toISOString();
+      const rows = await sb.upsert('results', payload);
+      if (rows && rows[0]) currentResult = rows[0];
+    }
+  } catch(e) { console.warn('Speichern fehlgeschlagen:', e.message); }
+}
+</script>
+
+</body>
+</html>

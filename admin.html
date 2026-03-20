@@ -458,6 +458,7 @@ CREATE POLICY "allow_all_results" ON results FOR ALL USING (true) WITH CHECK (tr
       <select id="newStudentTask">
         <option value="gerundium">Gerundium & Gerundivum markieren</option>
         <option value="aci">AcI-Bestandteile markieren</option>
+        <option value="singular_plural">Singular oder Plural (Aufgabe 7)</option>
       </select>
     </div>
     <div class="field">
@@ -513,8 +514,9 @@ const SESSION_KEY    = 'lk_session';
 
 const DEFAULT_PW     = 'Latein2025';
 const TASKS = {
-  gerundium: 'Gerundium & Gerundivum',
-  aci:       'AcI-Bestandteile'
+  gerundium:       'Gerundium & Gerundivum',
+  aci:             'AcI-Bestandteile',
+  singular_plural: 'Singular oder Plural (Aufgabe 7)'
 };
 
 let supaUrl = '', supaKey = '', baseUrl = '', sb = null;
