@@ -525,9 +525,9 @@ let supaUrl = '', supaKey = '', baseUrl = '', sb = null;
    BOOT
 ═══════════════════════════════════════════════════════════ */
 window.addEventListener('DOMContentLoaded', () => {
-  supaUrl = localStorage.getItem(SUPA_URL_KEY) || '';
-  supaKey = localStorage.getItem(SUPA_KEY_KEY) || '';
-  baseUrl = localStorage.getItem(BASE_URL_KEY) || window.location.origin + '/aufgabe.html';
+  supaUrl = localStorage.getItem(SUPA_URL_KEY) || 'https://jwvdyuvzapkiivsvkeis.supabase.co';
+  supaKey = localStorage.getItem(SUPA_KEY_KEY) || 'sb_publishable_DiTHFK_HaV9jN40fkLKHDA_PrzS8oKc';
+  baseUrl = localStorage.getItem(BASE_URL_KEY) || 'https://bando-ops.github.io/lateinn/aufgabe.html';
 
   if (document.getElementById('cfgUrl')) document.getElementById('cfgUrl').value = supaUrl;
   if (document.getElementById('cfgKey')) document.getElementById('cfgKey').value = supaKey;
