@@ -201,6 +201,23 @@
     .comment-box .comment-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; }
     .comment-existing { font-size: 14px; color: var(--text); margin-bottom: 10px; font-style: italic; border-left: 3px solid var(--accent); padding-left: 10px; }
 
+
+    /* ── FILTER BAR ─────────────────────────────────────────── */
+    .filter-bar {
+      display: flex; gap: 10px; align-items: center; margin-bottom: 16px; flex-wrap: wrap;
+    }
+    .filter-input {
+      background: var(--surface); border: 1px solid var(--border2); border-radius: 8px;
+      padding: 8px 14px; color: var(--text); font-family: 'DM Sans', sans-serif;
+      font-size: 14px; outline: none; transition: border-color 0.15s; width: 220px;
+    }
+    .filter-input:focus { border-color: var(--accent); }
+    .filter-select {
+      background: var(--surface); border: 1px solid var(--border2); border-radius: 8px;
+      padding: 8px 14px; color: var(--text); font-family: 'DM Sans', sans-serif;
+      font-size: 14px; outline: none; cursor: pointer;
+    }
+    .filter-count { font-size: 12px; color: var(--muted); margin-left: auto; }
     /* ── SETUP INFO ─────────────────────────────────────────────── */
     .setup-box {
       background: var(--surface); border: 1px solid var(--border);
@@ -301,6 +318,22 @@
         <h2>Schüler & Zugänge</h2>
         <button class="btn-sm" onclick="openAddStudent()">+ Schüler hinzufügen</button>
       </div>
+      <div class="filter-bar">
+        <input type="text" class="filter-input" id="filterStudentName" placeholder="🔍 Nach Name filtern…" oninput="renderStudentTable()"/>
+        <select class="filter-select" id="filterStudentTask" onchange="renderStudentTable()">
+          <option value="">Alle Aufgaben</option>
+          <option value="gerundium">Gerundium & Gerundivum</option>
+          <option value="aci">AcI-Bestandteile</option>
+          <option value="singular_plural">Singular oder Plural</option>
+        </select>
+        <select class="filter-select" id="filterStudentStatus" onchange="renderStudentTable()">
+          <option value="">Alle Status</option>
+          <option value="solved">✓ Gelöst</option>
+          <option value="progress">In Bearbeitung</option>
+          <option value="new">Noch nicht begonnen</option>
+        </select>
+        <span class="filter-count" id="filterStudentCount"></span>
+      </div>
       <div class="card">
         <table>
           <thead>
@@ -324,6 +357,22 @@
     <div class="tab-panel" id="tab-ergebnisse">
       <div class="section-hd">
         <h2>Ergebnisse</h2>
+      </div>
+      <div class="filter-bar">
+        <input type="text" class="filter-input" id="filterResultName" placeholder="🔍 Nach Name filtern…" oninput="renderResultsTable()"/>
+        <select class="filter-select" id="filterResultTask" onchange="renderResultsTable()">
+          <option value="">Alle Aufgaben</option>
+          <option value="gerundium">Gerundium & Gerundivum</option>
+          <option value="aci">AcI-Bestandteile</option>
+          <option value="singular_plural">Singular oder Plural</option>
+        </select>
+        <select class="filter-select" id="filterResultStatus" onchange="renderResultsTable()">
+          <option value="">Alle Status</option>
+          <option value="solved">✓ Richtig</option>
+          <option value="failed">Verbraucht</option>
+          <option value="progress">In Bearbeitung</option>
+        </select>
+        <span class="filter-count" id="filterResultCount"></span>
       </div>
       <div class="card">
         <table>
@@ -673,47 +722,76 @@ function taskLink(taskId, code) {
   return base + file + '?code=' + code;
 }
 
+let _allStudents = [], _allStudentResults = [];
+
 async function loadStudents() {
   const tbody = document.getElementById('studentTable');
   if (!sb) { tbody.innerHTML = `<tr><td colspan="6"><div class="empty"><p>Supabase nicht konfiguriert. Gehe zu Einstellungen.</p></div></td></tr>`; return; }
   try {
-    const students = await sb.select('students', 'order=created_at.asc');
-    const results  = await sb.select('results', '');
-    if (!students.length) {
-      tbody.innerHTML = `<tr><td colspan="6"><div class="empty"><div class="empty-icon">👥</div><p>Noch keine Schüler angelegt.</p></div></td></tr>`;
-      return;
-    }
-    tbody.innerHTML = students.map(s => {
-      const res = results.find(r => r.student_id === s.id);
-      const link = taskLink(s.task_id, s.code);
-      const statusBadge = res
-        ? (res.is_solved
-            ? '<span class="badge green">✓ Gelöst</span>'
-            : res.tries_used > 0
-              ? `<span class="badge yellow">In Bearbeitung</span>`
-              : '<span class="badge gray">Noch nicht begonnen</span>')
-        : '<span class="badge gray">Noch nicht begonnen</span>';
-      return `<tr>
-        <td><strong>${esc(s.name)}</strong></td>
-        <td><span class="mono">${esc(s.code)}</span></td>
-        <td>
-          <div class="link-copy">
-            <span title="${esc(link)}">${esc(link)}</span>
-            <button class="btn-copy" onclick="copyLink('${esc(link)}')" title="Kopieren">📋</button>
-          </div>
-        </td>
-        <td>${TASKS[s.task_id] || s.task_id || '—'}</td>
-        <td>${statusBadge}</td>
-        <td style="display:flex; gap:8px; flex-wrap:wrap;">
-          <button class="btn-sm" onclick="openAssign('${s.id}','${s.task_id||''}')">Aufgabe</button>
-          ${res ? `<button class="btn-sm success" onclick="resetTries('${res.id}','${s.name}')">Reset</button>` : ''}
-          <button class="btn-sm danger" onclick="deleteStudent('${s.id}','${s.name}')">Löschen</button>
-        </td>
-      </tr>`;
-    }).join('');
+    _allStudents = await sb.select('students', 'order=created_at.asc');
+    _allStudentResults = await sb.select('results', '');
+    renderStudentTable();
   } catch(e) {
     tbody.innerHTML = `<tr><td colspan="6" style="color:var(--red); padding:20px;">${esc(e.message)}</td></tr>`;
   }
+}
+
+function renderStudentTable() {
+  const tbody = document.getElementById('studentTable');
+  const nameQ   = (document.getElementById('filterStudentName')?.value || '').toLowerCase();
+  const taskQ   = document.getElementById('filterStudentTask')?.value || '';
+  const statusQ = document.getElementById('filterStudentStatus')?.value || '';
+
+  if (!_allStudents.length) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty"><div class="empty-icon">👥</div><p>Noch keine Schüler angelegt.</p></div></td></tr>`;
+    return;
+  }
+
+  let filtered = _allStudents.filter(s => {
+    const res = _allStudentResults.find(r => r.student_id === s.id);
+    const statusKey = res ? (res.is_solved ? 'solved' : res.tries_used > 0 ? 'progress' : 'new') : 'new';
+    if (nameQ && !s.name.toLowerCase().includes(nameQ)) return false;
+    if (taskQ && s.task_id !== taskQ) return false;
+    if (statusQ && statusKey !== statusQ) return false;
+    return true;
+  });
+
+  document.getElementById('filterStudentCount').textContent =
+    filtered.length + ' von ' + _allStudents.length + ' Schülern';
+
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty"><p>Keine Schüler gefunden.</p></div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(s => {
+    const res = _allStudentResults.find(r => r.student_id === s.id);
+    const link = taskLink(s.task_id, s.code);
+    const statusBadge = res
+      ? (res.is_solved
+          ? '<span class="badge green">✓ Gelöst</span>'
+          : res.tries_used > 0
+            ? `<span class="badge yellow">In Bearbeitung</span>`
+            : '<span class="badge gray">Noch nicht begonnen</span>')
+      : '<span class="badge gray">Noch nicht begonnen</span>';
+    return `<tr>
+      <td><strong>${esc(s.name)}</strong></td>
+      <td><span class="mono">${esc(s.code)}</span></td>
+      <td>
+        <div class="link-copy">
+          <span title="${esc(link)}">${esc(link)}</span>
+          <button class="btn-copy" onclick="copyLink('${esc(link)}')" title="Kopieren">📋</button>
+        </div>
+      </td>
+      <td>${TASKS[s.task_id] || s.task_id || '—'}</td>
+      <td>${statusBadge}</td>
+      <td style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="btn-sm" onclick="openAssign('${s.id}','${s.task_id||''}')">Aufgabe</button>
+        ${res ? `<button class="btn-sm success" onclick="resetTries('${res.id}','${s.name}')">Reset</button>` : ''}
+        <button class="btn-sm danger" onclick="deleteStudent('${s.id}','${s.name}')">Löschen</button>
+      </td>
+    </tr>`;
+  }).join('');
 }
 
 function openAddStudent() {
@@ -762,43 +840,74 @@ function copyLink(link) {
 /* ═══════════════════════════════════════════════════════════
    RESULTS
 ═══════════════════════════════════════════════════════════ */
+let _allResults = [], _allResultStudents = [];
+
 async function loadResults() {
   const tbody = document.getElementById('resultsTable');
   if (!sb) { tbody.innerHTML = `<tr><td colspan="7"><div class="empty"><p>Supabase nicht konfiguriert.</p></div></td></tr>`; return; }
   try {
-    const results  = await sb.select('results', 'order=submitted_at.desc');
-    const students = await sb.select('students', '');
-    const stuMap   = Object.fromEntries(students.map(s => [s.id, s]));
-    if (!results.length) {
-      tbody.innerHTML = `<tr><td colspan="7"><div class="empty"><div class="empty-icon">📊</div><p>Noch keine Ergebnisse vorhanden.</p></div></td></tr>`;
-      return;
-    }
-    tbody.innerHTML = results.map(r => {
-      const stu = stuMap[r.student_id] || {};
-      const date = r.submitted_at ? new Date(r.submitted_at).toLocaleDateString('de-DE', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
-      const badge = r.is_solved
-        ? '<span class="badge green">Richtig</span>'
-        : r.tries_left === 0
-          ? '<span class="badge red">Verbraucht</span>'
-          : '<span class="badge yellow">In Bearbeitung</span>';
-      const dots = [0,1,2].map(i => `<div class="tries-dot${i < r.tries_used ? ' used' : ''}"></div>`).join('');
-      return `<tr>
-        <td><strong>${esc(stu.name||'?')}</strong></td>
-        <td>${TASKS[r.task_id]||r.task_id}</td>
-        <td style="font-size:12px; color:var(--muted);">${date}</td>
-        <td>${badge}</td>
-        <td><div class="tries-dots">${dots}</div><span style="font-size:11px;color:var(--muted);margin-left:6px;">${r.tries_used}/3</span></td>
-        <td style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px; color:var(--muted);">${r.teacher_comment ? esc(r.teacher_comment) : '—'}</td>
-        <td style="display:flex; gap:6px; flex-wrap:wrap;">
-          <button class="btn-sm" onclick="viewResult('${r.id}')">Detail</button>
-          <button class="btn-sm" onclick="openComment('${r.id}','${esc(r.teacher_comment||'')}')">Kommentar</button>
-          <button class="btn-sm success" onclick="resetTries('${r.id}','${esc(stu.name||'')}')">Reset</button>
-        </td>
-      </tr>`;
-    }).join('');
+    _allResults = await sb.select('results', 'order=submitted_at.desc');
+    _allResultStudents = await sb.select('students', '');
+    renderResultsTable();
   } catch(e) {
     tbody.innerHTML = `<tr><td colspan="7" style="color:var(--red); padding:20px;">${esc(e.message)}</td></tr>`;
   }
+}
+
+function renderResultsTable() {
+  const tbody = document.getElementById('resultsTable');
+  const stuMap = Object.fromEntries(_allResultStudents.map(s => [s.id, s]));
+  const nameQ   = (document.getElementById('filterResultName')?.value || '').toLowerCase();
+  const taskQ   = document.getElementById('filterResultTask')?.value || '';
+  const statusQ = document.getElementById('filterResultStatus')?.value || '';
+
+  if (!_allResults.length) {
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty"><div class="empty-icon">📊</div><p>Noch keine Ergebnisse vorhanden.</p></div></td></tr>`;
+    return;
+  }
+
+  let filtered = _allResults.filter(r => {
+    const stu = stuMap[r.student_id] || {};
+    const statusKey = r.is_solved ? 'solved' : r.tries_left === 0 ? 'failed' : 'progress';
+    if (nameQ && !(stu.name||'').toLowerCase().includes(nameQ)) return false;
+    if (taskQ && r.task_id !== taskQ) return false;
+    if (statusQ && statusKey !== statusQ) return false;
+    return true;
+  });
+
+  document.getElementById('filterResultCount').textContent =
+    filtered.length + ' von ' + _allResults.length + ' Ergebnissen';
+
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty"><p>Keine Ergebnisse gefunden.</p></div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(r => {
+    const stu = stuMap[r.student_id] || {};
+    const date = r.submitted_at ? new Date(r.submitted_at).toLocaleDateString('de-DE', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
+    const badge = r.is_solved
+      ? '<span class="badge green">Richtig</span>'
+      : r.tries_left === 0
+        ? '<span class="badge red">Verbraucht</span>'
+        : '<span class="badge yellow">In Bearbeitung</span>';
+    // Fix: filled dots = tries_used, but if solved on first try → 1 dot filled
+    const triesUsed = r.is_solved ? Math.max(r.tries_used, 1) : r.tries_used;
+    const dots = [0,1,2].map(i => `<div class="tries-dot${i < triesUsed ? ' used' : ''}"></div>`).join('');
+    return `<tr>
+      <td><strong>${esc(stu.name||'?')}</strong></td>
+      <td>${TASKS[r.task_id]||r.task_id}</td>
+      <td style="font-size:12px; color:var(--muted);">${date}</td>
+      <td>${badge}</td>
+      <td><div class="tries-dots">${dots}</div><span style="font-size:11px;color:var(--muted);margin-left:6px;">${triesUsed}/3</span></td>
+      <td style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px; color:var(--muted);">${r.teacher_comment ? esc(r.teacher_comment) : '—'}</td>
+      <td style="display:flex; gap:6px; flex-wrap:wrap;">
+        <button class="btn-sm" onclick="viewResult('${r.id}')">Detail</button>
+        <button class="btn-sm" onclick="openComment('${r.id}','${esc(r.teacher_comment||'')}')">Kommentar</button>
+        <button class="btn-sm success" onclick="resetTries('${r.id}','${esc(stu.name||'')}')">Reset</button>
+      </td>
+    </tr>`;
+  }).join('');
 }
 
 async function resetTries(resultId, name) {
