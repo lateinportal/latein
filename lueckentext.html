@@ -119,6 +119,14 @@
       box-shadow: 0 1px 3px rgba(0,0,0,.06);
     }
     .word-chip:hover { border-color: var(--blue); transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,.1); }
+    /* Tap-select state */
+    .word-chip.is-selected { border-color: var(--blue); background: rgba(25,118,210,.1); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(25,118,210,.25); }
+    .luecke-blank.is-tap-target { border-color: var(--blue); border-style: solid; background: rgba(25,118,210,.07); animation: pulse .6s ease-in-out infinite alternate; }
+    .luecke-bank.is-tap-target { background: rgba(25,118,210,.06); border-left-color: var(--blue); }
+    @keyframes pulse { from { box-shadow: 0 0 0 0 rgba(25,118,210,.2); } to { box-shadow: 0 0 0 4px rgba(25,118,210,.1); } }
+    /* Hint for touch users */
+    .touch-hint { font-size: 12px; color: var(--muted); text-align: center; margin: -8px 0 10px; display: none; }
+    @media (hover: none) { .touch-hint { display: block; } }
     .word-chip:active { cursor: grabbing; }
     .word-chip.dragging { opacity: .35; }
 
@@ -248,7 +256,8 @@
   <main class="card">
     <h1 class="task-title">
       Ergänze die grammatischen Fachbegriffe.
-      <span class="task-sub">Ziehe die Wörter aus der Ablage in die passenden Lücken. Klicke auf ein Wort in einer Lücke, um es zurückzulegen.</span>
+      <span class="task-sub">Ziehe die Wörter aus der Ablage in die passenden Lücken – oder tippe erst ein Wort an, dann die Lücke.</span>
+    <p class="touch-hint">📱 Tippe ein Wort an → dann die passende Lücke</p>
     </h1>
 
     <div class="luecke-list" id="lueckeList"></div>
@@ -506,29 +515,104 @@ function initTask() {
     return '<div class="word-chip" draggable="true" data-row="'+rowId+'" data-word="'+wId+'"'+loc+'>'+esc(word.label)+'</div>';
   }
 
+  // ── TAP / CLICK STATE ──────────────────────────────────────
+  // selectedChip = { wordId, rowId, fromBlankId|null }
+  let selectedChip = null;
+
+  function clearSelection() {
+    selectedChip = null;
+    listEl.querySelectorAll('.is-selected,.is-tap-target').forEach(el => {
+      el.classList.remove('is-selected','is-tap-target');
+    });
+  }
+
   function bindDrag() {
+    // ── CHIP CLICKS (tap to select / deselect / return to bank) ──
     listEl.querySelectorAll('.word-chip').forEach(chip => {
+      // Desktop drag
       chip.addEventListener('dragstart', onChipDragStart);
       chip.addEventListener('dragend',   onChipDragEnd);
-      // click on chip in blank → return to bank
-      if (chip.dataset.inBlank) {
-        chip.addEventListener('click', e => {
-          if (isSolved || showResults) return;
-          const blank = chip.closest('.luecke-blank');
-          if (blank) { delete assignments[blank.dataset.blank]; render(); autoSave(); }
-        });
-      }
+
+      // Tap/click
+      chip.addEventListener('click', e => {
+        e.stopPropagation();
+        if (isSolved || showResults) return;
+
+        const wordId   = chip.dataset.word;
+        const rowId    = chip.dataset.row;
+        const inBlank  = !!chip.dataset.inBlank;
+        const blankEl  = inBlank ? chip.closest('.luecke-blank') : null;
+        const blankId  = blankEl ? blankEl.dataset.blank : null;
+
+        // If already selected → deselect
+        if (selectedChip && selectedChip.wordId === wordId && selectedChip.rowId === rowId) {
+          clearSelection(); return;
+        }
+
+        // If tapping a chip that is in a blank → return it to bank directly
+        if (inBlank && !selectedChip) {
+          delete assignments[blankId];
+          clearSelection(); render(); autoSave(); return;
+        }
+
+        // Select this chip
+        clearSelection();
+        selectedChip = { wordId, rowId, fromBlankId: blankId };
+        chip.classList.add('is-selected');
+
+        // Highlight valid drop targets (blanks of same row)
+        listEl.querySelectorAll(`.luecke-blank[data-row="${rowId}"]`).forEach(b => b.classList.add('is-tap-target'));
+      });
     });
+
+    // ── BLANK CLICKS (tap to drop selected chip) ──
     listEl.querySelectorAll('.luecke-blank').forEach(blank => {
+      // Desktop drag
       blank.addEventListener('dragover',  onBlankDragOver);
       blank.addEventListener('dragleave', onBlankDragLeave);
       blank.addEventListener('drop',      onBlankDrop);
+
+      // Tap/click
+      blank.addEventListener('click', e => {
+        if (isSolved || showResults) return;
+        if (!selectedChip) return;
+        if (blank.dataset.row !== selectedChip.rowId) { clearSelection(); return; }
+
+        const targetBlankId = blank.dataset.blank;
+        const currentInTarget = assignments[targetBlankId];
+
+        // Swap logic
+        if (currentInTarget) delete assignments[targetBlankId];
+        if (selectedChip.fromBlankId) delete assignments[selectedChip.fromBlankId];
+        if (currentInTarget && selectedChip.fromBlankId) assignments[selectedChip.fromBlankId] = currentInTarget;
+        assignments[targetBlankId] = selectedChip.wordId;
+
+        clearSelection(); render(); autoSave();
+      });
     });
+
+    // ── BANK CLICKS (tap to return chip from blank) ──
     listEl.querySelectorAll('.luecke-bank').forEach(bank => {
+      // Desktop drag
       bank.addEventListener('dragover',  onBankDragOver);
       bank.addEventListener('dragleave', onBankDragLeave);
       bank.addEventListener('drop',      onBankDrop);
+
+      // Tap: clicking empty bank area with a selected chip from a blank → return it
+      bank.addEventListener('click', e => {
+        if (isSolved || showResults) return;
+        if (!selectedChip || !selectedChip.fromBlankId) { clearSelection(); return; }
+        if (bank.dataset.bank !== selectedChip.rowId) { clearSelection(); return; }
+        delete assignments[selectedChip.fromBlankId];
+        clearSelection(); render(); autoSave();
+      });
     });
+
+    // Click outside → deselect
+    document.addEventListener('click', e => {
+      if (!selectedChip) return;
+      if (!e.target.closest('.luecke-row')) clearSelection();
+    }, { once: false });
   }
 
   function onChipDragStart(e) {
@@ -536,6 +620,7 @@ function initTask() {
     dragSource=this.getAttribute('data-in-blank')?'blank':'bank';
     dragBlankId=dragSource==='blank'?(this.closest('.luecke-blank')||{}).getAttribute?.('data-blank'):null;
     this.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; e.dataTransfer.setData('text/plain',dragWordId);
+    clearSelection();
   }
   function onChipDragEnd(){ this.classList.remove('dragging'); }
   function onBlankDragOver(e){ if(!dragWordId||this.getAttribute('data-row')!==dragRowId)return; e.preventDefault(); e.dataTransfer.dropEffect='move'; this.classList.add('drag-over'); }
