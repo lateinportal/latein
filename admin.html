@@ -588,11 +588,24 @@ CREATE POLICY "allow_all_results" ON results FOR ALL USING (true) WITH CHECK (tr
 
 <!-- Ergebnis-Detail -->
 <div class="modal-backdrop hidden" id="modalResult">
-  <div class="modal" style="width:min(620px,100%);">
+  <div class="modal" style="width:min(680px,100%);">
     <h3 id="modalResultTitle">Ergebnis</h3>
     <div id="modalResultBody"></div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal('modalResult')">Schließen</button>
+    <!-- Comment box inside modal -->
+    <div id="modalCommentInline" style="margin-top:16px; display:none;">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;">Kommentar an Schüler</div>
+      <textarea id="modalCommentText" style="width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;resize:vertical;min-height:80px;" placeholder="z.B. Gut gemacht! Achte beim nächsten Mal auf…"></textarea>
+      <input type="hidden" id="modalCommentResultId"/>
+    </div>
+    <div class="modal-actions" style="justify-content:space-between;flex-wrap:wrap;gap:8px;">
+      <div style="display:flex;gap:8px;">
+        <button class="btn-sm success" id="modalResetBtn" onclick="modalResetTries()">🔄 Versuche zurücksetzen</button>
+        <button class="btn-sm" id="modalCommentToggle" onclick="toggleModalComment()">💬 Kommentar</button>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-cancel" onclick="closeModal('modalResult')">Schließen</button>
+        <button class="btn-primary" id="modalCommentSave" style="display:none;width:auto;padding:9px 20px;" onclick="saveModalComment()">Kommentar speichern</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1264,8 +1277,55 @@ async function viewResult(resultId) {
       html += `<div class="comment-box" style="margin-top:16px;"><div class="comment-label">Dein Kommentar</div><div class="comment-existing">${esc(r.teacher_comment)}</div></div>`;
     }
 
+    // Store for modal actions
+    document.getElementById('modalCommentResultId').value = r.id;
+    document.getElementById('modalCommentText').value = r.teacher_comment || '';
+    document.getElementById('modalCommentInline').style.display = 'none';
+    document.getElementById('modalCommentSave').style.display = 'none';
+    document.getElementById('modalResetBtn').dataset.resultId = r.id;
+    document.getElementById('modalResetBtn').dataset.name = stu.name || '?';
+
     document.getElementById('modalResultBody').innerHTML = html;
     openModal('modalResult');
+  } catch(e) { alert(e.message); }
+}
+
+
+function toggleModalComment() {
+  const box = document.getElementById('modalCommentInline');
+  const saveBtn = document.getElementById('modalCommentSave');
+  const isVisible = box.style.display !== 'none';
+  box.style.display = isVisible ? 'none' : 'block';
+  saveBtn.style.display = isVisible ? 'none' : 'inline-block';
+}
+
+async function modalResetTries() {
+  const btn = document.getElementById('modalResetBtn');
+  const id = btn.dataset.resultId;
+  const name = btn.dataset.name;
+  if (!confirm(`Versuche für „${name}" wirklich zurücksetzen?`)) return;
+  try {
+    await sb.update('results', { id }, { tries_used: 0, tries_left: 3, is_solved: false, answers: null });
+    closeModal('modalResult');
+    loadResults(); loadStudents();
+  } catch(e) { alert(e.message); }
+}
+
+async function saveModalComment() {
+  const id = document.getElementById('modalCommentResultId').value;
+  const text = document.getElementById('modalCommentText').value.trim();
+  try {
+    await sb.update('results', { id }, { teacher_comment: text });
+    document.getElementById('modalCommentInline').style.display = 'none';
+    document.getElementById('modalCommentSave').style.display = 'none';
+    loadResults();
+    // Update comment display in modal body
+    const existing = document.querySelector('#modalResultBody .comment-existing');
+    if (existing) existing.textContent = text;
+    else if (text) {
+      const body = document.getElementById('modalResultBody');
+      body.insertAdjacentHTML('beforeend', `<div class="comment-box" style="margin-top:16px;"><div class="comment-label">Dein Kommentar</div><div class="comment-existing">${esc(text)}</div></div>`);
+    }
   } catch(e) { alert(e.message); }
 }
 
