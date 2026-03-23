@@ -608,20 +608,16 @@
     render();
 
     if (correct === allBlanks.length){
-      setFeedback("\u2705 Alles richtig!", "good");
-      checkBtn.disabled = true;
-      openPopup(true);
+      setFeedback("\u2705 Alles richtig!","good");checkBtn.disabled=true;ss({answers:Object.assign({},assignments),tries_used:Math.max(1,3-triesLeft),tries_left:triesLeft,is_solved:true});openPopup(true);
       return;
     }
 
     triesLeft--;
     updateDots();
     if (triesLeft>0){
-      setFeedback("\u274C "+correct+"/"+allBlanks.length+" richtig. Versuch es nochmal.", "bad");
+      setFeedback("\u274C "+correct+"/"+allBlanks.length+" richtig. Versuch es nochmal.","bad");ss({answers:Object.assign({},assignments),tries_used:3-triesLeft,tries_left:triesLeft,is_solved:false});
     } else {
-      setFeedback("\u274C Keine Versuche mehr.", "bad");
-      checkBtn.disabled = true;
-      openPopup(false);
+      setFeedback("\u274C Keine Versuche mehr.","bad");ss({answers:Object.assign({},assignments),tries_used:3,tries_left:0,is_solved:false});checkBtn.disabled=true;openPopup(false);
     }
   });
 

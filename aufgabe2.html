@@ -1144,20 +1144,16 @@
         const isFullSuccess = !anyError && totalCorrect === totalRequired;
 
         if (isFullSuccess) {
-          isSolved = true;
-          applyStatusToItems(true);
-          feedbackMsg("Alles richtig!", "good");
-          openResultPopup("success");
+          isSolved=true;applyStatusToItems(true);feedbackMsg("Alles richtig!","good");ss({answers:collectA(),tries_used:Math.max(1,3-triesLeft),tries_left:triesLeft,is_solved:true});openResultPopup("success");
         } else {
           triesLeft--;
           updateTriesUI();
 
           if (triesLeft > 0) {
-            feedbackMsg("Das ist noch nicht richtig.", "bad");
+            feedbackMsg("Das ist noch nicht richtig.","bad");ss({answers:collectA(),tries_used:3-triesLeft,tries_left:triesLeft,is_solved:false});
           } else {
             applyStatusToItems(false);
-            feedbackMsg("Keine Versuche mehr.", "bad");
-            checkBtn.disabled = true;
+            feedbackMsg("Keine Versuche mehr.","bad");ss({answers:collectA(),tries_used:3,tries_left:0,is_solved:false});checkBtn.disabled=true;
             openResultPopup("failure");
           }
         }
