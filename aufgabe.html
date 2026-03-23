@@ -1229,7 +1229,7 @@
       }
 
       checkBtn.addEventListener("click", () => {
-        if (checkBtn.textContent.trim() === "Weiter") {
+        if (checkBtn.textContent.trim() === "Zurück zu Trello") {
           window.location.href = "#";
           return;
         }
@@ -1252,6 +1252,8 @@
           ? "Alles richtig gemacht"
           : "Du hast Fehler gemacht.";
         if (mascotEl) mascotEl.textContent = isSuccess ? "🎉" : "🔍";
+        // Update button labels based on outcome
+        resultPopupNext.textContent = isSuccess ? "Zurück zu Trello" : "Schließen";
         document.body.classList.add("popup-open");
       }
 
@@ -1261,7 +1263,14 @@
         document.body.classList.remove("popup-open");
       }
 
-      resultPopupNext.addEventListener("click", closeResultPopup);
+      resultPopupNext.addEventListener("click", () => {
+        if (!isSolved) {
+          // failure "Schließen" → show solution
+          resultPopupSolution.click();
+        } else {
+          closeResultPopup();
+        }
+      });
 
       resultPopup.addEventListener("click", (e) => {
         if (e.target.hasAttribute("data-close-popup")) {
@@ -1344,7 +1353,7 @@
         `;
         solutionText.hidden = false;
 
-        checkBtn.textContent = "Weiter";
+        checkBtn.textContent = "Zurück zu Trello";
         checkBtn.disabled = false;
       });
 
@@ -1386,8 +1395,17 @@ function initTask(student,result){
       });
     });
   }
-  if(isSolved){feedbackMsg('Bereits gelöst! ✓','good');checkBtn.textContent='Weiter';}
-  if(triesLeft===0&&!isSolved){checkBtn.disabled=true;feedbackMsg('Keine Versuche mehr.','bad');}
+  if(isSolved){
+    applyStatusToItems(true);
+    feedbackMsg('Bereits gelöst! ✓','good');
+    checkBtn.textContent='Zurück zu Trello';
+    checkBtn.disabled=true;
+  }
+  if(triesLeft===0&&!isSolved){
+    applyStatusToItems(false);
+    checkBtn.disabled=true;
+    feedbackMsg('Keine Versuche mehr.','bad');
+  }
 }
 
       // initTask called by auth
@@ -1422,9 +1440,29 @@ window.addEventListener('load',function(){
       sp.classList.add('off');
       tw.style.display='block';
       initTask(_S,_R);
+      if(typeof startCommentPoll==='function')startCommentPoll();
+      startCommentPoll();
     });
   }).catch(function(e){console.error(e);sp.classList.add('off');ae.style.display='flex';});
 });
 </script>
+
+/* ── Poll for teacher comment every 60s ── */
+function startCommentPoll() {
+  setInterval(function() {
+    if (!_S) return;
+    sg('results', 'student_id=eq.' + _S.id + '&task_id=eq.' + _S.task_id).then(function(res) {
+      if (!res || !res[0]) return;
+      var comment = res[0].teacher_comment;
+      var tmEl = document.getElementById('tm');
+      var tmtEl = document.getElementById('tmt');
+      if (comment && tmtEl) {
+        tmtEl.textContent = comment;
+        if (tmEl) tmEl.style.display = 'block';
+      }
+    }).catch(function(){});
+  }, 60000);
+}
+
 </body>
 </html>

@@ -377,7 +377,6 @@
         <select class="filter-select" id="filterStudentTask" onchange="renderStudentTable()">
           <option value="">Alle Aufgaben</option>
           <option value="gerundium">Gerundium & Gerundivum</option>
-          <option value="aci">AcI-Bestandteile</option>
           <option value="singular_plural">Singular oder Plural</option>
           <option value="lueckentext">Lückentext – Grammatik</option>
         </select>
@@ -418,7 +417,6 @@
         <select class="filter-select" id="filterResultTask" onchange="renderResultsTable()">
           <option value="">Alle Aufgaben</option>
           <option value="gerundium">Gerundium & Gerundivum</option>
-          <option value="aci">AcI-Bestandteile</option>
           <option value="singular_plural">Singular oder Plural</option>
           <option value="lueckentext">Lückentext – Grammatik</option>
         </select>
@@ -641,7 +639,6 @@ const SESSION_KEY    = 'lk_session';
 const DEFAULT_PW     = 'Latein2025';
 const TASKS = {
   gerundium:       'Gerundium & Gerundivum',
-  aci:             'AcI-Bestandteile',
   singular_plural: 'Singular oder Plural (Aufgabe 7)',
   lueckentext:     'Lückentext – Grammatik'
 };
@@ -811,7 +808,6 @@ function taskLink(taskId, code) {
   const base = 'https://lateinportal.github.io/latein/';
   const files = {
     gerundium:       'aufgabe.html',
-    aci:             'aufgabe2.html',
     singular_plural: 'aufgabe7.html',
     lueckentext:     'lueckentext.html',
   };
@@ -857,7 +853,6 @@ const TASK_CATALOGUE = {
         label: 'Sonstige Aufgaben',
         tasks: [
           { id: 'gerundium',       label: 'Gerundium & Gerundivum markieren' },
-          { id: 'aci',             label: 'AcI-Bestandteile markieren' },
           { id: 'singular_plural', label: 'Singular oder Plural (Aufgabe 7)' },
         ]
       }
@@ -1131,9 +1126,6 @@ const TASK_DATA = {
     roleToColor: {gerundium:"blue", gerundivum:"yellow"},
     colorLabels:  {blue:"Gerundium", yellow:"Gerundivum"}
   },
-  aci: {
-    sentences: [
-      {id:1, tokens:[{w:"Caesar",role:null},{w:"dicit",role:"signal"},{w:"Romanos",role:"subj"},{w:"esse",role:"inf"},{w:"fortes",role:null}], translation:"Caesar sagt, dass die Römer tapfer sind."},
       {id:2, tokens:[{w:"Pater",role:null},{w:"putat",role:"signal"},{w:"filium",role:"subj"},{w:"venire",role:"inf"},{w:"cras",role:null}], translation:"Der Vater glaubt, dass der Sohn morgen kommt."},
       {id:3, tokens:[{w:"Senatus",role:null},{w:"audit",role:"signal"},{w:"hostes",role:"subj"},{w:"appropinquare",role:"inf"},{w:"urbem",role:null}], translation:"Der Senat hört, dass die Feinde sich der Stadt nähern."},
       {id:4, tokens:[{w:"Magister",role:null},{w:"credit",role:"signal"},{w:"discipulos",role:"subj"},{w:"laborare",role:"inf"},{w:"diligenter",role:null}], translation:"Der Lehrer glaubt, dass die Schüler fleißig arbeiten."}
@@ -1279,7 +1271,7 @@ async function viewResult(resultId) {
       html += '<p style="color:var(--muted);font-size:14px;padding:20px 0;">Noch keine Antworten abgegeben.</p>';
     } else if (!taskDef) {
       html += '<p style="color:var(--muted);font-size:14px;">Vorschau für diesen Aufgabentyp nicht verfügbar.</p>';
-    } else if (r.task_id === 'gerundium' || r.task_id === 'aci') {
+    } else if (r.task_id === 'gerundium') {
       html += buildMarkingPreview(taskDef, answers);
     } else if (r.task_id === 'singular_plural') {
       html += buildSortingPreview(taskDef, answers);

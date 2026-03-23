@@ -1035,7 +1035,7 @@
    8. PRÜFUNG & RESULTATE
    ========================================================================== */
       checkBtn7.addEventListener("click", () => {
-        if (checkBtn7.textContent.trim() === "Weiter") {
+        if (checkBtn7.textContent.trim() === "Zurück zu Trello") {
           window.location.href = "aufgabe08.html";
           return;
         }
@@ -1089,16 +1089,10 @@
         resultPopup.setAttribute("aria-hidden", "false");
         resultPopupPanel.classList.toggle("is-success", isSuccess);
         resultPopupPanel.classList.toggle("is-failure", !isSuccess);
-
         resultPopupBadge.textContent = isSuccess ? "✓" : "!";
-        resultPopupTitle.textContent = isSuccess
-          ? "Alles richtig gemacht"
-          : "Du hast Fehler gemacht.";
-
-        if (mascotEl) {
-          mascotEl.textContent = isSuccess ? "🎉" : "🔍";
-        }
-
+        resultPopupTitle.textContent = isSuccess ? "Alles richtig gemacht" : "Du hast Fehler gemacht.";
+        if (mascotEl) mascotEl.textContent = isSuccess ? "🎉" : "🔍";
+        resultPopupNext.textContent = isSuccess ? "Zurück zu Trello" : "Schließen";
         document.body.classList.add("popup-open");
       }
 
@@ -1108,7 +1102,13 @@
         document.body.classList.remove("popup-open");
       }
 
-      resultPopupNext.addEventListener("click", closeResultPopup);
+      resultPopupNext.addEventListener("click", () => {
+        if (!isSolved7) {
+          resultPopupSolution.click();
+        } else {
+          closeResultPopup();
+        }
+      });
 
       resultPopupSolution.addEventListener("click", () => {
         isSolved7 = true;
@@ -1123,7 +1123,7 @@
         setZonesEnabled7(false);
         setActiveWord7(null);
 
-        checkBtn7.textContent = "Weiter";
+        checkBtn7.textContent = "Zurück zu Trello";
         checkBtn7.disabled = false;
 
         solutionText7.innerHTML = `
@@ -1162,7 +1162,7 @@ function initTask(student,result){
     if(!stack)return;
     stack.addEventListener('click',function(e){var btn=e.target.closest('.hint-btn');if(btn)revealNextHint(Number(num));});
   });
-  if(isSolved7){feedbackMsg7('Bereits gelöst! ✓','good');checkBtn7.textContent='Weiter';}
+  if(isSolved7){feedbackMsg7('Bereits gelöst! ✓','good');checkBtn7.textContent='Zurück zu Trello';}
   if(triesLeft7===0&&!isSolved7){isChecked7=true;task7WordsData.forEach(function(w){w._status=assignments7[w.id]===w.solution?'correct':'wrong';});renderTask7();setZonesEnabled7(false);checkBtn7.disabled=true;feedbackMsg7('Keine Versuche mehr.','bad');}
 }
 
@@ -1197,9 +1197,29 @@ window.addEventListener('load',function(){
       sp.classList.add('off');
       tw.style.display='block';
       initTask(_S,_R);
+      if(typeof startCommentPoll==='function')startCommentPoll();
+      startCommentPoll();
     });
   }).catch(function(e){console.error(e);sp.classList.add('off');ae.style.display='flex';});
 });
 </script>
+
+/* ── Poll for teacher comment every 60s ── */
+function startCommentPoll() {
+  setInterval(function() {
+    if (!_S) return;
+    sg('results', 'student_id=eq.' + _S.id + '&task_id=eq.' + _S.task_id).then(function(res) {
+      if (!res || !res[0]) return;
+      var comment = res[0].teacher_comment;
+      var tmEl = document.getElementById('tm');
+      var tmtEl = document.getElementById('tmt');
+      if (comment && tmtEl) {
+        tmtEl.textContent = comment;
+        if (tmEl) tmEl.style.display = 'block';
+      }
+    }).catch(function(){});
+  }, 60000);
+}
+
 </body>
 </html>

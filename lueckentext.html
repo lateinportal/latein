@@ -641,13 +641,21 @@
     popupTitle.textContent  = success ? "Alles richtig gemacht!" : "Du hast Fehler gemacht.";
     popupMascot.textContent = success ? "\uD83C\uDF89" : "\uD83D\uDCAA";
     resultPopup.hidden = false;
+    document.getElementById("popupCloseBtn").textContent = success ? "Zur\\u00fcck zu Trello" : "Schlie\\u00dfen";
     document.body.classList.add("popup-open");
   }
   function closePopup(){
     resultPopup.hidden = true;
     document.body.classList.remove("popup-open");
   }
-  document.getElementById("popupCloseBtn").addEventListener("click", closePopup);
+  document.getElementById("popupCloseBtn").addEventListener("click", function(){
+    var isSuccess = popupPanel.classList.contains("is-success");
+    if (!isSuccess) {
+      document.getElementById("popupSolutionBtn").click();
+    } else {
+      closePopup();
+    }
+  });
   document.getElementById("popupSolutionBtn").addEventListener("click", closePopup);
   document.getElementById("popupBackdrop").addEventListener("click", closePopup);
   document.addEventListener("keydown", function(e){ if (e.key==="Escape") closePopup(); });
@@ -698,9 +706,29 @@ window.addEventListener('load',function(){
       sp.classList.add('off');
       tw.style.display='block';
       initTask(_S,_R);
+      if(typeof startCommentPoll==='function')startCommentPoll();
+      startCommentPoll();
     });
   }).catch(function(e){console.error(e);sp.classList.add('off');ae.style.display='flex';});
 });
 </script>
+
+/* ── Poll for teacher comment every 60s ── */
+function startCommentPoll() {
+  setInterval(function() {
+    if (!_S) return;
+    sg('results', 'student_id=eq.' + _S.id + '&task_id=eq.' + _S.task_id).then(function(res) {
+      if (!res || !res[0]) return;
+      var comment = res[0].teacher_comment;
+      var tmEl = document.getElementById('tm');
+      var tmtEl = document.getElementById('tmt');
+      if (comment && tmtEl) {
+        tmtEl.textContent = comment;
+        if (tmEl) tmEl.style.display = 'block';
+      }
+    }).catch(function(){});
+  }, 60000);
+}
+
 </body>
 </html>
