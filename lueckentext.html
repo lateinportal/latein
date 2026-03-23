@@ -1,270 +1,254 @@
 <!doctype html>
 <html lang="de">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Lückentext – Lateinische Grammatik</title>
   <style>
-    /* ── BASIS (identisch mit den anderen Aufgaben) ────────── */
-    :root {
-      --bg: #f6f7fb;
-      --card: #ffffff;
-      --text: #1f2937;
-      --muted: #6b7280;
-      --border: #e5e7eb;
-      --blue: #1976d2;
-      --blue-dark: #135aa3;
-      --green: #16a34a;
-      --red: #dc2626;
+    :root{
+      --bg:#f6f7fb;
+      --card:#ffffff;
+      --text:#1f2937;
+      --muted:#6b7280;
+      --border:#e5e7eb;
+      --shadow: 0 10px 30px rgba(0,0,0,.08);
+      --blue:#1976d2;
+      --blue-dark:#135aa3;
     }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background: var(--bg); color: var(--text); }
-    body.popup-open { overflow: hidden; }
-    html { scrollbar-gutter: stable; }
-
-    /* ── WELCOME BANNER ────────────────────────────────────── */
-    #welcomeBanner { background: var(--card); border-bottom: 1px solid var(--border); padding: 10px 20px; display: none; align-items: center; justify-content: space-between; font-size: 14px; }
-    .welcome-name { font-weight: 700; }
-    .welcome-task { color: var(--muted); }
-    #teacherCommentBox { max-width: 1100px; margin: 16px auto 0; padding: 0 18px; display: none; }
-    .teacher-comment { background: #fffbeb; border: 1px solid #fbbf24; border-radius: 12px; padding: 14px 18px; font-size: 14px; color: #78350f; line-height: 1.55; }
-    .teacher-comment strong { display: block; margin-bottom: 4px; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: #b45309; }
-
-    /* ── SPINNER ───────────────────────────────────────────── */
-    .spinner-overlay { position: fixed; inset: 0; background: rgba(246,247,251,.85); display: flex; align-items: center; justify-content: center; z-index: 200; flex-direction: column; gap: 12px; font-size: 14px; color: var(--muted); }
-    .spinner-overlay.hidden { display: none; }
-    .spin { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--blue); border-radius: 50%; animation: spin .7s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* ── PAGE LAYOUT ───────────────────────────────────────── */
-    .page { max-width: 1100px; margin: 28px auto; padding: 0 18px; }
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 22px 24px 28px; }
-    .task-title { margin: 0 0 6px; font-size: 20px; font-weight: 700; line-height: 1.25; }
-    .task-sub { display: block; margin-top: 6px; color: var(--muted); font-weight: 500; font-size: 14px; }
-    .top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-
-    /* ── LÜCKENTEXT ROWS ───────────────────────────────────── */
-    .luecke-list { display: flex; flex-direction: column; gap: 16px; margin: 22px 0 18px; }
-
-    .luecke-row {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      overflow: hidden;
-      display: grid;
-      grid-template-columns: 1fr 190px;
-      transition: border-color .14s, background .14s;
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:var(--bg);
+      color:var(--text);
     }
-    .luecke-row.is-correct { border-color: #3bd668; background: #f0fdf4; }
-    .luecke-row.is-wrong   { border-color: #feda31; background: #fffbeb; }
+    .page{
+      max-width: 1100px;
+      margin: 28px auto;
+      padding: 0 18px 40px;
+    }
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:14px;
+      box-shadow: var(--shadow);
+      padding: 22px 24px 28px;
+    }
+    .task-title{
+      margin: 0 0 6px 0;
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1.25;
+    }
+    .task-sub{
+      display:block;
+      margin-top:6px;
+      color:var(--muted);
+      font-weight:500;
+      font-size: 14px;
+    }
 
-    .luecke-main {
-      display: flex;
-      gap: 16px;
-      align-items: flex-start;
+    /* ── rows ── */
+    .luecke-list{
+      display:flex;
+      flex-direction:column;
+      gap: 14px;
+      margin: 20px 0 14px;
+    }
+    .luecke-row{
+      display:grid;
+      grid-template-columns: 1fr 180px;
+      background:#e5e7eb;
+      border-radius: 4px;
+      overflow:hidden;
+    }
+    .luecke-main{
+      display:flex;
+      gap: 14px;
+      align-items:flex-start;
       padding: 16px 18px;
     }
-
-    /* Nummern-Badge – identisch zu den anderen Aufgaben */
-    .num-badge {
-      display: inline-flex; align-items: center; justify-content: center;
-      width: 32px; height: 32px; min-width: 32px;
-      border-radius: 50%; background: #1f2937; color: #fff;
-      font-size: 14px; font-weight: 700;
-      margin-top: 4px; flex-shrink: 0;
+    .num-badge{
+      width: 42px; height: 42px; min-width: 42px;
+      border-radius: 999px;
+      background:#111827; color:#fff;
+      display:grid; place-items:center;
+      font-weight:700; font-size: 19px;
+      margin-top: 6px;
+    }
+    .luecke-text{
+      font-size: 17px;
+      line-height: 2.6;
+      color:#1f2937;
+      flex:1;
     }
 
-    .luecke-text { font-size: 1.05rem; line-height: 2.8; color: var(--text); flex: 1; }
-
-    /* ── WORD BANK (rechte Spalte) ──────────────────────────── */
-    .luecke-bank {
-      display: flex; flex-direction: column; justify-content: center;
-      gap: 8px; padding: 14px 12px;
-      border-left: 1px solid var(--border);
-      background: #fbfbfd;
-      transition: background .15s, border-color .15s;
+    /* ── bank ── */
+    .luecke-bank{
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      gap: 7px;
+      padding: 14px;
+      border-left: 6px solid #9ca3af;
+      background:#e5e7eb;
     }
-    .luecke-bank.drag-over { background: rgba(25,118,210,.06); border-left-color: var(--blue); }
-    .bank-label { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 2px; }
+    .luecke-bank.drag-over{
+      background: rgba(25,118,210,.08);
+      border-left-color: var(--blue);
+    }
 
-    /* ── CHIPS ──────────────────────────────────────────────── */
-    .word-chip {
-      border: 1px solid var(--border);
-      background: #fff;
-      border-radius: 8px;
-      min-height: 36px;
-      padding: 5px 12px;
-      font-size: 14px;
-      font-weight: 600;
+    /* ── chips (draggable words) ── */
+    .word-chip{
+      border: 2px solid #9ca3af;
+      background:#fff;
+      border-radius: 3px;
+      min-height: 38px;
+      padding: 5px 10px;
+      font-size: 15px;
       cursor: grab;
-      text-align: center;
-      color: var(--text);
-      user-select: none;
-      transition: border-color .12s, box-shadow .12s, opacity .15s, transform .1s;
+      text-align:center;
+      color:#111827;
+      user-select:none;
+      transition: border-color .1s, box-shadow .1s, opacity .15s;
       white-space: nowrap;
-      box-shadow: 0 1px 3px rgba(0,0,0,.06);
     }
-    .word-chip:hover { border-color: var(--blue); transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,.1); }
-    /* Tap-select state */
-    .word-chip.is-selected { border-color: var(--blue); background: rgba(25,118,210,.1); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(25,118,210,.25); }
-    .luecke-blank.is-tap-target { border-color: var(--blue); border-style: solid; background: rgba(25,118,210,.07); animation: pulse .6s ease-in-out infinite alternate; }
-    .luecke-bank.is-tap-target { background: rgba(25,118,210,.06); border-left-color: var(--blue); }
-    @keyframes pulse { from { box-shadow: 0 0 0 0 rgba(25,118,210,.2); } to { box-shadow: 0 0 0 4px rgba(25,118,210,.1); } }
-    /* Hint for touch users */
-    .touch-hint { font-size: 12px; color: var(--muted); text-align: center; margin: -8px 0 10px; display: none; }
-    @media (hover: none) { .touch-hint { display: block; } }
-    .word-chip:active { cursor: grabbing; }
-    .word-chip.dragging { opacity: .35; }
+    .word-chip:active{ cursor: grabbing; }
+    .word-chip.dragging{ opacity:.4; }
 
-    /* ── BLANKS ─────────────────────────────────────────────── */
-    .luecke-blank {
-      display: inline-flex; align-items: center; justify-content: center;
-      vertical-align: middle;
-      min-width: 130px; min-height: 36px;
-      margin: 0 5px; padding: 3px 6px;
-      border: 2px dashed #c4c9d4;
-      background: #fff;
-      border-radius: 8px;
+    /* ── blanks ── */
+    .luecke-blank{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      vertical-align:middle;
+      min-width: 130px;
+      min-height: 38px;
+      margin: 0 4px;
+      padding: 3px 6px;
+      border: 2px dashed #9ca3af;
+      background:#fff;
+      border-radius: 3px;
       cursor: default;
       transition: border-color .15s, background .15s;
     }
-    .luecke-blank.drag-over { border-color: var(--blue); background: rgba(25,118,210,.06); border-style: solid; }
-    .luecke-blank.is-filled { border-style: solid; border-color: #c4c9d4; }
-    .luecke-blank.is-correct { border-color: var(--green) !important; background: rgba(22,163,74,.07) !important; }
-    .luecke-blank.is-wrong   { border-color: #f59e0b !important; background: rgba(245,158,11,.07) !important; }
-    .luecke-blank .word-chip { font-size: 13px; min-height: 30px; padding: 3px 10px; cursor: grab; }
-    .blank-placeholder { display: block; width: 110px; height: 18px; }
+    .luecke-blank.drag-over{
+      border-color: var(--blue);
+      background: rgba(25,118,210,.07);
+      border-style: solid;
+    }
+    .luecke-blank.is-filled{
+      border-style: solid;
+      border-color: #9ca3af;
+      padding: 2px 4px;
+    }
+    .luecke-blank.is-correct{ border-color:#16a34a !important; background:rgba(22,163,74,.08) !important; }
+    .luecke-blank.is-wrong{   border-color:#dc2626 !important; background:rgba(220,38,38,.08) !important; }
 
-    /* ── BOTTOM BAR ─────────────────────────────────────────── */
-    .bottombar { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-top: 18px; flex-wrap: wrap; }
-
-    /* Hint system – identisch zu den anderen Aufgaben */
-    .hint-stack { display: flex; flex-direction: column; gap: 10px; min-width: 260px; max-width: min(100%, 600px); align-self: flex-start; }
-    .hint-box { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; color: #4b5563; line-height: 1.55; }
-    .hint-title { display: block; font-weight: 700; color: #374151; margin-bottom: 8px; }
-    .hint-btn { width: fit-content; border: 1px solid var(--border); background: #fff; border-radius: 12px; padding: 12px 14px; display: flex; gap: 10px; align-items: center; cursor: pointer; font-size: 14px; }
-    .hint-btn:hover { background: #f9f9f9; }
-
-    .right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0; }
-    .btn-group { display: flex; gap: 10px; }
-    .primary { background: var(--blue); border: 1px solid var(--blue); color: #fff; font-weight: 700; border-radius: 10px; padding: 12px 18px; min-width: 110px; cursor: pointer; font-size: 14px; transition: all .14s; }
-    .primary:hover { background: var(--blue-dark); }
-    .primary:disabled { opacity: .55; cursor: not-allowed; }
-    .ghost { border: 1px solid var(--border); background: #fff; border-radius: 10px; padding: 12px 16px; cursor: pointer; color: var(--text); font-size: 14px; font-weight: 600; transition: all .14s; }
-    .ghost:hover { background: #f0f2f5; border-color: #d1d5db; }
-
-    .tries { display: flex; flex-direction: column; align-items: center; width: 110px; font-size: 12px; color: var(--muted); gap: 6px; }
-    .dots { display: flex; gap: 6px; }
-    .dot { width: 10px; height: 10px; border-radius: 50%; border: 1px solid var(--border); background: #fff; transition: background .2s; }
-    .dot.is-on { background: #1f2937; border-color: #1f2937; }
-    .feedback { margin: 14px 0 0; color: var(--muted); min-height: 1.2em; font-size: 14px; }
-
-    /* ── RESULT POPUP – identisch zu den anderen Aufgaben ───── */
-    .result-popup { position: fixed; inset: 0; z-index: 50; }
-    .result-popup[hidden] { display: none; }
-    .result-popup__backdrop { position: absolute; inset: 0; background: rgba(17,24,39,.5); }
-    .result-popup__panel { position: relative; z-index: 1; width: min(420px, calc(100% - 32px)); margin: 120px auto 0; border-radius: 28px; padding: 28px 24px 24px; text-align: center; color: #fff; box-shadow: 0 18px 50px rgba(0,0,0,.25); }
-    .result-popup__panel.is-success { background: #76c800; }
-    .result-popup__panel.is-failure { background: #ff983e; }
-    .result-popup__badge { width: 64px; height: 64px; margin: 0 auto 14px; border-radius: 50%; display: grid; place-items: center; font-size: 32px; font-weight: 900; background: rgba(255,255,255,.2); border: 2px solid rgba(255,255,255,.3); }
-    .result-popup__title { margin: 0; font-size: 28px; line-height: 1.1; }
-    .result-popup__mascot { font-size: 64px; margin: 12px 0 18px; }
-    .result-popup__actions { display: flex; flex-direction: column; gap: 10px; }
-    .result-popup__next { font-size: 18px; padding: 14px 22px; border-radius: 12px; }
-    .result-popup__solution { border: none; background: transparent; color: #fff; font-size: 15px; cursor: pointer; }
-
-    /* ── SOLUTION ───────────────────────────────────────────── */
-    .solution-explanation { margin-top: 20px; padding: 20px; color: black; animation: snapIn .4s ease-out; }
-    .solution-explanation h3 { margin-top: 0; font-size: 18px; }
-    .solution-explanation ul { padding-left: 20px; margin-bottom: 0; }
-    .solution-explanation li { margin-bottom: 8px; }
-
-    @keyframes snapIn {
-      0%   { transform: translateY(10px) scale(.985); opacity: .75; }
-      70%  { transform: translateY(-2px) scale(1.01); opacity: 1; }
-      100% { transform: translateY(0) scale(1); opacity: 1; }
+    /* chip inside blank is slightly smaller */
+    .luecke-blank .word-chip{
+      width:auto;
+      cursor: grab;
+      font-size:14px;
+      min-height:32px;
+      padding:3px 8px;
+    }
+    .blank-placeholder{
+      display:block;
+      width:100px; height:20px;
     }
 
-    @media (max-width: 700px) {
-      .luecke-row { grid-template-columns: 1fr; }
-      .luecke-bank { border-left: none; border-top: 1px solid var(--border); flex-direction: row; flex-wrap: wrap; }
-      .luecke-text { font-size: 15px; }
-      .bottombar { flex-direction: column; align-items: center; }
-      .right { align-items: center; }
-      .hint-stack { width: 100%; align-items: center; }
+    /* ── bottom bar ── */
+    .bottombar{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+      margin-top:18px;
+      flex-wrap:wrap;
+    }
+    .hint-stack{ display:flex; flex-direction:column; gap:10px; min-width:260px; max-width:min(100%,600px); }
+    .hint-box{ background:#f1ebd8; border:1px solid #e3dcc5; border-radius:12px; padding:14px 16px; color:#4b5563; line-height:1.55; }
+    .hint-title{ display:block; font-weight:700; color:#374151; margin-bottom:5px; }
+    .hint-btn{ width:fit-content; min-height:42px; border:1px solid var(--border); background:#fff; border-radius:12px; padding:9px 14px; cursor:pointer; font-size:14px; }
+    .right{ display:flex; align-items:center; gap:12px; }
+    .ghost{ border:1px solid var(--border); background:#fff; border-radius:10px; padding:10px 12px; cursor:pointer; color:var(--text); font-size:14px; }
+    .primary{ background:var(--blue); border:1px solid var(--blue); color:#fff; font-weight:700; border-radius:10px; padding:11px 18px; cursor:pointer; font-size:14px; }
+    .primary:hover{ background:var(--blue-dark); }
+    .primary:disabled{ opacity:.5; cursor:not-allowed; }
+    .tries{ font-size:12px; color:var(--muted); display:flex; flex-direction:column; gap:5px; }
+    .dots{ display:flex; gap:6px; }
+    .dot{ width:10px; height:10px; border-radius:50%; border:1px solid var(--border); background:#fff; }
+    .dot.is-on{ background:#111827; border-color:#111827; }
+    .feedback{ margin:14px 0 0; color:var(--muted); min-height:1.4em; font-size:15px; }
+
+    /* ── popup ── */
+    .result-popup[hidden]{ display:none; }
+    .result-popup{ position:fixed; inset:0; z-index:1000; }
+    .result-popup__backdrop{ position:absolute; inset:0; background:rgba(15,23,42,.3); backdrop-filter:blur(2px); }
+    .result-popup__panel{ position:relative; width:min(400px,calc(100vw - 32px)); margin:140px auto 0; border-radius:10px; color:#fff; text-align:center; padding:36px 28px 24px; box-shadow:0 18px 40px rgba(0,0,0,.25); }
+    .result-popup__panel.is-success{ background:#76c800; }
+    .result-popup__panel.is-failure{ background:linear-gradient(180deg,#f3c300,#e38d00); }
+    .result-popup__badge{ position:absolute; top:-22px; left:50%; transform:translateX(-50%); width:44px; height:44px; border-radius:999px; border:4px solid #fff; display:grid; place-items:center; font-size:24px; font-weight:800; background:inherit; }
+    .result-popup__title{ margin:0; font-size:18px; font-weight:800; }
+    .result-popup__mascot{ font-size:72px; line-height:1; margin:16px 0 10px; }
+    .result-popup__actions{ display:flex; flex-direction:column; align-items:center; gap:10px; }
+    .result-popup__close-btn{ width:min(240px,100%); min-height:42px; font-size:15px; }
+    .result-popup__solution-btn{ border:none; background:transparent; color:#fff; font-weight:600; cursor:pointer; font-size:14px; }
+    .result-popup__solution-btn:hover{ text-decoration:underline; }
+    body.popup-open{ overflow:hidden; }
+
+    @media (max-width:700px){
+      .luecke-row{ grid-template-columns:1fr; }
+      .luecke-bank{ border-left:none; border-top:6px solid #9ca3af; flex-direction:row; flex-wrap:wrap; }
+      .luecke-text{ font-size:15px; line-height:2.4; }
     }
   
-    .spinner-overlay{position:fixed;inset:0;background:rgba(246,247,251,.9);display:flex;align-items:center;justify-content:center;z-index:200;flex-direction:column;gap:12px;font-size:14px;color:#6b7280;}
-    .spinner-overlay.hidden{display:none;}
-    .spin{width:32px;height:32px;border:3px solid #e5e7eb;border-top-color:#1976d2;border-radius:50%;animation:_spin .7s linear infinite;}
-    @keyframes _spin{to{transform:rotate(360deg);}}
+  .auth-spinner{position:fixed;inset:0;background:#f6f7fb;display:flex;align-items:center;justify-content:center;z-index:999;flex-direction:column;gap:14px;font-family:system-ui,sans-serif;font-size:14px;color:#6b7280;}
+  .auth-spinner.hidden{display:none;}
+  .auth-spin{width:34px;height:34px;border:3px solid #e5e7eb;border-top-color:#1976d2;border-radius:50%;animation:authspin .7s linear infinite;}
+  @keyframes authspin{to{transform:rotate(360deg);}}
+  #authError{display:none;min-height:100vh;align-items:center;justify-content:center;background:#f6f7fb;text-align:center;padding:20px;font-family:system-ui,sans-serif;}
+  #taskWrap{display:none;}
+  #welcomeBar{display:none;background:#fff;border-bottom:1px solid #e5e7eb;padding:10px 20px;align-items:center;gap:8px;font-size:14px;font-family:system-ui,sans-serif;}
+  #teacherMsg{display:none;max-width:1100px;margin:14px auto 0;padding:0 18px;}
+  .t-msg{background:#fffbeb;border:1px solid #fbbf24;border-radius:12px;padding:14px 18px;font-size:14px;color:#78350f;line-height:1.55;}
+  .t-msg b{display:block;margin-bottom:4px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#b45309;}
+
   </style>
 </head>
 <body>
-<div class="spinner-overlay" id="spinnerOverlay"><div class="spin"></div><span>Wird geladen…</span></div>
-<div id="noCodeError" style="display:none;min-height:100vh;align-items:center;justify-content:center;padding:20px;background:var(--bg);">
-  <div style="text-align:center;max-width:360px;"><div style="font-size:48px;margin-bottom:16px;">🔒</div>
-  <h2 style="font-size:20px;font-weight:700;color:#1f2937;margin-bottom:8px;">Kein Zugang</h2>
-  <p style="color:#6b7280;font-size:14px;line-height:1.6;">Kein gültiger Link. Wende dich an deine Lehrkraft.</p></div>
-</div>
-<div id="welcomeBanner" style="display:none;background:#fff;border-bottom:1px solid #e5e7eb;padding:10px 20px;align-items:center;font-size:14px;font-family:system-ui,sans-serif;">
-  <span style="font-weight:700;" id="welcomeName"></span><span style="color:#6b7280;" id="welcomeTask">Lückentext – Grammatik</span>
-</div>
-<div id="teacherCommentBox" style="display:none;max-width:1100px;margin:16px auto 0;padding:0 18px;">
-  <div style="background:#fffbeb;border:1px solid #fbbf24;border-radius:12px;padding:14px 18px;font-size:14px;color:#78350f;">
-    <strong style="display:block;margin-bottom:4px;font-size:12px;text-transform:uppercase;color:#b45309;">💬 Kommentar deiner Lehrkraft</strong>
-    <span id="teacherCommentText"></span>
+<div class="auth-spinner" id="authSpinner"><div class="auth-spin"></div><span>Wird geladen…</span></div>
+<div id="authError" style="display:none;min-height:100vh;align-items:center;justify-content:center;background:#f6f7fb;">
+  <div style="max-width:340px;text-align:center;">
+    <div style="font-size:48px;margin-bottom:14px;">🔒</div>
+    <h2 style="font-size:20px;font-weight:700;color:#1f2937;margin-bottom:8px;">Kein Zugang</h2>
+    <p style="color:#6b7280;font-size:14px;line-height:1.6;">Kein gültiger Link. Bitte wende dich an deine Lehrkraft.</p>
   </div>
 </div>
-
-<!-- Spinner -->
-  <span>Wird geladen…</span>
+<div id="welcomeBar">
+  <span id="wbName" style="font-weight:700;color:#1f2937;"></span>
+  <span id="wbTask" style="color:#6b7280;margin-left:4px;"></span>
 </div>
-
-    <h1>Aufgabe öffnen</h1>
-    <p>Gib deinen persönlichen Zugangscode ein, den du von deiner Lehrkraft erhalten hast.</p>
-    <input type="text" class="code-input" id="codeInput" placeholder="ABC-123-XYZ" maxlength="11" autocomplete="off" spellcheck="false"/>
-    <button class="btn-enter" onclick="submitCode()">Aufgabe öffnen →</button>
-    <div class="code-error" id="codeError"></div>
-    <p class="code-hint">Keinen Code? Wende dich an deine Lehrkraft.</p>
-  </div>
+<div id="teacherMsg">
+  <div class="t-msg"><b>💬 Kommentar deiner Lehrkraft</b><span id="teacherTxt"></span></div>
 </div>
+<div id="taskWrap">
 
-</div>
-
-</div>
-
-
-    <h2 style="font-size:20px; font-weight:700; color:#1f2937; margin-bottom:8px;">Kein Zugang</h2>
-    <p style="color:#6b7280; font-size:14px; line-height:1.6;">Du hast keinen persönlichen Link für diese Aufgabe. Bitte wende dich an deine Lehrkraft.</p>
-  </div>
-</div>
-
-<!-- Task Wrapper -->
-<div id="taskWrapper" style="display:none;">
 <div class="page">
-  <header class="top-nav">
-    <div style="font-size:14px; color:var(--muted);">Latein</div>
-  </header>
-
   <main class="card">
     <h1 class="task-title">
       Ergänze die grammatischen Fachbegriffe.
-      <span class="task-sub">Ziehe die Wörter aus der Ablage in die passenden Lücken – oder tippe erst ein Wort an, dann die Lücke.</span>
-    <p class="touch-hint">📱 Tippe ein Wort an → dann die passende Lücke</p>
+      <span class="task-sub">Ziehe die Wörter aus der Ablage in die passenden Lücken. Ein Wort aus einer Lücke zurück in die Ablage ziehen, um es zu entfernen.</span>
     </h1>
 
     <div class="luecke-list" id="lueckeList"></div>
 
-    <div id="solutionText" class="solution-explanation" hidden></div>
-
     <footer class="bottombar">
       <div class="hint-stack" id="hintStack"></div>
       <div class="right">
-        <div class="btn-group">
-          <button id="resetBtn" class="ghost">Zurücksetzen</button>
-          <button id="checkBtn" class="primary">Überprüfen</button>
-        </div>
+        <button id="resetBtn" class="ghost">Zurücksetzen</button>
+        <button id="checkBtn" class="primary">Überprüfen</button>
         <div class="tries">
           Versuche:
           <span class="dots">
@@ -273,60 +257,470 @@
             <span class="dot" id="dot2"></span>
           </span>
         </div>
-        <p id="feedback" class="feedback" role="status" aria-live="polite"></p>
       </div>
     </footer>
+    <p id="feedback" class="feedback" role="status" aria-live="polite"></p>
   </main>
 
-  <!-- Result Popup -->
-  <div class="result-popup" id="resultPopup" hidden aria-hidden="true">
+  <div class="result-popup" id="resultPopup" hidden>
     <div class="result-popup__backdrop" id="popupBackdrop"></div>
-    <div class="result-popup__panel" id="popupPanel" role="dialog" aria-modal="true">
+    <div class="result-popup__panel" id="popupPanel">
       <div class="result-popup__badge" id="popupBadge">!</div>
       <h2 class="result-popup__title" id="popupTitle"></h2>
       <div class="result-popup__mascot" id="popupMascot"></div>
       <div class="result-popup__actions">
-        <button type="button" class="primary result-popup__next" id="popupCloseBtn">Weiter</button>
-        <button type="button" class="result-popup__solution" id="popupSolutionBtn">Schau dir die Lösung an.</button>
+        <button type="button" class="primary result-popup__close-btn" id="popupCloseBtn">Schließen</button>
+        <button type="button" class="result-popup__solution-btn" id="popupSolutionBtn">Schau dir die Lösung an.</button>
       </div>
     </div>
   </div>
 </div>
-</div><!-- /taskWrapper -->
 
 <script>
-function initTask(student, result) {
+document.addEventListener("DOMContentLoaded", function () {
 
-/* ── Auth & Supabase ── */
-const _U='https://jwvdyuvzapkiivsvkeis.supabase.co',_K='sb_publishable_DiTHFK_HaV9jN40fkLKHDA_PrzS8oKc',_H={'apikey':_K,'Authorization':'Bearer '+_K,'Content-Type':'application/json','Prefer':'return=representation'};
-async function _get(t,q){const r=await fetch(_U+'/rest/v1/'+t+'?'+q,{headers:_H});if(!r.ok)throw new Error(await r.text());return r.json();}
-async function _save(sid,tid,data){
+  // ── DATA ──────────────────────────────────────────────────────────
+  var rows = [
+    {
+      id: "r1",
+      parts: [
+        "1.\u00a0Die ", { blank: "r1_b1" },
+        " (Haupt- oder Namenw\u00f6rter) treten im ", { blank: "r1_b2" },
+        " (in der Einzahl) und im ", { blank: "r1_b3" },
+        " (in der Mehrzahl) auf. Der \u00dcberbegriff zu Singular und Plural lautet ", { blank: "r1_b4" }, " (Zahl)."
+      ],
+      words: [
+        { id:"r1_w1", label:"Substantive" },
+        { id:"r1_w2", label:"Singular" },
+        { id:"r1_w3", label:"Plural" },
+        { id:"r1_w4", label:"Numerus" }
+      ],
+      solution: { r1_b1:"Substantive", r1_b2:"Singular", r1_b3:"Plural", r1_b4:"Numerus" }
+    },
+    {
+      id: "r2",
+      parts: [
+        "2.\u00a0Man kann lateinische Substantive \u2013 wie auch deutsche \u2013 ", { blank: "r2_b1" },
+        " (beugen), d.\u00a0h. in verschiedene ", { blank: "r2_b2" },
+        " (F\u00e4lle) setzen, z.\u00a0B. \u201eder Sklave, des Sklaven, dem Sklaven, den Sklaven\u201c. In dieser Lektion kommen die lateinischen Substantive nur im ", { blank: "r2_b3" }, " (1.\u00a0Fall) vor."
+      ],
+      words: [
+        { id:"r2_w1", label:"deklinieren" },
+        { id:"r2_w2", label:"Kasus" },
+        { id:"r2_w3", label:"Nominativ" }
+      ],
+      solution: { r2_b1:"deklinieren", r2_b2:"Kasus", r2_b3:"Nominativ" }
+    },
+    {
+      id: "r3",
+      parts: [
+        "3.\u00a0Jedes lateinische Substantiv ist einer ", { blank: "r3_b1" },
+        " zugeordnet; wir unterscheiden zun\u00e4chst zwei Deklinationsklassen, die ", { blank: "r3_b2" },
+        " (1.\u00a0Deklination) und die ", { blank: "r3_b3" },
+        " (2.\u00a0Deklination): Zur a-Deklination geh\u00f6ren Substantive mit der Endung ", { blank: "r3_b4" },
+        ", zur o-Deklination Substantive mit der Endung ", { blank: "r3_b5" }, " im Nominativ Singular."
+      ],
+      words: [
+        { id:"r3_w1", label:"Deklinationsklasse" },
+        { id:"r3_w2", label:"a-Deklination" },
+        { id:"r3_w3", label:"o-Deklination" },
+        { id:"r3_w4", label:"-a" },
+        { id:"r3_w5", label:"-us" }
+      ],
+      solution: { r3_b1:"Deklinationsklasse", r3_b2:"a-Deklination", r3_b3:"o-Deklination", r3_b4:"-a", r3_b5:"-us" }
+    },
+    {
+      id: "r4",
+      parts: [
+        "4.\u00a0Jedes lateinische Substantiv hat \u2013 wie auch jedes deutsche \u2013 ein bestimmtes ", { blank: "r4_b1" },
+        " (grammatisches Geschlecht); wir unterscheiden: ", { blank: "r4_b2" },
+        " (m) \u2013 m\u00e4nnliches Substantiv, ", { blank: "r4_b3" },
+        " (f) \u2013 weibliches Substantiv, ", { blank: "r4_b4" },
+        " (n) \u2013 s\u00e4chliches Substantiv. Die Substantive der a-Deklination sind meist ", { blank: "r4_b5" },
+        ". Die Substantive der o-Deklination auf -us sind meist ", { blank: "r4_b6" }, "."
+      ],
+      words: [
+        { id:"r4_w1", label:"Genus" },
+        { id:"r4_w2", label:"Masculinum" },
+        { id:"r4_w3", label:"Femininum" },
+        { id:"r4_w4", label:"Neutrum" },
+        { id:"r4_w5", label:"Feminina" },
+        { id:"r4_w6", label:"Masculina" }
+      ],
+      solution: { r4_b1:"Genus", r4_b2:"Masculinum", r4_b3:"Femininum", r4_b4:"Neutrum", r4_b5:"Feminina", r4_b6:"Masculina" }
+    },
+    {
+      id: "r5",
+      parts: [
+        "5.\u00a0Da es im Lateinischen keinen ", { blank: "r5_b1" },
+        " gibt, muss man bei der \u00dcbersetzung entscheiden, ob der bestimmte Artikel (z.\u00a0B. \u201eder Sklave, die Sklavin\u201c), der unbestimmte Artikel (z.\u00a0B. \u201eein Sklave, eine Sklavin\u201c) oder ", { blank: "r5_b2" },
+        " (z.\u00a0B. \u201eSklaven\u201c) einzusetzen ist."
+      ],
+      words: [
+        { id:"r5_w1", label:"Artikel" },
+        { id:"r5_w2", label:"kein Artikel" }
+      ],
+      solution: { r5_b1:"Artikel", r5_b2:"kein Artikel" }
+    }
+  ];
+
+  var hints = [
+    "Achte auf die Kategorie: Geht es um Zahl (Numerus), Fall (Kasus), Deklination oder Genus?",
+    "Die Deklinationsklassen hei\u00dfen a-Deklination (Endung\u00a0-a) und o-Deklination (Endung\u00a0-us).",
+    "Masculinum, Femininum und Neutrum sind die drei Genera; Feminina und Masculina sind ihre Pluralformen."
+  ];
+
+  // ── STATE ─────────────────────────────────────────────────────────
+  var triesLeft   = 3;
+  var showResults = false;
+  var assignments = {};   // blankId → wordId
+  var hintsOpened = 0;
+
+  // drag state
+  var dragWordId  = null;   // word being dragged
+  var dragRowId   = null;   // row it came from
+  var dragSource  = null;   // "bank" | "blank"
+  var dragBlankId = null;   // if source is blank
+
+  // ── ELEMENTS ──────────────────────────────────────────────────────
+  var listEl      = document.getElementById("lueckeList");
+  var feedbackEl  = document.getElementById("feedback");
+  var checkBtn    = document.getElementById("checkBtn");
+  var resetBtn    = document.getElementById("resetBtn");
+  var hintStackEl = document.getElementById("hintStack");
+  var resultPopup = document.getElementById("resultPopup");
+  var popupPanel  = document.getElementById("popupPanel");
+  var popupBadge  = document.getElementById("popupBadge");
+  var popupTitle  = document.getElementById("popupTitle");
+  var popupMascot = document.getElementById("popupMascot");
+
+  // ── HELPERS ───────────────────────────────────────────────────────
+  function esc(s){
+    return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  }
+  function getRow(id){ return rows.find(function(r){ return r.id===id; }); }
+  function getWord(row, wId){ return row && row.words.find(function(w){ return w.id===wId; }); }
+
+  function getAssignedIds(rowId){
+    var row = getRow(rowId);
+    if (!row) return [];
+    return Object.keys(assignments)
+      .filter(function(bid){ return bid.startsWith(rowId+"_") && row.words.some(function(w){ return w.id===assignments[bid]; }); })
+      .map(function(bid){ return assignments[bid]; });
+  }
+
+  function blankTone(blankId){
+    var wId = assignments[blankId];
+    if (!wId || !showResults) return "";
+    var rowId = blankId.replace(/_b\d+$/,"");
+    var row = getRow(rowId);
+    var wordObj = getWord(row, wId);
+    if (!row||!wordObj) return "";
+    return wordObj.label === row.solution[blankId] ? "is-correct" : "is-wrong";
+  }
+
+  // ── RENDER ────────────────────────────────────────────────────────
+  function render(){
+    listEl.innerHTML = rows.map(function(row, idx){
+      var assigned = getAssignedIds(row.id);
+      var bankWords = row.words.filter(function(w){ return assigned.indexOf(w.id)===-1; });
+
+      var partsHtml = row.parts.map(function(p){
+        if (typeof p === "string") return "<span>"+esc(p)+"</span>";
+        var blankId = p.blank;
+        var wId = assignments[blankId];
+        var tone = blankTone(blankId);
+        var inner = wId
+          ? makeChip(row.id, wId, true)
+          : '<span class="blank-placeholder"></span>';
+        return '<span class="luecke-blank'+(wId?" is-filled":"")+' '+(tone||"")+'" data-blank="'+blankId+'" data-row="'+row.id+'">'+inner+'</span>';
+      }).join("");
+
+      var bankHtml = bankWords.map(function(w){ return makeChip(row.id, w.id, false); }).join("");
+
+      return '<div class="luecke-row">'
+        +'<div class="luecke-main">'
+          +'<div class="num-badge">'+(idx+1)+'</div>'
+          +'<div class="luecke-text">'+partsHtml+'</div>'
+        +'</div>'
+        +'<div class="luecke-bank" data-bank="'+row.id+'">'+bankHtml+'</div>'
+        +'</div>';
+    }).join("");
+
+    bindDrag();
+  }
+
+  function makeChip(rowId, wId, inBlank){
+    var row  = getRow(rowId);
+    var word = getWord(row, wId);
+    if (!word) return "";
+    var loc = inBlank ? ' data-in-blank="1"' : "";
+    return '<div class="word-chip" draggable="true" data-row="'+rowId+'" data-word="'+wId+'"'+loc+'>'+esc(word.label)+'</div>';
+  }
+
+  // ── DRAG & DROP ───────────────────────────────────────────────────
+  function bindDrag(){
+    // chips → dragstart
+    listEl.querySelectorAll(".word-chip").forEach(function(chip){
+      chip.addEventListener("dragstart", onChipDragStart);
+      chip.addEventListener("dragend",   onChipDragEnd);
+    });
+
+    // blanks → drop zone
+    listEl.querySelectorAll(".luecke-blank").forEach(function(blank){
+      blank.addEventListener("dragover",  onBlankDragOver);
+      blank.addEventListener("dragleave", onBlankDragLeave);
+      blank.addEventListener("drop",      onBlankDrop);
+    });
+
+    // banks → drop zone (return chips)
+    listEl.querySelectorAll(".luecke-bank").forEach(function(bank){
+      bank.addEventListener("dragover",  onBankDragOver);
+      bank.addEventListener("dragleave", onBankDragLeave);
+      bank.addEventListener("drop",      onBankDrop);
+    });
+  }
+
+  function onChipDragStart(e){
+    dragWordId  = this.getAttribute("data-word");
+    dragRowId   = this.getAttribute("data-row");
+    dragSource  = this.getAttribute("data-in-blank") ? "blank" : "bank";
+    if (dragSource === "blank"){
+      // find which blank holds this word
+      var parent = this.closest(".luecke-blank");
+      dragBlankId = parent ? parent.getAttribute("data-blank") : null;
+    } else {
+      dragBlankId = null;
+    }
+    this.classList.add("dragging");
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", dragWordId);
+  }
+
+  function onChipDragEnd(){
+    this.classList.remove("dragging");
+  }
+
+  function onBlankDragOver(e){
+    if (!dragWordId) return;
+    // only allow drops from same row
+    if (this.getAttribute("data-row") !== dragRowId) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    this.classList.add("drag-over");
+  }
+
+  function onBlankDragLeave(){
+    this.classList.remove("drag-over");
+  }
+
+  function onBlankDrop(e){
+    e.preventDefault();
+    this.classList.remove("drag-over");
+    if (!dragWordId) return;
+    if (this.getAttribute("data-row") !== dragRowId) return;
+
+    var targetBlankId = this.getAttribute("data-blank");
+
+    // if blank already has a word, swap it back to bank
+    var currentInTarget = assignments[targetBlankId];
+    if (currentInTarget){
+      delete assignments[targetBlankId];
+    }
+
+    // if chip came from another blank, free that blank
+    if (dragSource === "blank" && dragBlankId){
+      delete assignments[dragBlankId];
+    }
+
+    // if target had a word and our chip came from a blank, put displaced word into old blank
+    if (currentInTarget && dragSource === "blank" && dragBlankId){
+      assignments[dragBlankId] = currentInTarget;
+    }
+
+    assignments[targetBlankId] = dragWordId;
+    dragWordId = dragRowId = dragSource = dragBlankId = null;
+    render();
+  }
+
+  function onBankDragOver(e){
+    if (!dragWordId) return;
+    if (this.getAttribute("data-bank") !== dragRowId) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    this.classList.add("drag-over");
+  }
+
+  function onBankDragLeave(){
+    this.classList.remove("drag-over");
+  }
+
+  function onBankDrop(e){
+    e.preventDefault();
+    this.classList.remove("drag-over");
+    if (!dragWordId) return;
+    if (this.getAttribute("data-bank") !== dragRowId) return;
+
+    // return chip to bank = remove from blank
+    if (dragSource === "blank" && dragBlankId){
+      delete assignments[dragBlankId];
+    }
+    dragWordId = dragRowId = dragSource = dragBlankId = null;
+    render();
+  }
+
+  // ── UI HELPERS ────────────────────────────────────────────────────
+  function updateDots(){
+    var failed = Math.max(0, 3-triesLeft);
+    for (var i=0; i<3; i++){
+      document.getElementById("dot"+i).classList.toggle("is-on", i<failed);
+    }
+  }
+
+  function setFeedback(text, tone){
+    feedbackEl.textContent = text;
+    feedbackEl.style.color = tone==="good" ? "#166534" : tone==="bad" ? "#991b1b" : "#6b7280";
+  }
+
+  function renderHints(){
+    hintStackEl.innerHTML = "";
+    for (var i=0; i<hintsOpened; i++){
+      var box = document.createElement("div");
+      box.className = "hint-box";
+      box.innerHTML = '<span class="hint-title">'+(i+1)+'. Tipp</span><span>'+esc(hints[i])+'</span>';
+      hintStackEl.appendChild(box);
+    }
+    if (hintsOpened < hints.length){
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "hint-btn";
+      btn.textContent = "\uD83D\uDCA1 "+(hintsOpened+1)+". Tipp anzeigen";
+      btn.addEventListener("click", function(){ hintsOpened++; renderHints(); });
+      hintStackEl.appendChild(btn);
+    }
+  }
+
+  // ── CHECK ─────────────────────────────────────────────────────────
+  checkBtn.addEventListener("click", function(){
+    if (triesLeft<=0) return;
+    var allBlanks = [];
+    rows.forEach(function(row){ Object.keys(row.solution).forEach(function(b){ allBlanks.push(b); }); });
+    var allFilled = allBlanks.every(function(b){ return !!assignments[b]; });
+    if (!allFilled){ setFeedback("Bitte f\u00fclle zuerst alle L\u00fccken.", "bad"); return; }
+
+    var correct = 0;
+    rows.forEach(function(row){
+      Object.keys(row.solution).forEach(function(blankId){
+        var wId = assignments[blankId];
+        var word = getWord(row, wId);
+        if (word && word.label === row.solution[blankId]) correct++;
+      });
+    });
+
+    showResults = true;
+    render();
+
+    if (correct === allBlanks.length){
+      setFeedback("\u2705 Alles richtig!", "good");
+      checkBtn.disabled = true;
+      openPopup(true);
+      return;
+    }
+
+    triesLeft--;
+    updateDots();
+    if (triesLeft>0){
+      setFeedback("\u274C "+correct+"/"+allBlanks.length+" richtig. Versuch es nochmal.", "bad");
+    } else {
+      setFeedback("\u274C Keine Versuche mehr.", "bad");
+      checkBtn.disabled = true;
+      openPopup(false);
+    }
+  });
+
+  // ── RESET ─────────────────────────────────────────────────────────
+  resetBtn.addEventListener("click", function(){
+    triesLeft   = 3;
+    showResults = false;
+    assignments = {};
+    hintsOpened = 0;
+    checkBtn.disabled = false;
+    updateDots();
+    renderHints();
+    render();
+    setFeedback("Zur\u00fcckgesetzt.", "muted");
+  });
+
+  // ── POPUP ─────────────────────────────────────────────────────────
+  function openPopup(success){
+    popupPanel.className = "result-popup__panel "+(success?"is-success":"is-failure");
+    popupBadge.textContent  = success ? "\u2713" : "!";
+    popupTitle.textContent  = success ? "Alles richtig gemacht!" : "Du hast Fehler gemacht.";
+    popupMascot.textContent = success ? "\uD83C\uDF89" : "\uD83D\uDCAA";
+    resultPopup.hidden = false;
+    document.body.classList.add("popup-open");
+  }
+  function closePopup(){
+    resultPopup.hidden = true;
+    document.body.classList.remove("popup-open");
+  }
+  document.getElementById("popupCloseBtn").addEventListener("click", closePopup);
+  document.getElementById("popupSolutionBtn").addEventListener("click", closePopup);
+  document.getElementById("popupBackdrop").addEventListener("click", closePopup);
+  document.addEventListener("keydown", function(e){ if (e.key==="Escape") closePopup(); });
+
+  // ── INIT ──────────────────────────────────────────────────────────
+
+function initTask(student, result) {
+  var savedAssignments = (result && result.answers) ? result.answers : {};
+  var savedTries = (result && result.tries_left != null) ? result.tries_left : 3;
+  var savedSolved = (result && result.is_solved) ? result.is_solved : false;
+  triesLeft   = savedTries;
+  showResults = savedSolved || (savedTries === 0);
+  assignments = Object.assign({}, savedAssignments);
+  hintsOpened = 0;
+  checkBtn.disabled = (savedTries===0 || savedSolved);
+  render();
+  renderHints();
+  updateDots();
+  if (savedSolved) setFeedback('Bereits gelöst! ✓','good');
+  if (savedTries===0 && !savedSolved) setFeedback('Keine Versuche mehr.','bad');
+}
+
+  // initTask() called by auth layer
+});
+</script>
+</div><!-- /taskWrap -->
+<script>
+const SB_URL='https://jwvdyuvzapkiivsvkeis.supabase.co',SB_KEY='sb_publishable_DiTHFK_HaV9jN40fkLKHDA_PrzS8oKc';
+const SB_H={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'};
+async function sbGet(t,q){const r=await fetch(SB_URL+'/rest/v1/'+t+'?'+q,{headers:SB_H});if(!r.ok)throw new Error(await r.text());return r.json();}
+async function sbSave(sid,tid,data){
   try{
-    const ex=await _get('results','student_id=eq.'+sid+'&task_id=eq.'+tid);
+    const ex=await sbGet('results','student_id=eq.'+sid+'&task_id=eq.'+tid);
     const p={student_id:sid,task_id:tid,updated_at:new Date().toISOString(),...data};
-    if(ex&&ex[0])await fetch(_U+'/rest/v1/results?id=eq.'+ex[0].id,{method:'PATCH',headers:_H,body:JSON.stringify(p)});
-    else{p.submitted_at=new Date().toISOString();await fetch(_U+'/rest/v1/results',{method:'POST',headers:_H,body:JSON.stringify(p)});}
+    if(ex&&ex[0])await fetch(SB_URL+'/rest/v1/results?id=eq.'+ex[0].id,{method:'PATCH',headers:SB_H,body:JSON.stringify(p)});
+    else{p.submitted_at=new Date().toISOString();await fetch(SB_URL+'/rest/v1/results',{method:'POST',headers:SB_H,body:JSON.stringify(p)});}
   }catch(e){console.warn('save:',e);}
 }
 window.addEventListener('DOMContentLoaded',async()=>{
   const sid=new URLSearchParams(location.search).get('s');
-  if(!sid){document.getElementById('spinnerOverlay').classList.add('hidden');document.getElementById('noCodeError').style.display='flex';return;}
+  if(!sid){document.getElementById('authSpinner').classList.add('hidden');document.getElementById('authError').style.display='flex';return;}
   try{
-    const rows=await _get('students','code=eq.'+encodeURIComponent(sid));
-    if(!rows||!rows.length){document.getElementById('spinnerOverlay').classList.add('hidden');document.getElementById('noCodeError').style.display='flex';return;}
+    const rows=await sbGet('students','code=eq.'+encodeURIComponent(sid));
+    if(!rows||!rows.length){document.getElementById('authSpinner').classList.add('hidden');document.getElementById('authError').style.display='flex';return;}
     const student=rows[0];
-    const res=await _get('results','student_id=eq.'+student.id+'&task_id=eq.'+student.task_id);
+    const res=await sbGet('results','student_id=eq.'+student.id+'&task_id=eq.'+student.task_id);
     const result=(res&&res[0])?res[0]:{tries_used:0,tries_left:3,is_solved:false,answers:null,teacher_comment:null};
-    document.getElementById('welcomeName').textContent=student.name+' · ';
-    document.getElementById('welcomeBanner').style.display='flex';
-    if(result.teacher_comment){document.getElementById('teacherCommentText').textContent=result.teacher_comment;document.getElementById('teacherCommentBox').style.display='block';}
-    document.getElementById('spinnerOverlay').classList.add('hidden');
-    document.getElementById('taskWrapper').style.display='block';
+    document.getElementById('wbName').textContent=student.name+' ·';
+    document.getElementById('wbTask').textContent='Lückentext – Grammatik';
+    document.getElementById('welcomeBar').style.display='flex';
+    if(result.teacher_comment){document.getElementById('teacherTxt').textContent=result.teacher_comment;document.getElementById('teacherMsg').style.display='block';}
+    document.getElementById('authSpinner').classList.add('hidden');
+    document.getElementById('taskWrap').style.display='block';
     initTask(student,result);
-  }catch(e){document.getElementById('spinnerOverlay').classList.add('hidden');document.getElementById('noCodeError').style.display='flex';}
+  }catch(e){console.error(e);document.getElementById('authSpinner').classList.add('hidden');document.getElementById('authError').style.display='flex';}
 });
-
-}
 </script>
 </body>
 </html>

@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Aufgabe 2 – AcI markieren</title>
+    <title>Aufgabe – Gerundium & Gerundivum markieren</title>
     <style>
       /* ==========================================================================
    1. VARIABLEN & BASIS-SETUP
@@ -167,7 +167,7 @@
       }
 
       /* ==========================================================================
-   4. AUFGABENSPEZIFISCH: MARKIER-AREA (AcI)
+   4. AUFGABENSPEZIFISCH: MARKIER-AREA
    ========================================================================== */
       .mark-area {
         margin: 22px 0 18px;
@@ -180,7 +180,6 @@
         gap: 14px;
       }
 
-      /* Einzelne Satz-Kacheln */
       .mark-item {
         background: var(--tile);
         border: 1px solid var(--border);
@@ -194,6 +193,9 @@
           background 0.14s ease,
           box-shadow 0.14s ease;
         position: relative;
+        display: flex;
+        align-items: center;
+        gap: 0;
       }
 
       .mark-item.is-correct {
@@ -206,7 +208,6 @@
         background: #fffbeb !important;
       }
 
-      /* Status-Icon rechts oben auf der Satz-Kachel */
       .mark-item.is-correct::after,
       .mark-item.is-wrong::after {
         content: " ";
@@ -240,26 +241,39 @@
         background-size: 14px 14px;
       }
 
-      .sentence-num {
-        display: block;
-        font-size: 11px;
+      /* Nummerierungs-Badge (wie im Screenshot: dunkler Kreis mit Ziffer) */
+      .sentence-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #1f2937;
+        color: #fff;
+        font-size: 14px;
         font-weight: 700;
-        color: var(--muted);
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        margin-bottom: 6px;
+        flex-shrink: 0;
+        margin-right: 14px;
+        align-self: flex-start;
+        margin-top: 3px;
+      }
+
+      .sentence-content {
+        flex: 1;
+        min-width: 0;
       }
 
       .sentence-translation {
         display: block;
-        margin-top: 6px;
+        margin-top: 4px;
         margin-left: 3px;
         font-size: 0.88rem;
         font-style: italic;
         color: var(--muted);
       }
 
-      /* Einzelne Wörter */
+      /* Wörter */
       .word {
         display: inline-block;
         cursor: pointer;
@@ -276,31 +290,26 @@
         outline: 2px dashed #bbb;
       }
 
-      /* Highlight-Farben */
-      .word[data-color="pink"] {
-        background: #ffd6e7;
-      }
+      /* Highlight-Farben: blau = Gerundium, gelb = Gerundivum */
       .word[data-color="blue"] {
         background: #cce3ff;
       }
-      .word[data-color="green"] {
-        background: #c8f5d4;
+      .word[data-color="yellow"] {
+        background: #fff0a0;
       }
 
-      /* Nach Prüfung: falsch markierte Wörter gelb umrandet */
       .word.is-wrong-mark {
         outline: 2px solid #f59e0b !important;
         outline-offset: 1px;
         position: relative;
       }
 
-      /* Nach Prüfung: korrekt markierte Wörter grün umrandet */
       .word.is-correct-mark {
         outline: 2px solid #22c55e !important;
         outline-offset: 1px;
       }
 
-      /* Tooltip bei Klick auf falsch markiertes Wort */
+      /* Tooltip bei falsch markiertem Wort */
       .word-tooltip {
         position: absolute;
         bottom: calc(100% + 8px);
@@ -328,15 +337,8 @@
         border-top-color: #1f2937;
       }
 
-      .sentence-translation {
-        display: block;
-        margin-top: 6px;
-        font-style: italic;
-        font-size: 0.88rem;
-        color: var(--muted);
-      }
-
       /* ==========================================================================
+   5. COLORBAR
    ========================================================================== */
       .colorbar {
         background: var(--tile);
@@ -395,14 +397,13 @@
       }
 
       .swatch-pink {
-        background: #ffd6e7;
-      }
-      .swatch-blue {
         background: #cce3ff;
       }
-      .swatch-green {
-        background: #c8f5d4;
+
+      .swatch-yellow {
+        background: #fff0a0;
       }
+
       .swatch-clear {
         background: #f0f0f0;
         display: flex;
@@ -448,14 +449,11 @@
         border: 1px solid rgba(0, 0, 0, 0.1);
       }
 
-      .swatch-mini.swatch-pink {
-        background: #ffd6e7;
-      }
       .swatch-mini.swatch-blue {
         background: #cce3ff;
       }
-      .swatch-mini.swatch-green {
-        background: #c8f5d4;
+      .swatch-mini.swatch-yellow {
+        background: #fff0a0;
       }
 
       /* ==========================================================================
@@ -677,61 +675,36 @@
         }
       }
     
-    .spinner-overlay{position:fixed;inset:0;background:rgba(246,247,251,.9);display:flex;align-items:center;justify-content:center;z-index:200;flex-direction:column;gap:12px;font-size:14px;color:#6b7280;}
-    .spinner-overlay.hidden{display:none;}
-    .spin{width:32px;height:32px;border:3px solid #e5e7eb;border-top-color:#1976d2;border-radius:50%;animation:_spin .7s linear infinite;}
-    @keyframes _spin{to{transform:rotate(360deg);}}
+  .auth-spinner{position:fixed;inset:0;background:#f6f7fb;display:flex;align-items:center;justify-content:center;z-index:999;flex-direction:column;gap:14px;font-family:system-ui,sans-serif;font-size:14px;color:#6b7280;}
+  .auth-spinner.hidden{display:none;}
+  .auth-spin{width:34px;height:34px;border:3px solid #e5e7eb;border-top-color:#1976d2;border-radius:50%;animation:authspin .7s linear infinite;}
+  @keyframes authspin{to{transform:rotate(360deg);}}
+  #authError{display:none;min-height:100vh;align-items:center;justify-content:center;background:#f6f7fb;text-align:center;padding:20px;font-family:system-ui,sans-serif;}
+  #taskWrap{display:none;}
+  #welcomeBar{display:none;background:#fff;border-bottom:1px solid #e5e7eb;padding:10px 20px;align-items:center;gap:8px;font-size:14px;font-family:system-ui,sans-serif;}
+  #teacherMsg{display:none;max-width:1100px;margin:14px auto 0;padding:0 18px;}
+  .t-msg{background:#fffbeb;border:1px solid #fbbf24;border-radius:12px;padding:14px 18px;font-size:14px;color:#78350f;line-height:1.55;}
+  .t-msg b{display:block;margin-bottom:4px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#b45309;}
+
   </style>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-  <style>
-    #welcomeBanner { background:#fff; border-bottom:1px solid #e5e7eb; padding:10px 20px; display:none; align-items:center; justify-content:space-between; font-size:14px; font-family:DM Sans,sans-serif; }
-    .welcome-name { font-weight:700; color:#1f2937; }
-    .welcome-task { color:#6b7280; }
-    #teacherCommentBox { max-width:1100px; margin:16px auto 0; padding:0 18px; display:none; }
-    .teacher-comment { background:#fffbeb; border:1px solid #fbbf24; border-radius:12px; padding:14px 18px; font-size:14px; color:#78350f; line-height:1.55; }
-    .teacher-comment strong { display:block; margin-bottom:4px; font-size:12px; text-transform:uppercase; letter-spacing:0.05em; color:#b45309; }
-    .spinner-overlay { position:fixed; inset:0; background:rgba(246,247,251,0.85); display:flex; align-items:center; justify-content:center; z-index:200; font-size:14px; color:#6b7280; flex-direction:column; gap:12px; font-family:DM Sans,sans-serif; }
-    .spinner-overlay.hidden { display:none; }
-    .spin { width:32px; height:32px; border:3px solid #e5e7eb; border-top-color:#1976d2; border-radius:50%; animation:spin2 0.7s linear infinite; }
-    @keyframes spin2 { to { transform:rotate(360deg); } }
-  </style>
-</head>
+  </head>
   <body>
-<div class="spinner-overlay" id="spinnerOverlay"><div class="spin"></div><span>Wird geladen…</span></div>
-<div id="noCodeError" style="display:none;min-height:100vh;align-items:center;justify-content:center;padding:20px;background:var(--bg);">
-  <div style="text-align:center;max-width:360px;"><div style="font-size:48px;margin-bottom:16px;">🔒</div>
-  <h2 style="font-size:20px;font-weight:700;color:#1f2937;margin-bottom:8px;">Kein Zugang</h2>
-  <p style="color:#6b7280;font-size:14px;line-height:1.6;">Kein gültiger Link. Wende dich an deine Lehrkraft.</p></div>
-</div>
-<div id="welcomeBanner" style="display:none;background:#fff;border-bottom:1px solid #e5e7eb;padding:10px 20px;align-items:center;font-size:14px;font-family:system-ui,sans-serif;">
-  <span style="font-weight:700;" id="welcomeName"></span><span style="color:#6b7280;" id="welcomeTask">AcI-Bestandteile</span>
-</div>
-<div id="teacherCommentBox" style="display:none;max-width:1100px;margin:16px auto 0;padding:0 18px;">
-  <div style="background:#fffbeb;border:1px solid #fbbf24;border-radius:12px;padding:14px 18px;font-size:14px;color:#78350f;">
-    <strong style="display:block;margin-bottom:4px;font-size:12px;text-transform:uppercase;color:#b45309;">💬 Kommentar deiner Lehrkraft</strong>
-    <span id="teacherCommentText"></span>
+<div class="auth-spinner" id="authSpinner"><div class="auth-spin"></div><span>Wird geladen…</span></div>
+<div id="authError" style="display:none;min-height:100vh;align-items:center;justify-content:center;background:#f6f7fb;">
+  <div style="max-width:340px;text-align:center;">
+    <div style="font-size:48px;margin-bottom:14px;">🔒</div>
+    <h2 style="font-size:20px;font-weight:700;color:#1f2937;margin-bottom:8px;">Kein Zugang</h2>
+    <p style="color:#6b7280;font-size:14px;line-height:1.6;">Kein gültiger Link. Bitte wende dich an deine Lehrkraft.</p>
   </div>
 </div>
-
-    <h1>Aufgabe öffnen</h1>
-    <p>Gib deinen persönlichen Zugangscode ein, den du von deiner Lehrkraft erhalten hast.</p>
-    <input type="text" class="code-input" id="codeInput" placeholder="ABC-123-XYZ" maxlength="11" autocomplete="off" spellcheck="false"/>
-    <button class="btn-enter" onclick="submitCode()">Aufgabe öffnen →</button>
-    <div class="code-error" id="codeError"></div>
-    <p class="code-hint">Keinen Code? Wende dich an deine Lehrkraft.</p>
-  </div>
+<div id="welcomeBar">
+  <span id="wbName" style="font-weight:700;color:#1f2937;"></span>
+  <span id="wbTask" style="color:#6b7280;margin-left:4px;"></span>
 </div>
-
+<div id="teacherMsg">
+  <div class="t-msg"><b>💬 Kommentar deiner Lehrkraft</b><span id="teacherTxt"></span></div>
 </div>
-</div>
-
-
-    <h2 style="font-size:20px; font-weight:700; color:#1f2937; margin-bottom:8px;">Kein Zugang</h2>
-    <p style="color:#6b7280; font-size:14px; line-height:1.6;">Du hast keinen persönlichen Link für diese Aufgabe. Bitte wende dich an deine Lehrkraft.</p>
-  </div>
-</div>
-
-<div id="taskWrapper" style="display:none;">
+<div id="taskWrap">
 
     <div class="page">
       <!-- Top-Navigation -->
@@ -742,62 +715,44 @@
 
       <!-- Haupt-Card -->
       <main class="card">
-        <section id="task2" aria-label="Aufgabe 2">
+        <section id="task1" aria-label="Gerundium & Gerundivum">
           <h1 class="task-title">
             Markiere die AcI-Bestandteile.
-            <span class="task-sub"> </span>
+            <span class="task-sub">Klicke auf ein Wort, um es zu markieren.</span>
           </h1>
 
           <!-- Farbauswahl -->
           <div class="colorbar" id="colorbar" aria-label="Farbauswahl">
             <div class="colorbar-label">
-              <span class="active-tool-label" id="activeToolLabel"
-                >Signalverb</span
-              >
+              <span class="active-tool-label" id="activeToolLabel">Signalverb</span>
             </div>
             <div class="colorbar-tools">
-              <button
-                class="color-btn is-active"
-                data-color="pink"
-                aria-label="Signalverb (rosa)"
-              >
-                <span class="swatch swatch-pink"></span>
-              </button>
-              <button
-                class="color-btn"
-                data-color="blue"
-                aria-label="Subjektsakkusativ (blau)"
-              >
+              <button class="color-btn is-active" data-color="blue" aria-label="Signalverb (rosa)">
                 <span class="swatch swatch-blue"></span>
               </button>
-              <button
-                class="color-btn"
-                data-color="green"
-                aria-label="Infinitiv (grün)"
-              >
+              <button class="color-btn" data-color="yellow" aria-label="Subjektsakkusativ (blau)">
+                <span class="swatch swatch-yellow"></span>
+              </button>
+              <button class="color-btn" data-color="green" aria-label="Infinitiv (grün)">
                 <span class="swatch swatch-green"></span>
               </button>
-              <button
-                class="color-btn"
-                data-color="clear"
-                aria-label="Markierung entfernen"
-              >
+              <button class="color-btn" data-color="clear" aria-label="Markierung entfernen">
                 <span class="swatch swatch-clear">✕</span>
               </button>
 
               <div class="legend">
-                <span class="legend-item"
-                  ><span class="swatch-mini swatch-pink"></span>
-                  Signalverb</span
-                >
-                <span class="legend-item"
-                  ><span class="swatch-mini swatch-blue"></span>
-                  Subjektsakkusativ</span
-                >
-                <span class="legend-item"
-                  ><span class="swatch-mini swatch-green"></span>
-                  Infinitiv</span
-                >
+                <span class="legend-item">
+                  <span class="swatch-mini swatch-pink"></span>
+                  Signalverb
+                </span>
+                <span class="legend-item">
+                  <span class="swatch-mini swatch-blue"></span>
+                  Subjektsakkusativ
+                </span>
+                <span class="legend-item">
+                  <span class="swatch-mini swatch-green"></span>
+                  Infinitiv
+                </span>
               </div>
             </div>
           </div>
@@ -810,32 +765,32 @@
           ></div>
 
           <!-- Lösungstext -->
-          <div id="solutionText2" class="solution-explanation" hidden></div>
+          <div id="solutionText" class="solution-explanation" hidden></div>
 
           <!-- Bottombar: Tipps links, Prüfen rechts -->
           <footer class="bottombar">
             <div
               class="hint-stack"
-              id="hintStack2"
-              aria-label="Tipps Aufgabe 2"
+              id="hintStack"
+              aria-label="Tipps"
             ></div>
 
             <div class="right">
               <div class="btn-group">
-                <button id="checkBtn2" class="primary" type="button">
+                <button id="checkBtn" class="primary" type="button">
                   Überprüfen
                 </button>
               </div>
               <div class="tries">
                 Versuche:
-                <span class="dots" aria-label="Versuche-Anzeige Aufgabe 2">
+                <span class="dots" aria-label="Versuche-Anzeige">
                   <span class="dot"></span>
                   <span class="dot"></span>
                   <span class="dot"></span>
                 </span>
               </div>
               <p
-                id="feedback2"
+                id="feedback"
                 class="feedback"
                 role="status"
                 aria-live="polite"
@@ -861,15 +816,13 @@
           </h2>
           <div class="result-popup__mascot" aria-hidden="true">🎉</div>
           <div class="result-popup__actions">
-            <a href="aufgabe3.html">
-              <button
-                type="button"
-                class="primary result-popup__next"
-                id="resultPopupNext"
-              >
-                Zur nächsten Aufgabe
-              </button>
-            </a>
+            <button
+              type="button"
+              class="primary result-popup__next"
+              id="resultPopupNext"
+            >
+              Zur nächsten Aufgabe
+            </button>
             <button
               type="button"
               class="result-popup__solution"
@@ -884,97 +837,108 @@
     <!-- /.page -->
 
     <script>
-function initTask(student, result) {
-
       /* ==========================================================================
    1. KONFIGURATION & DATEN
    ========================================================================== */
 
       /**
-       * Jeder Satz besteht aus einem Array von Token-Objekten.
-       * { w: "Wort", role: "signal"|"subj"|"inf"|null }
+       * Jeder Satz hat Token-Objekte:
+       * { w: "Wort", role: "gerundium"|"gerundivum"|null, bold: true|false }
        *
        * role-Werte:
-       *   "signal" → Signalverb  (rosa)
-       *   "subj"   → Subjektsakkusativ (blau)
-       *   "inf"    → Infinitiv   (grün)
-       *   null     → kein AcI-Bestandteil
+       *   "gerundium"  → blau
+       *   "gerundivum" → gelb
+       *   null         → nicht markieren
        */
       const sentences = [
         {
           id: 1,
-          translation: "Caesar sagt, dass die Römer tapfer sind.",
           tokens: [
-            { w: "Caesar", role: null },
-            { w: "dicit", role: "signal" },
-            { w: "Romanos", role: "subj" },
-            { w: "esse", role: "inf" },
-            { w: "fortes", role: null },
+            { w: "Ad", role: null },
+            { w: "ludendum", role: "gerundium", bold: true },
+            { w: "paravi", role: null },
             { w: ".", role: null, isPunct: true },
           ],
+          translation: "Ich habe mich zum Spielen vorbereitet.",
         },
         {
           id: 2,
-          translation: "Der Vater glaubt, dass der Sohn morgen kommt.",
           tokens: [
-            { w: "Pater", role: null },
-            { w: "putat", role: "signal" },
-            { w: "filium", role: "subj" },
-            { w: "venire", role: "inf" },
-            { w: "cras", role: null },
+            { w: "Pecuniae", role: null },
+            { w: "rapiendae", role: "gerundivum", bold: true },
+            { w: "cupidus", role: null },
+            { w: "sum", role: null },
             { w: ".", role: null, isPunct: true },
           ],
+          translation: "Ich bin begierig, Geld zu rauben.",
         },
         {
           id: 3,
-          translation: "Der Senat hört, dass die Feinde sich der Stadt nähern.",
           tokens: [
-            { w: "Senatus", role: null },
-            { w: "audit", role: "signal" },
-            { w: "hostes", role: "subj" },
-            { w: "appropinquare", role: "inf" },
-            { w: "urbem", role: null },
+            { w: "Puer", role: null },
+            { w: "puniendus", role: "gerundivum", bold: true },
+            { w: "est", role: null },
             { w: ".", role: null, isPunct: true },
           ],
+          translation: "Der Junge muss bestraft werden.",
         },
         {
           id: 4,
-          translation: "Der Lehrer glaubt, dass die Schüler fleißig arbeiten.",
           tokens: [
-            { w: "Magister", role: null },
-            { w: "credit", role: "signal" },
-            { w: "discipulos", role: "subj" },
-            { w: "laborare", role: "inf" },
-            { w: "diligenter", role: null },
+            { w: "Laborando", role: "gerundium", bold: true },
+            { w: "fatigatus", role: null },
+            { w: "est", role: null },
             { w: ".", role: null, isPunct: true },
           ],
+          translation: "Durch das Arbeiten ist er müde.",
+        },
+        {
+          id: 5,
+          tokens: [
+            { w: "Mihi", role: null },
+            { w: "cupiditas", role: null },
+            { w: "senatoris", role: null },
+            { w: "visitandi", role: "gerundium", bold: true },
+            { w: "erat", role: null },
+            { w: ".", role: null, isPunct: true },
+          ],
+          translation: "Ich hatte den Wunsch, den Senator zu besuchen.",
+        },
+        {
+          id: 6,
+          tokens: [
+            { w: "Studium", role: null },
+            { w: "pugnandi", role: "gerundium", bold: true },
+            { w: "magnum", role: null },
+            { w: "est", role: null },
+            { w: ".", role: null, isPunct: true },
+          ],
+          translation: "Der Eifer des Kämpfens ist groß.",
         },
       ];
 
-      /* Welche CSS-data-color entspricht welcher Rolle? */
-      const roleToColor = { signal: "pink", subj: "blue", inf: "green" };
-      const colorToRole = { pink: "signal", blue: "subj", green: "inf" };
+      const roleToColor = { gerundium: "blue", gerundivum: "yellow" };
+      const colorToRole = { blue: "gerundium", yellow: "gerundivum" };
 
       const colorTitles = {
-        pink: "Signalverb",
-        blue: "Subjektsakkusativ",
-        green: "Infinitiv",
+        blue: "Gerundium",
+        yellow: "Gerundivum",
         clear: "Radierer",
       };
 
       const hintsByTask = {
-        2: [
-          "Das Signalverb ist ein Verb des Sagens, Denkens oder Wahrnehmens (z. B. dicit, putat, audit).",
-          "Der Subjektsakkusativ steht im Akkusativ und ist das 'Subjekt' des Infinitivs.",
-          "Der Infinitiv steht immer am Ende des AcI-Satzes und ist nicht konjugiert.",
+        1: [
+          "Das Gerundium ist eine Form des Verbs, die wie ein Substantiv verwendet wird (z. B. ad ludendum – zum Spielen).",
+          "Das Gerundivum ist ein verbales Adjektiv, das oft eine Notwendigkeit ausdrückt. Es richtet sich in Genus, Numerus und Kasus nach dem zugehörigen Nomen.",
+          "Tipp: Endet die Form auf -ndus/-nda/-ndum und gehört zu einem Nomen? → Gerundivum. Wird die Form allein als Substantiv genutzt? → Gerundium.",
         ],
       };
 
       const explanations = [
-        "Caesar <b>dicit</b> (Signalverb) <span style='background:#cce3ff;border-radius:3px;padding:1px 3px'>Romanos</span> (Subjektsakkusativ) <span style='background:#c8f5d4;border-radius:3px;padding:1px 3px'>esse</span> fortes. – Caesar sagt, dass die Römer tapfer sind.",
-        "Pater <b>putat</b> (Signalverb) <span style='background:#cce3ff;border-radius:3px;padding:1px 3px'>filium</span> (Subjektsakkusativ) <span style='background:#c8f5d4;border-radius:3px;padding:1px 3px'>venire</span> cras. – Der Vater glaubt, dass der Sohn morgen kommt.",
-        "Senatus <b>audit</b> (Signalverb) <span style='background:#cce3ff;border-radius:3px;padding:1px 3px'>hostes</span> (Subjektsakkusativ) <span style='background:#c8f5d4;border-radius:3px;padding:1px 3px'>appropinquare</span> urbem. – Der Senat hört, dass die Feinde sich der Stadt nähern.",
-        "Magister <b>credit</b> (Signalverb) <span style='background:#cce3ff;border-radius:3px;padding:1px 3px'>discipulos</span> (Subjektsakkusativ) <span style='background:#c8f5d4;border-radius:3px;padding:1px 3px'>laborare</span> diligenter. – Der Lehrer glaubt, dass die Schüler fleißig arbeiten.",
+        "Caesar <b>dicit</b> (Signalverb) <span style='background:#cce3ff;border-radius:3px;padding:1px 3px'>Romanos</span> (Subjektsakkusativ) <span style='background:#c8f5d4;border-radius:3px;padding:1px 3px'>esse</span> fortes.",
+        "Pater <b>putat</b> (Signalverb) <span style='background:#cce3ff;border-radius:3px;padding:1px 3px'>filium</span> (Subjektsakkusativ) <span style='background:#c8f5d4;border-radius:3px;padding:1px 3px'>venire</span> cras.",
+        "Senatus <b>audit</b> (Signalverb) <span style='background:#cce3ff;border-radius:3px;padding:1px 3px'>hostes</span> (Subjektsakkusativ) <span style='background:#c8f5d4;border-radius:3px;padding:1px 3px'>appropinquare</span> urbem.",
+        "Magister <b>credit</b> (Signalverb) <span style='background:#cce3ff;border-radius:3px;padding:1px 3px'>discipulos</span> (Subjektsakkusativ) <span style='background:#c8f5d4;border-radius:3px;padding:1px 3px'>laborare</span> diligenter.",
       ];
 
       /* ==========================================================================
@@ -984,44 +948,37 @@ function initTask(student, result) {
       let triesLeft = 3;
       let isSolved = false;
       let reviewMode = false;
-      const hintState = { 2: 0 };
+      const hintState = { 1: 0 };
 
       /* ==========================================================================
    3. DOM-REFERENZEN
    ========================================================================== */
       const markArea = document.getElementById("markArea");
-      const feedback2 = document.getElementById("feedback2");
-      const checkBtn2 = document.getElementById("checkBtn2");
-      const solutionText2 = document.getElementById("solutionText2");
-      const activeToolLbl = document.getElementById("activeToolLabel");
+      const feedbackEl = document.getElementById("feedback");
+      const checkBtn = document.getElementById("checkBtn");
+      const solutionText = document.getElementById("solutionText");
 
       const resultPopup = document.getElementById("resultPopup");
       const resultPopupPanel = document.getElementById("resultPopupPanel");
       const resultPopupBadge = document.getElementById("resultPopupBadge");
       const resultPopupTitle = document.getElementById("resultPopupTitle");
       const resultPopupNext = document.getElementById("resultPopupNext");
-      const resultPopupSolution = document.getElementById(
-        "resultPopupSolution",
-      );
+      const resultPopupSolution = document.getElementById("resultPopupSolution");
+
+      const colorBtns = document.querySelectorAll(".color-btn");
+      const activeToolLbl = document.getElementById("activeToolLabel");
 
       /* ==========================================================================
    4. HILFSFUNKTIONEN
    ========================================================================== */
-      function escapeHtml(str) {
-        return String(str)
-          .replaceAll("&", "&amp;")
-          .replaceAll("<", "&lt;")
-          .replaceAll(">", "&gt;");
-      }
-
       function feedbackMsg(text, tone) {
-        feedback2.textContent = text;
-        feedback2.style.color =
+        feedbackEl.textContent = text;
+        feedbackEl.style.color =
           tone === "good" ? "#166534" : tone === "bad" ? "#991b1b" : "#6b7280";
       }
 
       function updateTriesUI() {
-        const dots = document.querySelectorAll("#task2 .dot");
+        const dots = document.querySelectorAll("#task1 .dot");
         const failedCount = Math.max(0, Math.min(3, 3 - triesLeft));
         dots.forEach((d, i) => d.classList.toggle("is-on", i < failedCount));
       }
@@ -1037,12 +994,17 @@ function initTask(student, result) {
           item.className = "mark-item";
           item.dataset.sentenceId = s.id;
 
-          const numSpan = document.createElement("span");
-          numSpan.className = "sentence-num";
-          numSpan.textContent = `Satz ${s.id}`;
-          item.appendChild(numSpan);
+          // Nummern-Badge
+          const badge = document.createElement("span");
+          badge.className = "sentence-badge";
+          badge.textContent = s.id;
+          item.appendChild(badge);
 
-          // Text-Container (inline)
+          // Inhalts-Container
+          const content = document.createElement("div");
+          content.className = "sentence-content";
+
+          // Text-Zeile
           const textLine = document.createElement("span");
 
           s.tokens.forEach((tok, idx) => {
@@ -1051,66 +1013,77 @@ function initTask(student, result) {
               return;
             }
 
-            // Leerzeichen vor dem Wort (außer nach sentence-num)
-            if (idx > 0 && !s.tokens[idx - 1].isPunct) {
-              textLine.append(" ");
+            if (idx > 0 && !s.tokens[idx - 1]?.isPunct) {
+              if (idx === 0 || true) textLine.append(" ");
             }
 
             const span = document.createElement("span");
             span.className = "word";
-            span.textContent = tok.w;
-            span.dataset.color = "";
             span.dataset.sentenceId = s.id;
             span.dataset.tokenIdx = idx;
+            span.dataset.color = "";
+
+            if (tok.bold) {
+              const b = document.createElement("b");
+              b.textContent = tok.w;
+              span.appendChild(b);
+            } else {
+              span.textContent = tok.w;
+            }
 
             span.addEventListener("click", () => {
-              if (reviewMode || isSolved) return;
+              if (isSolved || reviewMode) return;
+              const current = span.dataset.color;
               if (activeColor === "clear") {
                 span.dataset.color = "";
-              } else if (span.dataset.color === activeColor) {
+              } else if (current === activeColor) {
                 span.dataset.color = "";
               } else {
                 span.dataset.color = activeColor;
               }
-              _save(student.id, student.task_id, {answers:collectAnswers2(),tries_used:3-triesLeft,tries_left:triesLeft,is_solved:false});
             });
 
             textLine.appendChild(span);
           });
 
-          item.appendChild(textLine);
+          content.appendChild(textLine);
 
-          if (s.translation) {
-            const transEl = document.createElement("span");
-            transEl.className = "sentence-translation";
-            transEl.textContent = s.translation;
-            item.appendChild(transEl);
-          }
+          // Übersetzung
+          const transl = document.createElement("span");
+          transl.className = "sentence-translation";
+          transl.textContent = s.translation;
+          content.appendChild(transl);
 
+          item.appendChild(content);
           markArea.appendChild(item);
         });
       }
 
       /* ==========================================================================
-   6. FARBAUSWAHL-LEISTE
+   6. FARBAUSWAHL
    ========================================================================== */
-      const colorBtns = document.querySelectorAll(".color-btn");
-
       colorBtns.forEach((btn) => {
         btn.addEventListener("click", () => {
-          if (reviewMode) return;
+          if (isSolved || reviewMode) return;
           colorBtns.forEach((b) => b.classList.remove("is-active"));
           btn.classList.add("is-active");
           activeColor = btn.dataset.color;
-          activeToolLbl.textContent = colorTitles[activeColor] ?? "";
+          activeToolLbl.textContent = colorTitles[activeColor] ?? "–";
         });
       });
 
       /* ==========================================================================
    7. TIPPS-SYSTEM
    ========================================================================== */
+      function escapeHtml(str) {
+        return String(str)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;");
+      }
+
       function renderHintStack(taskNumber) {
-        const stack = document.getElementById(`hintStack${taskNumber}`);
+        const stack = document.getElementById(`hintStack`);
         const hints = hintsByTask[taskNumber];
         if (!stack || !Array.isArray(hints)) return;
 
@@ -1121,9 +1094,9 @@ function initTask(student, result) {
           const box = document.createElement("div");
           box.className = "hint-box";
           box.innerHTML = `
-      <span class="hint-title">${i + 1}. Tipp</span>
-      <span>${escapeHtml(hints[i])}</span>
-    `;
+            <span class="hint-title">${i + 1}. Tipp</span>
+            <span>${escapeHtml(hints[i])}</span>
+          `;
           stack.appendChild(box);
         }
 
@@ -1149,7 +1122,7 @@ function initTask(student, result) {
 
       Object.keys(hintsByTask).forEach((num) => {
         renderHintStack(num);
-        const stack = document.getElementById(`hintStack${num}`);
+        const stack = document.getElementById(`hintStack`);
         if (!stack) return;
         stack.addEventListener("click", (e) => {
           const btn = e.target.closest(".hint-btn");
@@ -1159,49 +1132,26 @@ function initTask(student, result) {
       });
 
       /* ==========================================================================
-   8. PRÜFUNG
+   8. PRÜFEN
    ========================================================================== */
-
-      /**
-       * Für jeden Satz: für jedes relevante Token (role != null)
-       * prüfen, ob colorToRole[span.dataset.color] === token.role.
-       * Ein Satz gilt als korrekt, wenn ALLE Pflicht-Token richtig markiert sind
-       * UND kein falsches Token markiert wurde.
-       */
       function checkTask() {
-        if (triesLeft <= 0 || isSolved) return;
+        if (isSolved) return;
 
-        // Alle Word-Spans einsammeln
-        const allWordSpans = markArea.querySelectorAll(".word");
-
-        // Prüfe, ob überhaupt etwas markiert wurde
-        const anyMarked = [...allWordSpans].some((s) => s.dataset.color !== "");
-        if (!anyMarked) {
-          feedbackMsg("Markiere erst die AcI-Bestandteile.", "bad");
-          return;
-        }
-
-        let totalCorrect = 0;
         let totalRequired = 0;
+        let totalCorrect = 0;
         let anyError = false;
 
         sentences.forEach((s) => {
-          const item = markArea.querySelector(
-            `.mark-item[data-sentence-id="${s.id}"]`,
-          );
-
           s.tokens.forEach((tok, idx) => {
             if (tok.isPunct) return;
-
             const span = markArea.querySelector(
-              `.word[data-sentence-id="${s.id}"][data-token-idx="${idx}"]`,
+              `.word[data-sentence-id="${s.id}"][data-token-idx="${idx}"]`
             );
             if (!span) return;
 
             const markedRole = colorToRole[span.dataset.color] ?? null;
 
             if (tok.role !== null) {
-              // Pflicht-Token
               totalRequired++;
               if (markedRole === tok.role) {
                 totalCorrect++;
@@ -1209,7 +1159,6 @@ function initTask(student, result) {
                 anyError = true;
               }
             } else {
-              // Sollte NICHT markiert sein
               if (markedRole !== null) {
                 anyError = true;
               }
@@ -1223,7 +1172,6 @@ function initTask(student, result) {
           isSolved = true;
           applyStatusToItems(true);
           feedbackMsg("Alles richtig!", "good");
-          _save(student.id, student.task_id, {answers:collectAnswers2(),tries_used:3-triesLeft,tries_left:triesLeft,is_solved:true});
           openResultPopup("success");
         } else {
           triesLeft--;
@@ -1231,55 +1179,47 @@ function initTask(student, result) {
 
           if (triesLeft > 0) {
             feedbackMsg("Das ist noch nicht richtig.", "bad");
-            _save(student.id, student.task_id, {answers:collectAnswers2(),tries_used:3-triesLeft,tries_left:triesLeft,is_solved:false});
           } else {
             applyStatusToItems(false);
             feedbackMsg("Keine Versuche mehr.", "bad");
-            _save(student.id, student.task_id, {answers:collectAnswers2(),tries_used:3,tries_left:0,is_solved:false});
-            checkBtn2.disabled = true;
+            checkBtn.disabled = true;
             openResultPopup("failure");
           }
         }
       }
 
-      /** Setzt is-correct / is-wrong auf die Satz-Kacheln + Wort-Umrandungen */
       function applyStatusToItems(allCorrect) {
         sentences.forEach((s) => {
           const item = markArea.querySelector(
-            `.mark-item[data-sentence-id="${s.id}"]`,
+            `.mark-item[data-sentence-id="${s.id}"]`
           );
-          if (!item) return;
 
           if (allCorrect) {
             item.classList.add("is-correct");
-            // Alle Pflicht-Tokens grün markieren
             s.tokens.forEach((tok, idx) => {
               if (tok.isPunct || tok.role === null) return;
               const span = markArea.querySelector(
-                `.word[data-sentence-id="${s.id}"][data-token-idx="${idx}"]`,
+                `.word[data-sentence-id="${s.id}"][data-token-idx="${idx}"]`
               );
               if (span) span.classList.add("is-correct-mark");
             });
             return;
           }
 
-          // Prüfe diesen Satz einzeln
           let sentenceOk = true;
           s.tokens.forEach((tok, idx) => {
             if (tok.isPunct) return;
             const span = markArea.querySelector(
-              `.word[data-sentence-id="${s.id}"][data-token-idx="${idx}"]`,
+              `.word[data-sentence-id="${s.id}"][data-token-idx="${idx}"]`
             );
             if (!span) return;
             const correctColor = tok.role ? roleToColor[tok.role] : "";
             const userColor = span.dataset.color || "";
             const markedRole = colorToRole[span.dataset.color] ?? null;
 
-            if (tok.role !== null && markedRole !== tok.role)
-              sentenceOk = false;
+            if (tok.role !== null && markedRole !== tok.role) sentenceOk = false;
             if (tok.role === null && markedRole !== null) sentenceOk = false;
 
-            // Wort-Umrandung setzen
             if (tok.role !== null || userColor !== "") {
               if (userColor === correctColor) {
                 span.classList.add("is-correct-mark");
@@ -1295,37 +1235,26 @@ function initTask(student, result) {
         });
       }
 
-      /** Hängt einen Klick-Tooltip an ein falsch markiertes Wort */
       function attachTooltip(span, tok) {
-        // Welche Rolle hätte das Wort haben sollen?
-        const correctRole = tok.role; // null = sollte gar nicht markiert sein
+        const correctRole = tok.role;
         const label = correctRole
           ? colorTitles[roleToColor[correctRole]]
           : "Nicht markieren";
 
-        span.addEventListener(
-          "click",
-          function onTooltipClick(e) {
-            // Kein Markieren mehr im Review-Modus
-            e.stopPropagation();
-            // Alten Tooltip entfernen
-            document
-              .querySelectorAll(".word-tooltip")
-              .forEach((t) => t.remove());
-            const tip = document.createElement("span");
-            tip.className = "word-tooltip";
-            tip.textContent = label;
-            span.appendChild(tip);
-            // Tooltip nach 2,5 s ausblenden
-            setTimeout(() => tip.remove(), 2500);
-          },
-          { once: false },
-        );
+        span.addEventListener("click", function (e) {
+          e.stopPropagation();
+          document.querySelectorAll(".word-tooltip").forEach((t) => t.remove());
+          const tip = document.createElement("span");
+          tip.className = "word-tooltip";
+          tip.textContent = label;
+          span.appendChild(tip);
+          setTimeout(() => tip.remove(), 2500);
+        });
       }
 
-      checkBtn2.addEventListener("click", () => {
-        if (checkBtn2.textContent.trim() === "Weiter") {
-          window.location.href = "aufgabe3.html";
+      checkBtn.addEventListener("click", () => {
+        if (checkBtn.textContent.trim() === "Weiter") {
+          window.location.href = "#";
           return;
         }
         checkTask();
@@ -1373,25 +1302,22 @@ function initTask(student, result) {
 
         closeResultPopup();
 
-        // Farbauswahl deaktivieren
         colorBtns.forEach((b) => {
           b.disabled = true;
           b.style.opacity = "0.45";
         });
         activeToolLbl.textContent = "–";
 
-        // Wort-Markierungen setzen (ergänzt bereits gesetzte aus checkTask)
         sentences.forEach((s) => {
           const item = markArea.querySelector(
-            `.mark-item[data-sentence-id="${s.id}"]`,
+            `.mark-item[data-sentence-id="${s.id}"]`
           );
 
-          // Prüfe, ob dieser Satz vollständig korrekt war
           let sentenceWasCorrect = true;
           s.tokens.forEach((tok, idx) => {
             if (tok.isPunct) return;
             const span = markArea.querySelector(
-              `.word[data-sentence-id="${s.id}"][data-token-idx="${idx}"]`,
+              `.word[data-sentence-id="${s.id}"][data-token-idx="${idx}"]`
             );
             if (!span) return;
             const correctColor = tok.role ? roleToColor[tok.role] : "";
@@ -1402,15 +1328,13 @@ function initTask(student, result) {
           s.tokens.forEach((tok, idx) => {
             if (tok.isPunct) return;
             const span = markArea.querySelector(
-              `.word[data-sentence-id="${s.id}"][data-token-idx="${idx}"]`,
+              `.word[data-sentence-id="${s.id}"][data-token-idx="${idx}"]`
             );
             if (!span) return;
 
             const correctColor = tok.role ? roleToColor[tok.role] : "";
             const userColor = span.dataset.color || "";
 
-            // Ursprüngliche Nutzer-Markierung NICHT überschreiben
-            // Klassen nur setzen falls noch nicht vorhanden (z.B. bei letztem Versuch bereits gesetzt)
             if (
               !span.classList.contains("is-correct-mark") &&
               !span.classList.contains("is-wrong-mark")
@@ -1426,7 +1350,6 @@ function initTask(student, result) {
             }
           });
 
-          // Satz-Kachel-Status: grün wenn alles stimmte, gelb wenn Fehler
           if (item) {
             item.classList.remove("is-correct", "is-wrong");
             if (sentenceWasCorrect) {
@@ -1437,57 +1360,93 @@ function initTask(student, result) {
           }
         });
 
-        // Lösungstext einblenden
-        solutionText2.innerHTML = `
-    <h3>Lösungsweg:</h3>
-    <ul>
-      ${explanations.map((e) => `<li>${e}</li>`).join("")}
-    </ul>
-  `;
-        solutionText2.hidden = false;
+        solutionText.innerHTML = `
+          <h3>Lösungsweg:</h3>
+          <ul>
+            ${explanations.map((e) => `<li>${e}</li>`).join("")}
+          </ul>
+        `;
+        solutionText.hidden = false;
 
-        checkBtn2.textContent = "Weiter";
-        checkBtn2.disabled = false;
+        checkBtn.textContent = "Weiter";
+        checkBtn.disabled = false;
       });
 
       /* ==========================================================================
    11. INITIALISIERUNG
    ========================================================================== */
-      buildMarkArea();
-      updateTriesUI();
-    
-}
-</script>
-  </div><!-- /taskWrapper -->
 
+function collectAnswers() {
+  const answers = {};
+  sentences.forEach(s => {
+    answers[s.id] = s.tokens.map((tok,idx) => {
+      if (tok.isPunct) return null;
+      const span = markArea.querySelector('.word[data-sentence-id="'+s.id+'"][data-token-idx="'+idx+'"]');
+      const color = span ? span.dataset.color : '';
+      const correctColor = tok.role ? roleToColor[tok.role] : '';
+      return {idx, text:tok.w, color, correct: color&&correctColor ? color===correctColor : null};
+    }).filter(Boolean);
+  });
+  return answers;
+}
+function initTask(student, result) {
+  triesLeft = result.tries_left ?? 3;
+  isSolved  = result.is_solved ?? false;
+  buildMarkArea();
+  updateTriesUI();
+  renderHintStack(1);
+  document.getElementById('hintStack').addEventListener('click', e => {
+    const btn = e.target.closest('.hint-btn');
+    if (!btn) return;
+    revealNextHint(1);
+  });
+  if (result.answers) {
+    sentences.forEach(s => {
+      const sa = result.answers[s.id] || [];
+      s.tokens.forEach((tok, idx) => {
+        const saved = sa.find(a => a && a.idx === idx);
+        if (!saved || !saved.color) return;
+        const span = markArea.querySelector('.word[data-sentence-id="'+s.id+'"][data-token-idx="'+idx+'"]');
+        if (span) span.dataset.color = saved.color;
+      });
+    });
+  }
+  if (isSolved) { feedbackMsg('Bereits gelöst! ✓','good'); checkBtn.textContent='Weiter'; }
+  if (triesLeft===0 && !isSolved) { checkBtn.disabled=true; feedbackMsg('Keine Versuche mehr.','bad'); }
+}
+
+      // initTask() called by auth layer
+    </script>
+  </div><!-- /taskWrap -->
 <script>
-/* ── Auth & Supabase ── */
-const _U='https://jwvdyuvzapkiivsvkeis.supabase.co',_K='sb_publishable_DiTHFK_HaV9jN40fkLKHDA_PrzS8oKc',_H={'apikey':_K,'Authorization':'Bearer '+_K,'Content-Type':'application/json','Prefer':'return=representation'};
-async function _get(t,q){const r=await fetch(_U+'/rest/v1/'+t+'?'+q,{headers:_H});if(!r.ok)throw new Error(await r.text());return r.json();}
-async function _save(sid,tid,data){
+const SB_URL='https://jwvdyuvzapkiivsvkeis.supabase.co',SB_KEY='sb_publishable_DiTHFK_HaV9jN40fkLKHDA_PrzS8oKc';
+const SB_H={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'};
+async function sbGet(t,q){const r=await fetch(SB_URL+'/rest/v1/'+t+'?'+q,{headers:SB_H});if(!r.ok)throw new Error(await r.text());return r.json();}
+async function sbSave(sid,tid,data){
   try{
-    const ex=await _get('results','student_id=eq.'+sid+'&task_id=eq.'+tid);
+    const ex=await sbGet('results','student_id=eq.'+sid+'&task_id=eq.'+tid);
     const p={student_id:sid,task_id:tid,updated_at:new Date().toISOString(),...data};
-    if(ex&&ex[0])await fetch(_U+'/rest/v1/results?id=eq.'+ex[0].id,{method:'PATCH',headers:_H,body:JSON.stringify(p)});
-    else{p.submitted_at=new Date().toISOString();await fetch(_U+'/rest/v1/results',{method:'POST',headers:_H,body:JSON.stringify(p)});}
+    if(ex&&ex[0])await fetch(SB_URL+'/rest/v1/results?id=eq.'+ex[0].id,{method:'PATCH',headers:SB_H,body:JSON.stringify(p)});
+    else{p.submitted_at=new Date().toISOString();await fetch(SB_URL+'/rest/v1/results',{method:'POST',headers:SB_H,body:JSON.stringify(p)});}
   }catch(e){console.warn('save:',e);}
 }
 window.addEventListener('DOMContentLoaded',async()=>{
   const sid=new URLSearchParams(location.search).get('s');
-  if(!sid){document.getElementById('spinnerOverlay').classList.add('hidden');document.getElementById('noCodeError').style.display='flex';return;}
+  if(!sid){document.getElementById('authSpinner').classList.add('hidden');document.getElementById('authError').style.display='flex';return;}
   try{
-    const rows=await _get('students','code=eq.'+encodeURIComponent(sid));
-    if(!rows||!rows.length){document.getElementById('spinnerOverlay').classList.add('hidden');document.getElementById('noCodeError').style.display='flex';return;}
+    const rows=await sbGet('students','code=eq.'+encodeURIComponent(sid));
+    if(!rows||!rows.length){document.getElementById('authSpinner').classList.add('hidden');document.getElementById('authError').style.display='flex';return;}
     const student=rows[0];
-    const res=await _get('results','student_id=eq.'+student.id+'&task_id=eq.'+student.task_id);
+    const res=await sbGet('results','student_id=eq.'+student.id+'&task_id=eq.'+student.task_id);
     const result=(res&&res[0])?res[0]:{tries_used:0,tries_left:3,is_solved:false,answers:null,teacher_comment:null};
-    document.getElementById('welcomeName').textContent=student.name+' · ';
-    document.getElementById('welcomeBanner').style.display='flex';
-    if(result.teacher_comment){document.getElementById('teacherCommentText').textContent=result.teacher_comment;document.getElementById('teacherCommentBox').style.display='block';}
-    document.getElementById('spinnerOverlay').classList.add('hidden');
-    document.getElementById('taskWrapper').style.display='block';
+    document.getElementById('wbName').textContent=student.name+' ·';
+    document.getElementById('wbTask').textContent='AcI-Bestandteile markieren';
+    document.getElementById('welcomeBar').style.display='flex';
+    if(result.teacher_comment){document.getElementById('teacherTxt').textContent=result.teacher_comment;document.getElementById('teacherMsg').style.display='block';}
+    document.getElementById('authSpinner').classList.add('hidden');
+    document.getElementById('taskWrap').style.display='block';
     initTask(student,result);
-  }catch(e){document.getElementById('spinnerOverlay').classList.add('hidden');document.getElementById('noCodeError').style.display='flex';}
+  }catch(e){console.error(e);document.getElementById('authSpinner').classList.add('hidden');document.getElementById('authError').style.display='flex';}
 });
 </script>
 </body>

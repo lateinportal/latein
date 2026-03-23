@@ -632,69 +632,38 @@
         }
       }
     
-    .spinner-overlay{position:fixed;inset:0;background:rgba(246,247,251,.9);display:flex;align-items:center;justify-content:center;z-index:200;flex-direction:column;gap:12px;font-size:14px;color:#6b7280;}
-    .spinner-overlay.hidden{display:none;}
-    .spin{width:32px;height:32px;border:3px solid #e5e7eb;border-top-color:#1976d2;border-radius:50%;animation:_spin .7s linear infinite;}
-    @keyframes _spin{to{transform:rotate(360deg);}}
+  .auth-spinner{position:fixed;inset:0;background:#f6f7fb;display:flex;align-items:center;justify-content:center;z-index:999;flex-direction:column;gap:14px;font-family:system-ui,sans-serif;font-size:14px;color:#6b7280;}
+  .auth-spinner.hidden{display:none;}
+  .auth-spin{width:34px;height:34px;border:3px solid #e5e7eb;border-top-color:#1976d2;border-radius:50%;animation:authspin .7s linear infinite;}
+  @keyframes authspin{to{transform:rotate(360deg);}}
+  #authError{display:none;min-height:100vh;align-items:center;justify-content:center;background:#f6f7fb;text-align:center;padding:20px;font-family:system-ui,sans-serif;}
+  #taskWrap{display:none;}
+  #welcomeBar{display:none;background:#fff;border-bottom:1px solid #e5e7eb;padding:10px 20px;align-items:center;gap:8px;font-size:14px;font-family:system-ui,sans-serif;}
+  #teacherMsg{display:none;max-width:1100px;margin:14px auto 0;padding:0 18px;}
+  .t-msg{background:#fffbeb;border:1px solid #fbbf24;border-radius:12px;padding:14px 18px;font-size:14px;color:#78350f;line-height:1.55;}
+  .t-msg b{display:block;margin-bottom:4px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#b45309;}
+
   </style>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-  <style>
-    #welcomeBanner { background: #fff; border-bottom: 1px solid #e5e7eb; padding: 10px 20px; display: none; align-items: center; justify-content: space-between; font-size: 14px; font-family: DM Sans, sans-serif; }
-    .welcome-name { font-weight: 700; color: #1f2937; }
-    .welcome-task { color: #6b7280; }
-    #teacherCommentBox { max-width: 1100px; margin: 16px auto 0; padding: 0 18px; display: none; }
-    .teacher-comment { background: #fffbeb; border: 1px solid #fbbf24; border-radius: 12px; padding: 14px 18px; font-size: 14px; color: #78350f; line-height: 1.55; }
-    .teacher-comment strong { display: block; margin-bottom: 4px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: #b45309; }
-    .spinner-overlay { position: fixed; inset: 0; background: rgba(246,247,251,0.85); display: flex; align-items: center; justify-content: center; z-index: 200; font-size: 14px; color: #6b7280; flex-direction: column; gap: 12px; font-family: DM Sans, sans-serif; }
-    .spinner-overlay.hidden { display: none; }
-    .spin { width: 32px; height: 32px; border: 3px solid #e5e7eb; border-top-color: #1976d2; border-radius: 50%; animation: spin 0.7s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-  </style>
-</head>
+  </head>
   <body>
-<div class="spinner-overlay" id="spinnerOverlay"><div class="spin"></div><span>Wird geladen…</span></div>
-<div id="noCodeError" style="display:none;min-height:100vh;align-items:center;justify-content:center;padding:20px;background:var(--bg);">
-  <div style="text-align:center;max-width:360px;"><div style="font-size:48px;margin-bottom:16px;">🔒</div>
-  <h2 style="font-size:20px;font-weight:700;color:#1f2937;margin-bottom:8px;">Kein Zugang</h2>
-  <p style="color:#6b7280;font-size:14px;line-height:1.6;">Kein gültiger Link. Wende dich an deine Lehrkraft.</p></div>
-</div>
-<div id="welcomeBanner" style="display:none;background:#fff;border-bottom:1px solid #e5e7eb;padding:10px 20px;align-items:center;font-size:14px;font-family:system-ui,sans-serif;">
-  <span style="font-weight:700;" id="welcomeName"></span><span style="color:#6b7280;" id="welcomeTask">Singular oder Plural</span>
-</div>
-<div id="teacherCommentBox" style="display:none;max-width:1100px;margin:16px auto 0;padding:0 18px;">
-  <div style="background:#fffbeb;border:1px solid #fbbf24;border-radius:12px;padding:14px 18px;font-size:14px;color:#78350f;">
-    <strong style="display:block;margin-bottom:4px;font-size:12px;text-transform:uppercase;color:#b45309;">💬 Kommentar deiner Lehrkraft</strong>
-    <span id="teacherCommentText"></span>
+<div class="auth-spinner" id="authSpinner"><div class="auth-spin"></div><span>Wird geladen…</span></div>
+<div id="authError" style="display:none;min-height:100vh;align-items:center;justify-content:center;background:#f6f7fb;">
+  <div style="max-width:340px;text-align:center;">
+    <div style="font-size:48px;margin-bottom:14px;">🔒</div>
+    <h2 style="font-size:20px;font-weight:700;color:#1f2937;margin-bottom:8px;">Kein Zugang</h2>
+    <p style="color:#6b7280;font-size:14px;line-height:1.6;">Kein gültiger Link. Bitte wende dich an deine Lehrkraft.</p>
   </div>
 </div>
-
-<!-- Spinner -->
-  <span>Wird geladen…</span>
+<div id="welcomeBar">
+  <span id="wbName" style="font-weight:700;color:#1f2937;"></span>
+  <span id="wbTask" style="color:#6b7280;margin-left:4px;"></span>
 </div>
-
-    <h1>Aufgabe öffnen</h1>
-    <p>Gib deinen persönlichen Zugangscode ein, den du von deiner Lehrkraft erhalten hast.</p>
-    <input type="text" class="code-input" id="codeInput" placeholder="ABC-123-XYZ" maxlength="11" autocomplete="off" spellcheck="false" />
-    <button class="btn-enter" onclick="submitCode()">Aufgabe öffnen →</button>
-    <div class="code-error" id="codeError"></div>
-    <p class="code-hint">Keinen Code? Wende dich an deine Lehrkraft.</p>
-  </div>
+<div id="teacherMsg">
+  <div class="t-msg"><b>💬 Kommentar deiner Lehrkraft</b><span id="teacherTxt"></span></div>
 </div>
+<div id="taskWrap">
 
-</div>
-
-</div>
-
-<!-- Task wrapper (hidden until auth) -->
-
-    <h2 style="font-size:20px; font-weight:700; color:#1f2937; margin-bottom:8px;">Kein Zugang</h2>
-    <p style="color:#6b7280; font-size:14px; line-height:1.6;">Du hast keinen persönlichen Link für diese Aufgabe. Bitte wende dich an deine Lehrkraft.</p>
-  </div>
-</div>
-
-<div id="taskWrapper" style="display:none;">
-
-    
+    <div class="page">
       <header class="top-nav">
         <button type="button" class="btn-overview">Übersicht</button>
         <button type="button" class="btn-overview">Abmelden</button>
@@ -801,8 +770,6 @@
     </div>
 
     <script>
-function initTask(student, result) {
-
       /* ==========================================================================
    1. KONFIGURATION & DATEN (Aufgabeninhalte)
    ========================================================================== */
@@ -1117,7 +1084,7 @@ function initTask(student, result) {
           feedbackMsg7("Alles richtig!", "good");
           setZonesEnabled7(false);
           setActiveWord7(null);
-          _save(student.id, student.task_id, {answers: assignments7, tries_used: 3-triesLeft7, tries_left: triesLeft7, is_solved: true});
+          sbSave(student.id, student.task_id, {answers:{...assignments7}, tries_used:Math.max(1,3-triesLeft7), tries_left:triesLeft7, is_solved:true});
           openResultPopup("success");
         } else {
           triesLeft7--;
@@ -1126,9 +1093,9 @@ function initTask(student, result) {
           if (triesLeft7 > 0) {
             feedbackMsg7(
               "Das ist noch nicht richtig. Versuch es nochmal.",
-              "bad",
+              "bad"
             );
-            _save(student.id, student.task_id, {answers: assignments7, tries_used: 3-triesLeft7, tries_left: triesLeft7, is_solved: false});
+            sbSave(student.id, student.task_id, {answers:{...assignments7}, tries_used:3-triesLeft7, tries_left:triesLeft7, is_solved:false});
           } else {
             isChecked7 = true;
             task7WordsData.forEach((word) => {
@@ -1137,7 +1104,7 @@ function initTask(student, result) {
             });
             renderTask7();
             feedbackMsg7("Keine Versuche mehr.", "bad");
-            _save(student.id, student.task_id, {answers: assignments7, tries_used: 3, tries_left: 0, is_solved: false});
+            sbSave(student.id, student.task_id, {answers:{...assignments7}, tries_used:3, tries_left:0, is_solved:false});
             checkBtn7.disabled = true;
             setZonesEnabled7(false);
             setActiveWord7(null);
@@ -1214,53 +1181,60 @@ function initTask(student, result) {
       /* ==========================================================================
    9. INITIALISIERUNG
    ========================================================================== */
-      Object.keys(hintsByTask).forEach((taskNumber) => {
-        renderHintStack(taskNumber);
-        const stack = document.getElementById(`hintStack${taskNumber}`);
-        if (!stack) return;
-        stack.addEventListener("click", (e) => {
-          const btn = e.target.closest(".hint-btn");
-          if (!btn) return;
-          revealNextHint(Number(taskNumber));
-        });
-      });
 
-      renderTask7();
-      updateTriesUI7();
-      setZonesEnabled7(false);
-    
+function initTask(student, result) {
+  triesLeft7 = result.tries_left ?? 3;
+  isSolved7  = result.is_solved ?? false;
+  if (result.answers) Object.assign(assignments7, result.answers);
+  renderTask7();
+  updateTriesUI7();
+  setZonesEnabled7(false);
+  Object.keys(hintsByTask).forEach(num => {
+    renderHintStack(num);
+    const stack = document.getElementById('hintStack'+num);
+    if (!stack) return;
+    stack.addEventListener('click', e => {
+      const btn = e.target.closest('.hint-btn');
+      if (!btn) return;
+      revealNextHint(Number(num));
+    });
+  });
+  if (isSolved7) { feedbackMsg7('Bereits gelöst! ✓','good'); checkBtn7.textContent='Weiter'; }
+  if (triesLeft7===0 && !isSolved7) { isChecked7=true; task7WordsData.forEach(w=>{w._status=assignments7[w.id]===w.solution?'correct':'wrong';}); renderTask7(); setZonesEnabled7(false); checkBtn7.disabled=true; feedbackMsg7('Keine Versuche mehr.','bad'); }
 }
-</script>
-  </div><!-- /taskWrapper -->
 
+      // initTask() called by auth layer
+    </script>
+  </div><!-- /taskWrap -->
 <script>
-/* ── Auth & Supabase ── */
-const _U='https://jwvdyuvzapkiivsvkeis.supabase.co',_K='sb_publishable_DiTHFK_HaV9jN40fkLKHDA_PrzS8oKc',_H={'apikey':_K,'Authorization':'Bearer '+_K,'Content-Type':'application/json','Prefer':'return=representation'};
-async function _get(t,q){const r=await fetch(_U+'/rest/v1/'+t+'?'+q,{headers:_H});if(!r.ok)throw new Error(await r.text());return r.json();}
-async function _save(sid,tid,data){
+const SB_URL='https://jwvdyuvzapkiivsvkeis.supabase.co',SB_KEY='sb_publishable_DiTHFK_HaV9jN40fkLKHDA_PrzS8oKc';
+const SB_H={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'};
+async function sbGet(t,q){const r=await fetch(SB_URL+'/rest/v1/'+t+'?'+q,{headers:SB_H});if(!r.ok)throw new Error(await r.text());return r.json();}
+async function sbSave(sid,tid,data){
   try{
-    const ex=await _get('results','student_id=eq.'+sid+'&task_id=eq.'+tid);
+    const ex=await sbGet('results','student_id=eq.'+sid+'&task_id=eq.'+tid);
     const p={student_id:sid,task_id:tid,updated_at:new Date().toISOString(),...data};
-    if(ex&&ex[0])await fetch(_U+'/rest/v1/results?id=eq.'+ex[0].id,{method:'PATCH',headers:_H,body:JSON.stringify(p)});
-    else{p.submitted_at=new Date().toISOString();await fetch(_U+'/rest/v1/results',{method:'POST',headers:_H,body:JSON.stringify(p)});}
+    if(ex&&ex[0])await fetch(SB_URL+'/rest/v1/results?id=eq.'+ex[0].id,{method:'PATCH',headers:SB_H,body:JSON.stringify(p)});
+    else{p.submitted_at=new Date().toISOString();await fetch(SB_URL+'/rest/v1/results',{method:'POST',headers:SB_H,body:JSON.stringify(p)});}
   }catch(e){console.warn('save:',e);}
 }
 window.addEventListener('DOMContentLoaded',async()=>{
   const sid=new URLSearchParams(location.search).get('s');
-  if(!sid){document.getElementById('spinnerOverlay').classList.add('hidden');document.getElementById('noCodeError').style.display='flex';return;}
+  if(!sid){document.getElementById('authSpinner').classList.add('hidden');document.getElementById('authError').style.display='flex';return;}
   try{
-    const rows=await _get('students','code=eq.'+encodeURIComponent(sid));
-    if(!rows||!rows.length){document.getElementById('spinnerOverlay').classList.add('hidden');document.getElementById('noCodeError').style.display='flex';return;}
+    const rows=await sbGet('students','code=eq.'+encodeURIComponent(sid));
+    if(!rows||!rows.length){document.getElementById('authSpinner').classList.add('hidden');document.getElementById('authError').style.display='flex';return;}
     const student=rows[0];
-    const res=await _get('results','student_id=eq.'+student.id+'&task_id=eq.'+student.task_id);
+    const res=await sbGet('results','student_id=eq.'+student.id+'&task_id=eq.'+student.task_id);
     const result=(res&&res[0])?res[0]:{tries_used:0,tries_left:3,is_solved:false,answers:null,teacher_comment:null};
-    document.getElementById('welcomeName').textContent=student.name+' · ';
-    document.getElementById('welcomeBanner').style.display='flex';
-    if(result.teacher_comment){document.getElementById('teacherCommentText').textContent=result.teacher_comment;document.getElementById('teacherCommentBox').style.display='block';}
-    document.getElementById('spinnerOverlay').classList.add('hidden');
-    document.getElementById('taskWrapper').style.display='block';
+    document.getElementById('wbName').textContent=student.name+' ·';
+    document.getElementById('wbTask').textContent='Singular oder Plural';
+    document.getElementById('welcomeBar').style.display='flex';
+    if(result.teacher_comment){document.getElementById('teacherTxt').textContent=result.teacher_comment;document.getElementById('teacherMsg').style.display='block';}
+    document.getElementById('authSpinner').classList.add('hidden');
+    document.getElementById('taskWrap').style.display='block';
     initTask(student,result);
-  }catch(e){document.getElementById('spinnerOverlay').classList.add('hidden');document.getElementById('noCodeError').style.display='flex';}
+  }catch(e){console.error(e);document.getElementById('authSpinner').classList.add('hidden');document.getElementById('authError').style.display='flex';}
 });
 </script>
 </body>

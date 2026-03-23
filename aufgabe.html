@@ -1,747 +1,1459 @@
 <!doctype html>
 <html lang="de">
-<head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Aufgabe – Latein</title>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-  <style>
-    /* ── CODE-EINGABE SCREEN ─────────────────────────────── */
-    :root {
-      --bg: #f6f7fb;
-      --card: #ffffff;
-      --text: #1f2937;
-      --muted: #6b7280;
-      --border: #e5e7eb;
-      --blue: #1976d2;
-      --blue-dark: #135aa3;
-      --red: #dc2626;
-      --green: #16a34a;
-    }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Aufgabe – Gerundium & Gerundivum markieren</title>
+    <style>
+      /* ==========================================================================
+   1. VARIABLEN & BASIS-SETUP
+   ========================================================================== */
+      :root {
+        --bg: #f6f7fb;
+        --card: #ffffff;
+        --text: #1f2937;
+        --muted: #6b7280;
+        --border: #e5e7eb;
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        --blue: #1976d2;
+        --blue-dark: #135aa3;
+        --tile: #ffffff;
+      }
 
-    body {
-      font-family: 'DM Sans', system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-    }
+      * {
+        box-sizing: border-box;
+      }
 
-    /* ── WELCOME BANNER ─────────────────────────────────── */
-    #welcomeBanner {
-      background: var(--card);
-      border-bottom: 1px solid var(--border);
-      padding: 10px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 14px;
-    }
-    #welcomeBanner.hidden { display: none; }
-    .welcome-name { font-weight: 700; }
-    .welcome-task { color: var(--muted); }
-    #welcomeBanner .comment-notice {
-      background: #fffbeb;
-      border: 1px solid #fbbf24;
-      border-radius: 8px;
-      padding: 6px 12px;
-      font-size: 13px;
-      color: #92400e;
-      cursor: pointer;
-    }
+      body {
+        margin: 0;
+        font-family:
+          system-ui,
+          -apple-system,
+          Segoe UI,
+          Roboto,
+          Arial,
+          sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
 
-    /* ── TEACHER COMMENT BOX ────────────────────────────── */
-    #teacherCommentBox {
-      max-width: 1100px;
-      margin: 16px auto 0;
-      padding: 0 18px;
-    }
-    .teacher-comment {
-      background: #fffbeb;
-      border: 1px solid #fbbf24;
-      border-radius: 12px;
-      padding: 14px 18px;
-      font-size: 14px;
-      color: #78350f;
-      line-height: 1.55;
-    }
-    .teacher-comment strong { display: block; margin-bottom: 4px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: #b45309; }
+      body.popup-open {
+        overflow: hidden;
+      }
 
-    /* ── SPINNER ─────────────────────────────────────────── */
-    .spinner-overlay {
-      position: fixed; inset: 0; background: rgba(246,247,251,0.85);
-      display: flex; align-items: center; justify-content: center;
-      z-index: 200; font-size: 14px; color: var(--muted);
-      flex-direction: column; gap: 12px;
-    }
-    .spinner-overlay.hidden { display: none; }
-    .spin { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.7s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-  
-    .spinner-overlay{position:fixed;inset:0;background:rgba(246,247,251,.9);display:flex;align-items:center;justify-content:center;z-index:200;flex-direction:column;gap:12px;font-size:14px;color:#6b7280;}
-    .spinner-overlay.hidden{display:none;}
-    .spin{width:32px;height:32px;border:3px solid #e5e7eb;border-top-color:#1976d2;border-radius:50%;animation:_spin .7s linear infinite;}
-    @keyframes _spin{to{transform:rotate(360deg);}}
+      html {
+        scrollbar-gutter: stable;
+      }
+
+      /* ==========================================================================
+   2. LAYOUT-STRUKTUR
+   ========================================================================== */
+      .page {
+        max-width: 1100px;
+        margin: 28px auto;
+        padding: 0 18px;
+      }
+
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 22px;
+      }
+
+      .task-title {
+        margin: 0 0 14px 0;
+        font-size: 20px;
+        font-weight: 650;
+        line-height: 1.25;
+      }
+
+      .task-sub {
+        display: block;
+        margin-top: 6px;
+        color: var(--muted);
+        font-weight: 500;
+        font-size: 14px;
+      }
+
+      .bottombar {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 14px;
+        margin-top: 10px;
+      }
+
+      .right {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 8px;
+        flex-shrink: 0;
+      }
+
+      @media (max-width: 900px) {
+        .bottombar {
+          flex-direction: column;
+          align-items: center;
+        }
+        .right {
+          order: 2;
+          align-items: center;
+        }
+      }
+
+      /* ==========================================================================
+   3. BUTTONS & INTERAKTIONS-ELEMENTE
+   ========================================================================== */
+      .btn-group {
+        display: flex;
+        gap: 12px;
+      }
+
+      button {
+        cursor: pointer;
+        transition: all 0.14s ease;
+      }
+
+      .primary {
+        background: var(--blue);
+        border: 1px solid var(--blue);
+        color: #fff;
+        font-weight: 700;
+        border-radius: 10px;
+        padding: 12px 18px;
+        min-width: 110px;
+      }
+
+      .primary:hover {
+        background: var(--blue-dark);
+        border-color: var(--blue-dark);
+      }
+
+      /* Versuche-Anzeige (Dots) */
+      .tries {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 110px;
+        font-size: 12px;
+        color: var(--muted);
+        gap: 6px;
+      }
+
+      .dots {
+        display: flex;
+        gap: 6px;
+      }
+
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        border: 1px solid var(--border);
+        background: #fff;
+        transition: background 0.2s ease;
+      }
+
+      .dot.is-on {
+        background: black;
+      }
+
+      .feedback {
+        margin: 14px 0 0;
+        color: var(--muted);
+        min-height: 1.2em;
+      }
+
+      /* ==========================================================================
+   4. AUFGABENSPEZIFISCH: MARKIER-AREA
+   ========================================================================== */
+      .mark-area {
+        margin: 22px 0 18px;
+        padding: 18px 14px;
+        border-radius: 12px;
+        background: #fbfbfd;
+        border: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      .mark-item {
+        background: var(--tile);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 14px 16px;
+        font-size: 1.05rem;
+        line-height: 2;
+        overflow: visible;
+        transition:
+          border-color 0.14s ease,
+          background 0.14s ease,
+          box-shadow 0.14s ease;
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 0;
+      }
+
+      .mark-item.is-correct {
+        border-color: #3bd668 !important;
+        background: #f0fdf4 !important;
+      }
+
+      .mark-item.is-wrong {
+        border-color: #feda31 !important;
+        background: #fffbeb !important;
+      }
+
+      .mark-item.is-correct::after,
+      .mark-item.is-wrong::after {
+        content: " ";
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: block;
+        font-size: 14px;
+        font-weight: bold;
+        color: white;
+        line-height: 24px;
+        text-align: center;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        z-index: 2;
+      }
+
+      .mark-item.is-correct::after {
+        content: "✓";
+        background: #4bd668;
+      }
+
+      .mark-item.is-wrong::after {
+        content: " ";
+        background-color: #fcde01;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='10' cy='10' r='6'/%3E%3Cline x1='14.5' y1='14.5' x2='20' y2='20'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: 14px 14px;
+      }
+
+      /* Nummerierungs-Badge (wie im Screenshot: dunkler Kreis mit Ziffer) */
+      .sentence-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #1f2937;
+        color: #fff;
+        font-size: 14px;
+        font-weight: 700;
+        flex-shrink: 0;
+        margin-right: 14px;
+        align-self: flex-start;
+        margin-top: 3px;
+      }
+
+      .sentence-content {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .sentence-translation {
+        display: block;
+        margin-top: 4px;
+        margin-left: 3px;
+        font-size: 0.88rem;
+        font-style: italic;
+        color: var(--muted);
+      }
+
+      /* Wörter */
+      .word {
+        display: inline-block;
+        cursor: pointer;
+        border-radius: 4px;
+        padding: 2px 3px;
+        position: relative;
+        transition:
+          background 0.15s ease,
+          outline 0.15s ease,
+          transform 0.15s ease;
+      }
+
+      .word:hover {
+        outline: 2px dashed #bbb;
+      }
+
+      /* Highlight-Farben: blau = Gerundium, gelb = Gerundivum */
+      .word[data-color="blue"] {
+        background: #cce3ff;
+      }
+      .word[data-color="yellow"] {
+        background: #fff0a0;
+      }
+
+      .word.is-wrong-mark {
+        outline: 2px solid #f59e0b !important;
+        outline-offset: 1px;
+        position: relative;
+      }
+
+      .word.is-correct-mark {
+        outline: 2px solid #22c55e !important;
+        outline-offset: 1px;
+      }
+
+      /* Tooltip bei falsch markiertem Wort */
+      .word-tooltip {
+        position: absolute;
+        bottom: calc(100% + 8px);
+        left: 50%;
+        transform: translateX(-50%);
+        background: #1f2937;
+        color: #fff;
+        font-size: 12px;
+        font-weight: 600;
+        padding: 5px 10px;
+        border-radius: 8px;
+        white-space: nowrap;
+        pointer-events: none;
+        z-index: 100;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+      }
+
+      .word-tooltip::after {
+        content: "";
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border: 5px solid transparent;
+        border-top-color: #1f2937;
+      }
+
+      /* ==========================================================================
+   5. COLORBAR
+   ========================================================================== */
+      .colorbar {
+        background: var(--tile);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 14px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 4px;
+      }
+
+      .colorbar-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .colorbar-tools {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .color-btn {
+        background: none;
+        border: 2px solid transparent;
+        border-radius: 50%;
+        padding: 3px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition:
+          border-color 0.15s ease,
+          transform 0.12s ease;
+      }
+
+      .color-btn:hover {
+        transform: scale(1.14);
+      }
+
+      .color-btn.is-active {
+        border-color: #555;
+      }
+
+      .swatch {
+        display: block;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        border: 1.5px solid rgba(0, 0, 0, 0.1);
+      }
+
+      .swatch-blue {
+        background: #cce3ff;
+      }
+
+      .swatch-yellow {
+        background: #fff0a0;
+      }
+
+      .swatch-clear {
+        background: #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.82rem;
+        color: #888;
+        border-radius: 50%;
+        width: 28px;
+        height: 28px;
+        border: 1.5px solid rgba(0, 0, 0, 0.1);
+      }
+
+      .active-tool-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text);
+        margin-left: 4px;
+      }
+
+      /* Legende */
+      .legend {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-left: auto;
+        flex-wrap: wrap;
+      }
+
+      .legend-item {
+        font-size: 12px;
+        color: #555;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .swatch-mini {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border-radius: 3px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+      }
+
+      .swatch-mini.swatch-blue {
+        background: #cce3ff;
+      }
+      .swatch-mini.swatch-yellow {
+        background: #fff0a0;
+      }
+
+      /* ==========================================================================
+   6. TIPPS & HILFE-SYSTEM
+   ========================================================================== */
+      .hint-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        align-self: flex-start;
+        min-width: 260px;
+        max-width: min(100%, 780px);
+      }
+
+      .hint-box {
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 16px 18px;
+        color: #4b5563;
+        line-height: 1.55;
+      }
+
+      .hint-title {
+        display: block;
+        font-weight: 700;
+        color: #374151;
+        margin-bottom: 8px;
+      }
+
+      .hint-btn {
+        width: fit-content;
+        border: 1px solid var(--border);
+        background: #fff;
+        border-radius: 12px;
+        padding: 12px 14px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      @media (max-width: 900px) {
+        .hint-stack {
+          width: 100%;
+          align-items: center;
+        }
+        .hint-btn {
+          margin: 0 auto;
+        }
+      }
+
+      /* ==========================================================================
+   7. LÖSUNGSANZEIGE
+   ========================================================================== */
+      .solution-explanation {
+        margin-top: 20px;
+        padding: 20px;
+        color: black;
+        animation: snapIn 0.4s ease-out;
+      }
+
+      .solution-explanation h3 {
+        margin-top: 0;
+        font-size: 18px;
+        color: black;
+      }
+
+      .solution-explanation ul {
+        margin-bottom: 0;
+        padding-left: 20px;
+      }
+
+      .solution-explanation li {
+        margin-bottom: 8px;
+      }
+
+      /* ==========================================================================
+   8. RESULT-POPUP
+   ========================================================================== */
+      .result-popup {
+        position: fixed;
+        inset: 0;
+        z-index: 50;
+      }
+
+      .result-popup[hidden] {
+        display: none;
+      }
+
+      .result-popup__backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(17, 24, 39, 0.5);
+      }
+
+      .result-popup__panel {
+        position: relative;
+        z-index: 1;
+        width: min(420px, calc(100% - 32px));
+        margin: 120px auto 0;
+        border-radius: 28px;
+        padding: 28px 24px 24px;
+        text-align: center;
+        color: #fff;
+        box-shadow: 0 18px 50px rgba(0, 0, 0, 0.25);
+      }
+
+      .result-popup__panel.is-success {
+        background: #76c800;
+      }
+      .result-popup__panel.is-failure {
+        background: #ff983e;
+      }
+
+      .result-popup__badge {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 14px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-size: 32px;
+        font-weight: 900;
+        background: rgba(255, 255, 255, 0.2);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+      }
+
+      .result-popup__title {
+        margin: 0;
+        font-size: 28px;
+        line-height: 1.1;
+      }
+
+      .result-popup__mascot {
+        font-size: 64px;
+        margin: 12px 0 18px;
+      }
+
+      .result-popup__actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .result-popup__next {
+        font-size: 18px;
+        padding: 14px 22px;
+        border-radius: 12px;
+      }
+
+      .result-popup__solution {
+        border: none;
+        background: transparent;
+        color: #fff;
+        font-size: 15px;
+      }
+
+      /* ==========================================================================
+   9. TOP-NAVIGATION
+   ========================================================================== */
+      .top-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .btn-overview {
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 8px 16px;
+        font-weight: 600;
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .btn-overview:hover {
+        background: #f0f2f5;
+        border-color: #d1d5db;
+      }
+
+      @media (max-width: 400px) {
+        .page {
+          padding: 0 8px;
+          margin: 10px auto;
+        }
+        .card {
+          padding: 12px;
+        }
+        .top-nav {
+          margin-bottom: 12px;
+        }
+        .btn-overview {
+          font-size: 14px;
+          padding: 6px 12px;
+        }
+      }
+
+      /* ==========================================================================
+   10. ANIMATIONEN
+   ========================================================================== */
+      @keyframes snapIn {
+        0% {
+          transform: translateY(10px) scale(0.985);
+          opacity: 0.75;
+        }
+        70% {
+          transform: translateY(-2px) scale(1.01);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(0) scale(1);
+          opacity: 1;
+        }
+      }
+    
+  .auth-spinner{position:fixed;inset:0;background:#f6f7fb;display:flex;align-items:center;justify-content:center;z-index:999;flex-direction:column;gap:14px;font-family:system-ui,sans-serif;font-size:14px;color:#6b7280;}
+  .auth-spinner.hidden{display:none;}
+  .auth-spin{width:34px;height:34px;border:3px solid #e5e7eb;border-top-color:#1976d2;border-radius:50%;animation:authspin .7s linear infinite;}
+  @keyframes authspin{to{transform:rotate(360deg);}}
+  #authError{display:none;min-height:100vh;align-items:center;justify-content:center;background:#f6f7fb;text-align:center;padding:20px;font-family:system-ui,sans-serif;}
+  #taskWrap{display:none;}
+  #welcomeBar{display:none;background:#fff;border-bottom:1px solid #e5e7eb;padding:10px 20px;align-items:center;gap:8px;font-size:14px;font-family:system-ui,sans-serif;}
+  #teacherMsg{display:none;max-width:1100px;margin:14px auto 0;padding:0 18px;}
+  .t-msg{background:#fffbeb;border:1px solid #fbbf24;border-radius:12px;padding:14px 18px;font-size:14px;color:#78350f;line-height:1.55;}
+  .t-msg b{display:block;margin-bottom:4px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#b45309;}
+
   </style>
-
-  <!-- Aufgabe styles (inline from aufgabe_gerundium) -->
-  <style>
-    body.popup-open { overflow: hidden; }
-    html { scrollbar-gutter: stable; }
-
-    .page { max-width: 1100px; margin: 28px auto; padding: 0 18px; }
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 22px; }
-    .task-title { margin: 0 0 14px 0; font-size: 20px; font-weight: 650; line-height: 1.25; }
-    .task-sub { display: block; margin-top: 6px; color: var(--muted); font-weight: 500; font-size: 14px; }
-    .bottombar { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-top: 10px; }
-    .right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0; }
-    @media (max-width: 900px) { .bottombar { flex-direction: column; align-items: center; } .right { order: 2; align-items: center; } }
-
-    .btn-group { display: flex; gap: 12px; }
-    button { cursor: pointer; transition: all 0.14s ease; }
-    .primary { background: var(--blue); border: 1px solid var(--blue); color: #fff; font-weight: 700; border-radius: 10px; padding: 12px 18px; min-width: 110px; }
-    .primary:hover { background: var(--blue-dark); border-color: var(--blue-dark); }
-
-    .tries { display: flex; flex-direction: column; align-items: center; width: 110px; font-size: 12px; color: var(--muted); gap: 6px; }
-    .dots { display: flex; gap: 6px; }
-    .dot { width: 10px; height: 10px; border-radius: 50%; border: 1px solid var(--border); background: #fff; transition: background 0.2s ease; }
-    .dot.is-on { background: black; }
-    .feedback { margin: 14px 0 0; color: var(--muted); min-height: 1.2em; }
-
-    .mark-area { margin: 22px 0 18px; padding: 18px 14px; border-radius: 12px; background: #fbfbfd; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 14px; }
-    .mark-item { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; font-size: 1.05rem; line-height: 2; overflow: visible; transition: border-color 0.14s ease, background 0.14s ease; position: relative; display: flex; align-items: center; gap: 0; }
-    .mark-item.is-correct { border-color: #3bd668 !important; background: #f0fdf4 !important; }
-    .mark-item.is-wrong   { border-color: #feda31 !important; background: #fffbeb !important; }
-    .mark-item.is-correct::after, .mark-item.is-wrong::after { content: " "; position: absolute; top: -10px; right: -10px; width: 24px; height: 24px; border-radius: 50%; display: block; font-size: 14px; font-weight: bold; color: white; line-height: 24px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 2; }
-    .mark-item.is-correct::after { content: "✓"; background: #4bd668; }
-    .mark-item.is-wrong::after { content: " "; background-color: #fcde01; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='10' cy='10' r='6'/%3E%3Cline x1='14.5' y1='14.5' x2='20' y2='20'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:center; background-size:14px 14px; }
-
-    .sentence-badge { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; background: #1f2937; color: #fff; font-size: 14px; font-weight: 700; flex-shrink: 0; margin-right: 14px; align-self: flex-start; margin-top: 3px; }
-    .sentence-content { flex: 1; min-width: 0; }
-    .sentence-translation { display: block; margin-top: 4px; margin-left: 3px; font-size: 0.88rem; font-style: italic; color: var(--muted); }
-
-    .word { display: inline-block; cursor: pointer; border-radius: 4px; padding: 2px 3px; position: relative; transition: background 0.15s ease, outline 0.15s ease; }
-    .word:hover { outline: 2px dashed #bbb; }
-    .word[data-color="blue"]   { background: #cce3ff; }
-    .word[data-color="yellow"] { background: #fff0a0; }
-    .word.is-wrong-mark  { outline: 2px solid #f59e0b !important; outline-offset: 1px; }
-    .word.is-correct-mark { outline: 2px solid #22c55e !important; outline-offset: 1px; }
-    .word-tooltip { position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: #1f2937; color: #fff; font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 8px; white-space: nowrap; pointer-events: none; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.18); }
-    .word-tooltip::after { content: ""; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: #1f2937; }
-
-    .colorbar { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 4px; }
-    .colorbar-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
-    .colorbar-tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-    .color-btn { background: none; border: 2px solid transparent; border-radius: 50%; padding: 3px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color 0.15s ease, transform 0.12s ease; }
-    .color-btn:hover { transform: scale(1.14); }
-    .color-btn.is-active { border-color: #555; }
-    .swatch { display: block; width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid rgba(0,0,0,0.1); }
-    .swatch-blue   { background: #cce3ff; }
-    .swatch-yellow { background: #fff0a0; }
-    .swatch-clear  { background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 0.82rem; color: #888; border-radius: 50%; width: 28px; height: 28px; border: 1.5px solid rgba(0,0,0,0.1); }
-    .active-tool-label { font-size: 13px; font-weight: 600; color: var(--text); margin-left: 4px; }
-    .legend { display: flex; align-items: center; gap: 14px; margin-left: auto; flex-wrap: wrap; }
-    .legend-item { font-size: 12px; color: #555; display: flex; align-items: center; gap: 4px; }
-    .swatch-mini { display: inline-block; width: 14px; height: 14px; border-radius: 3px; border: 1px solid rgba(0,0,0,0.1); }
-    .swatch-mini.swatch-blue   { background: #cce3ff; }
-    .swatch-mini.swatch-yellow { background: #fff0a0; }
-
-    .hint-stack { display: flex; flex-direction: column; gap: 10px; align-self: flex-start; min-width: 260px; max-width: min(100%, 780px); }
-    .hint-box { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; color: #4b5563; line-height: 1.55; }
-    .hint-title { display: block; font-weight: 700; color: #374151; margin-bottom: 8px; }
-    .hint-btn { width: fit-content; border: 1px solid var(--border); background: #fff; border-radius: 12px; padding: 12px 14px; display: flex; gap: 10px; align-items: center; }
-    @media (max-width: 900px) { .hint-stack { width: 100%; align-items: center; } .hint-btn { margin: 0 auto; } }
-
-    .solution-explanation { margin-top: 20px; padding: 20px; color: black; animation: snapIn 0.4s ease-out; }
-    .solution-explanation h3 { margin-top: 0; font-size: 18px; color: black; }
-    .solution-explanation ul { margin-bottom: 0; padding-left: 20px; }
-    .solution-explanation li { margin-bottom: 8px; }
-
-    .result-popup { position: fixed; inset: 0; z-index: 50; }
-    .result-popup[hidden] { display: none; }
-    .result-popup__backdrop { position: absolute; inset: 0; background: rgba(17,24,39,0.5); }
-    .result-popup__panel { position: relative; z-index: 1; width: min(420px, calc(100% - 32px)); margin: 120px auto 0; border-radius: 28px; padding: 28px 24px 24px; text-align: center; color: #fff; box-shadow: 0 18px 50px rgba(0,0,0,0.25); }
-    .result-popup__panel.is-success { background: #76c800; }
-    .result-popup__panel.is-failure { background: #ff983e; }
-    .result-popup__badge { width: 64px; height: 64px; margin: 0 auto 14px; border-radius: 50%; display: grid; place-items: center; font-size: 32px; font-weight: 900; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.3); }
-    .result-popup__title { margin: 0; font-size: 28px; line-height: 1.1; }
-    .result-popup__mascot { font-size: 64px; margin: 12px 0 18px; }
-    .result-popup__actions { display: flex; flex-direction: column; gap: 10px; }
-    .result-popup__next { font-size: 18px; padding: 14px 22px; border-radius: 12px; }
-    .result-popup__solution { border: none; background: transparent; color: #fff; font-size: 15px; }
-    .top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .btn-overview { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 8px 16px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s ease; }
-    .btn-overview:hover { background: #f0f2f5; border-color: #d1d5db; }
-    @keyframes snapIn { 0% { transform: translateY(10px) scale(0.985); opacity: 0.75; } 70% { transform: translateY(-2px) scale(1.01); opacity: 1; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
-  </style>
-</head>
-<body>
-<div class="spinner-overlay" id="spinnerOverlay"><div class="spin"></div><span>Wird geladen…</span></div>
-<div id="noCodeError" style="display:none;min-height:100vh;align-items:center;justify-content:center;padding:20px;background:var(--bg);">
-  <div style="text-align:center;max-width:360px;"><div style="font-size:48px;margin-bottom:16px;">🔒</div>
-  <h2 style="font-size:20px;font-weight:700;color:#1f2937;margin-bottom:8px;">Kein Zugang</h2>
-  <p style="color:#6b7280;font-size:14px;line-height:1.6;">Kein gültiger Link. Wende dich an deine Lehrkraft.</p></div>
-</div>
-<div id="welcomeBanner" style="display:none;background:#fff;border-bottom:1px solid #e5e7eb;padding:10px 20px;align-items:center;font-size:14px;font-family:system-ui,sans-serif;">
-  <span style="font-weight:700;" id="welcomeName"></span><span style="color:#6b7280;" id="welcomeTask">Gerundium & Gerundivum</span>
-</div>
-<div id="teacherCommentBox" style="display:none;max-width:1100px;margin:16px auto 0;padding:0 18px;">
-  <div style="background:#fffbeb;border:1px solid #fbbf24;border-radius:12px;padding:14px 18px;font-size:14px;color:#78350f;">
-    <strong style="display:block;margin-bottom:4px;font-size:12px;text-transform:uppercase;color:#b45309;">💬 Kommentar deiner Lehrkraft</strong>
-    <span id="teacherCommentText"></span>
+  </head>
+  <body>
+<div class="auth-spinner" id="authSpinner"><div class="auth-spin"></div><span>Wird geladen…</span></div>
+<div id="authError" style="display:none;min-height:100vh;align-items:center;justify-content:center;background:#f6f7fb;">
+  <div style="max-width:340px;text-align:center;">
+    <div style="font-size:48px;margin-bottom:14px;">🔒</div>
+    <h2 style="font-size:20px;font-weight:700;color:#1f2937;margin-bottom:8px;">Kein Zugang</h2>
+    <p style="color:#6b7280;font-size:14px;line-height:1.6;">Kein gültiger Link. Bitte wende dich an deine Lehrkraft.</p>
   </div>
 </div>
-
-<!-- Loading overlay -->
-  <span>Wird geladen…</span>
+<div id="welcomeBar">
+  <span id="wbName" style="font-weight:700;color:#1f2937;"></span>
+  <span id="wbTask" style="color:#6b7280;margin-left:4px;"></span>
 </div>
-
-<!-- Code entry screen -->
-    <h1>Aufgabe öffnen</h1>
-    <p>Gib deinen persönlichen Zugangscode ein, den du von deiner Lehrkraft erhalten hast.</p>
-    <input type="text" class="code-input" id="codeInput"
-           placeholder="ABC-123-XYZ"
-           maxlength="11"
-           autocomplete="off"
-           spellcheck="false" />
-    <button class="btn-enter" id="codeBtn" onclick="submitCode()">Aufgabe öffnen →</button>
-    <div class="code-error" id="codeError"></div>
-    <p class="code-hint">Keinen Code? Wende dich an deine Lehrkraft.</p>
-  </div>
+<div id="teacherMsg">
+  <div class="t-msg"><b>💬 Kommentar deiner Lehrkraft</b><span id="teacherTxt"></span></div>
 </div>
+<div id="taskWrap">
 
-<!-- Welcome banner (shown after login) -->
-  <div id="commentNoticeWrap"></div>
-</div>
+    <div class="page">
+      <!-- Top-Navigation -->
+      <header class="top-nav">
+        <button type="button" class="btn-overview">Übersicht</button>
+        <button type="button" class="btn-overview">Abmelden</button>
+      </header>
 
-<!-- Teacher comment box -->
-</div>
+      <!-- Haupt-Card -->
+      <main class="card">
+        <section id="task1" aria-label="Gerundium & Gerundivum">
+          <h1 class="task-title">
+            Markiere Gerundium und Gerundivum.
+            <span class="task-sub">Klicke auf ein Wort, um es zu markieren.</span>
+          </h1>
 
-<!-- ═══════════════════════════════════════════════════
-     AUFGABE: GERUNDIUM & GERUNDIVUM
-═══════════════════════════════════════════════════ -->
+          <!-- Farbauswahl -->
+          <div class="colorbar" id="colorbar" aria-label="Farbauswahl">
+            <div class="colorbar-label">
+              <span class="active-tool-label" id="activeToolLabel">Gerundium</span>
+            </div>
+            <div class="colorbar-tools">
+              <button class="color-btn is-active" data-color="blue" aria-label="Gerundium (blau)">
+                <span class="swatch swatch-blue"></span>
+              </button>
+              <button class="color-btn" data-color="yellow" aria-label="Gerundivum (gelb)">
+                <span class="swatch swatch-yellow"></span>
+              </button>
+              <button class="color-btn" data-color="clear" aria-label="Markierung entfernen">
+                <span class="swatch swatch-clear">✕</span>
+              </button>
 
-    <h2 style="font-size:20px; font-weight:700; color:#1f2937; margin-bottom:8px;">Kein Zugang</h2>
-    <p style="color:#6b7280; font-size:14px; line-height:1.6;">Du hast keinen persönlichen Link für diese Aufgabe. Bitte wende dich an deine Lehrkraft.</p>
-  </div>
-</div>
-
-<div id="taskWrapper" style="display:none;">
-  <div class="page">
-    <header class="top-nav">
-      <div style="font-size:14px; color:var(--muted);">Latein</div>
-    </header>
-
-    <main class="card">
-      <section id="task1" aria-label="Gerundium & Gerundivum">
-        <h1 class="task-title">
-          Markiere Gerundium und Gerundivum.
-          <span class="task-sub">Klicke auf ein Wort, um es zu markieren.</span>
-        </h1>
-
-        <!-- Farbauswahl -->
-        <div class="colorbar" id="colorbar" aria-label="Farbauswahl">
-          <div class="colorbar-label">
-            <span class="active-tool-label" id="activeToolLabel">Gerundium</span>
-          </div>
-          <div class="colorbar-tools">
-            <button class="color-btn is-active" data-color="blue" aria-label="Gerundium (blau)">
-              <span class="swatch swatch-blue"></span>
-            </button>
-            <button class="color-btn" data-color="yellow" aria-label="Gerundivum (gelb)">
-              <span class="swatch swatch-yellow"></span>
-            </button>
-            <button class="color-btn" data-color="clear" aria-label="Markierung entfernen">
-              <span class="swatch swatch-clear">✕</span>
-            </button>
-            <div class="legend">
-              <span class="legend-item"><span class="swatch-mini swatch-blue"></span> Gerundium</span>
-              <span class="legend-item"><span class="swatch-mini swatch-yellow"></span> Gerundivum</span>
+              <div class="legend">
+                <span class="legend-item">
+                  <span class="swatch-mini swatch-blue"></span>
+                  Gerundium
+                </span>
+                <span class="legend-item">
+                  <span class="swatch-mini swatch-yellow"></span>
+                  Gerundivum
+                </span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Satzliste -->
-        <div class="mark-area" id="markArea" aria-label="Sätze zum Markieren"></div>
+          <!-- Satzliste -->
+          <div
+            class="mark-area"
+            id="markArea"
+            aria-label="Sätze zum Markieren"
+          ></div>
 
-        <!-- Lösungstext -->
-        <div id="solutionText" class="solution-explanation" hidden></div>
+          <!-- Lösungstext -->
+          <div id="solutionText" class="solution-explanation" hidden></div>
 
-        <footer class="bottombar">
-          <div class="hint-stack" id="hintStack" aria-label="Tipps"></div>
-          <div class="right">
-            <div class="btn-group">
-              <button id="checkBtn" class="primary" type="button">Überprüfen</button>
+          <!-- Bottombar: Tipps links, Prüfen rechts -->
+          <footer class="bottombar">
+            <div
+              class="hint-stack"
+              id="hintStack"
+              aria-label="Tipps"
+            ></div>
+
+            <div class="right">
+              <div class="btn-group">
+                <button id="checkBtn" class="primary" type="button">
+                  Überprüfen
+                </button>
+              </div>
+              <div class="tries">
+                Versuche:
+                <span class="dots" aria-label="Versuche-Anzeige">
+                  <span class="dot"></span>
+                  <span class="dot"></span>
+                  <span class="dot"></span>
+                </span>
+              </div>
+              <p
+                id="feedback"
+                class="feedback"
+                role="status"
+                aria-live="polite"
+              ></p>
             </div>
-            <div class="tries">
-              Versuche:
-              <span class="dots" aria-label="Versuche-Anzeige">
-                <span class="dot"></span>
-                <span class="dot"></span>
-                <span class="dot"></span>
-              </span>
-            </div>
-            <p id="feedback" class="feedback" role="status" aria-live="polite"></p>
+          </footer>
+        </section>
+      </main>
+
+      <!-- Result-Popup -->
+      <div class="result-popup" id="resultPopup" hidden aria-hidden="true">
+        <div class="result-popup__backdrop" data-close-popup></div>
+        <div
+          class="result-popup__panel"
+          id="resultPopupPanel"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="resultPopupTitle"
+        >
+          <div class="result-popup__badge" id="resultPopupBadge">!</div>
+          <h2 class="result-popup__title" id="resultPopupTitle">
+            Alles richtig gemacht
+          </h2>
+          <div class="result-popup__mascot" aria-hidden="true">🎉</div>
+          <div class="result-popup__actions">
+            <button
+              type="button"
+              class="primary result-popup__next"
+              id="resultPopupNext"
+            >
+              Zur nächsten Aufgabe
+            </button>
+            <button
+              type="button"
+              class="result-popup__solution"
+              id="resultPopupSolution"
+            >
+              Schau dir die Lösung an.
+            </button>
           </div>
-        </footer>
-      </section>
-    </main>
-
-    <div class="result-popup" id="resultPopup" hidden aria-hidden="true">
-      <div class="result-popup__backdrop" data-close-popup></div>
-      <div class="result-popup__panel" id="resultPopupPanel" role="dialog" aria-modal="true">
-        <div class="result-popup__badge" id="resultPopupBadge">!</div>
-        <h2 class="result-popup__title" id="resultPopupTitle">Alles richtig gemacht</h2>
-        <div class="result-popup__mascot" aria-hidden="true">🎉</div>
-        <div class="result-popup__actions">
-          <button type="button" class="primary result-popup__next" id="resultPopupNext">Weiter</button>
-          <button type="button" class="result-popup__solution" id="resultPopupSolution">Schau dir die Lösung an.</button>
         </div>
       </div>
     </div>
-  </div>
-</div>
+    <!-- /.page -->
 
-<script>
-/* ═══════════════════════════════════════════════════════════
-   SUPABASE CONFIG (from localStorage, shared with admin.html)
-═══════════════════════════════════════════════════════════ */
-  const params = new URLSearchParams(window.location.search);
-  const code = params.get('code');
-  if (code) {
-    authenticateCode(code.toUpperCase());
-  } else {
-    // No code in URL → show error
-    document.getElementById('spinnerOverlay').classList.add('hidden');
-    document.getElementById('noCodeError').style.display = 'flex';
-  }
-});
+    <script>
+      /* ==========================================================================
+   1. KONFIGURATION & DATEN
+   ========================================================================== */
 
-async function authenticateCode(code) {
-  show('spinnerOverlay');
-  if (!sb) {
-    // No supabase — demo mode (for testing without backend)
-    hide('spinnerOverlay');
-    student = { id: 'demo', name: 'Demo-Schüler', code, task_id: 'gerundium' };
-    result  = { id: null, tries_used: 0, tries_left: 3, is_solved: false, answers: null, teacher_comment: null };
-    startTask();
-    return;
-  }
+      /**
+       * Jeder Satz hat Token-Objekte:
+       * { w: "Wort", role: "gerundium"|"gerundivum"|null, bold: true|false }
+       *
+       * role-Werte:
+       *   "gerundium"  → blau
+       *   "gerundivum" → gelb
+       *   null         → nicht markieren
+       */
+      const sentences = [
+        {
+          id: 1,
+          tokens: [
+            { w: "Ad", role: null },
+            { w: "ludendum", role: "gerundium", bold: true },
+            { w: "paravi", role: null },
+            { w: ".", role: null, isPunct: true },
+          ],
+          translation: "Ich habe mich zum Spielen vorbereitet.",
+        },
+        {
+          id: 2,
+          tokens: [
+            { w: "Pecuniae", role: null },
+            { w: "rapiendae", role: "gerundivum", bold: true },
+            { w: "cupidus", role: null },
+            { w: "sum", role: null },
+            { w: ".", role: null, isPunct: true },
+          ],
+          translation: "Ich bin begierig, Geld zu rauben.",
+        },
+        {
+          id: 3,
+          tokens: [
+            { w: "Puer", role: null },
+            { w: "puniendus", role: "gerundivum", bold: true },
+            { w: "est", role: null },
+            { w: ".", role: null, isPunct: true },
+          ],
+          translation: "Der Junge muss bestraft werden.",
+        },
+        {
+          id: 4,
+          tokens: [
+            { w: "Laborando", role: "gerundium", bold: true },
+            { w: "fatigatus", role: null },
+            { w: "est", role: null },
+            { w: ".", role: null, isPunct: true },
+          ],
+          translation: "Durch das Arbeiten ist er müde.",
+        },
+        {
+          id: 5,
+          tokens: [
+            { w: "Mihi", role: null },
+            { w: "cupiditas", role: null },
+            { w: "senatoris", role: null },
+            { w: "visitandi", role: "gerundium", bold: true },
+            { w: "erat", role: null },
+            { w: ".", role: null, isPunct: true },
+          ],
+          translation: "Ich hatte den Wunsch, den Senator zu besuchen.",
+        },
+        {
+          id: 6,
+          tokens: [
+            { w: "Studium", role: null },
+            { w: "pugnandi", role: "gerundium", bold: true },
+            { w: "magnum", role: null },
+            { w: "est", role: null },
+            { w: ".", role: null, isPunct: true },
+          ],
+          translation: "Der Eifer des Kämpfens ist groß.",
+        },
+      ];
 
-  try {
-    const rows = await sb.get('students', `code=eq.${encodeURIComponent(code)}`);
-    if (!rows || !rows.length) {
-      hide('spinnerOverlay');
-      document.getElementById('noCodeError').style.display = 'flex';
-      return;
-    }
-    student = rows[0];
+      const roleToColor = { gerundium: "blue", gerundivum: "yellow" };
+      const colorToRole = { blue: "gerundium", yellow: "gerundivum" };
 
-    // Load or create result
-    const res = await sb.get('results', `student_id=eq.${student.id}&task_id=eq.${student.task_id}`);
-    if (res && res.length) {
-      result = res[0];
-    } else {
-      result = { id: null, tries_used: 0, tries_left: 3, is_solved: false, answers: null, teacher_comment: null };
-    }
-    startTask();
-  } catch(e) {
-    hide('spinnerOverlay');
-    document.getElementById('noCodeError').style.display = 'flex';
-  document.getElementById('welcomeTask').textContent = 'Gerundium & Gerundivum';
-  show('welcomeBanner', 'flex');
+      const colorTitles = {
+        blue: "Gerundium",
+        yellow: "Gerundivum",
+        clear: "Radierer",
+      };
 
-  // Teacher comment
-  if (result.teacher_comment) {
-    document.getElementById('teacherCommentText').textContent = result.teacher_comment;
-    document.getElementById('teacherCommentBox').style.display = 'block';
-  }
+      const hintsByTask = {
+        1: [
+          "Das Gerundium ist eine Form des Verbs, die wie ein Substantiv verwendet wird (z. B. ad ludendum – zum Spielen).",
+          "Das Gerundivum ist ein verbales Adjektiv, das oft eine Notwendigkeit ausdrückt. Es richtet sich in Genus, Numerus und Kasus nach dem zugehörigen Nomen.",
+          "Tipp: Endet die Form auf -ndus/-nda/-ndum und gehört zu einem Nomen? → Gerundivum. Wird die Form allein als Substantiv genutzt? → Gerundium.",
+        ],
+      };
 
-  show('taskWrapper');
-  initTask();
-}
+      const explanations = [
+        "<b>ludendum</b> (Satz 1): Gerundium – steht nach der Präposition <i>ad</i> als Zweckangabe.",
+        "<b>rapiendae</b> (Satz 2): Gerundivum – bezieht sich auf <i>pecuniae</i> (Genitiv, fem. Sg.).",
+        "<b>puniendus</b> (Satz 3): Gerundivum – drückt Notwendigkeit aus; bezieht sich auf <i>puer</i>.",
+        "<b>Laborando</b> (Satz 4): Gerundium – steht im Ablativ als Mittelangabe.",
+        "<b>visitandi</b> (Satz 5): Gerundium – steht im Genitiv nach <i>cupiditas</i>.",
+        "<b>pugnandi</b> (Satz 6): Gerundium – steht im Genitiv nach <i>studium</i>.",
+      ];
 
-/* ═══════════════════════════════════════════════════════════
-   SAVE RESULT TO SUPABASE
-═══════════════════════════════════════════════════════════ */
+      /* ==========================================================================
+   2. STATE
+   ========================================================================== */
+      let activeColor = "blue";
+      let triesLeft = 3;
+      let isSolved = false;
+      let reviewMode = false;
+      const hintState = { 1: 0 };
 
+      /* ==========================================================================
+   3. DOM-REFERENZEN
+   ========================================================================== */
+      const markArea = document.getElementById("markArea");
+      const feedbackEl = document.getElementById("feedback");
+      const checkBtn = document.getElementById("checkBtn");
+      const solutionText = document.getElementById("solutionText");
 
-/* ═══════════════════════════════════════════════════════════
-   TASK DATA
-═══════════════════════════════════════════════════════════ */
-const sentences = [
-  { id: 1, tokens: [{ w: "Ad", role: null }, { w: "ludendum", role: "gerundium", bold: true }, { w: "paravi", role: null }, { w: ".", role: null, isPunct: true }], translation: "Ich habe mich zum Spielen vorbereitet." },
-  { id: 2, tokens: [{ w: "Pecuniae", role: null }, { w: "rapiendae", role: "gerundivum", bold: true }, { w: "cupidus", role: null }, { w: "sum", role: null }, { w: ".", role: null, isPunct: true }], translation: "Ich bin begierig, Geld zu rauben." },
-  { id: 3, tokens: [{ w: "Puer", role: null }, { w: "puniendus", role: "gerundivum", bold: true }, { w: "est", role: null }, { w: ".", role: null, isPunct: true }], translation: "Der Junge muss bestraft werden." },
-  { id: 4, tokens: [{ w: "Laborando", role: "gerundium", bold: true }, { w: "fatigatus", role: null }, { w: "est", role: null }, { w: ".", role: null, isPunct: true }], translation: "Durch das Arbeiten ist er müde." },
-  { id: 5, tokens: [{ w: "Mihi", role: null }, { w: "cupiditas", role: null }, { w: "senatoris", role: null }, { w: "visitandi", role: "gerundium", bold: true }, { w: "erat", role: null }, { w: ".", role: null, isPunct: true }], translation: "Ich hatte den Wunsch, den Senator zu besuchen." },
-  { id: 6, tokens: [{ w: "Studium", role: null }, { w: "pugnandi", role: "gerundium", bold: true }, { w: "magnum", role: null }, { w: "est", role: null }, { w: ".", role: null, isPunct: true }], translation: "Der Eifer des Kämpfens ist groß." },
-];
+      const resultPopup = document.getElementById("resultPopup");
+      const resultPopupPanel = document.getElementById("resultPopupPanel");
+      const resultPopupBadge = document.getElementById("resultPopupBadge");
+      const resultPopupTitle = document.getElementById("resultPopupTitle");
+      const resultPopupNext = document.getElementById("resultPopupNext");
+      const resultPopupSolution = document.getElementById("resultPopupSolution");
 
-const roleToColor  = { gerundium: "blue", gerundivum: "yellow" };
-const colorToRole  = { blue: "gerundium", yellow: "gerundivum" };
-const colorTitles  = { blue: "Gerundium", yellow: "Gerundivum", clear: "Radierer" };
-const hintsByTask  = { 1: [
-  "Das Gerundium ist eine Form des Verbs, die wie ein Substantiv verwendet wird (z. B. ad ludendum – zum Spielen).",
-  "Das Gerundivum ist ein verbales Adjektiv, das oft eine Notwendigkeit ausdrückt. Es richtet sich in Genus, Numerus und Kasus nach dem zugehörigen Nomen.",
-  "Tipp: Endet die Form auf -ndus/-nda/-ndum und gehört zu einem Nomen? → Gerundivum. Wird die Form allein als Substantiv genutzt? → Gerundium.",
-]};
-const explanations = [
-  "<b>ludendum</b> (Satz 1): Gerundium – steht nach der Präposition <i>ad</i> als Zweckangabe.",
-  "<b>rapiendae</b> (Satz 2): Gerundivum – bezieht sich auf <i>pecuniae</i> (Genitiv, fem. Sg.).",
-  "<b>puniendus</b> (Satz 3): Gerundivum – drückt Notwendigkeit aus; bezieht sich auf <i>puer</i>.",
-  "<b>Laborando</b> (Satz 4): Gerundium – steht im Ablativ als Mittelangabe.",
-  "<b>visitandi</b> (Satz 5): Gerundium – steht im Genitiv nach <i>cupiditas</i>.",
-  "<b>pugnandi</b> (Satz 6): Gerundium – steht im Genitiv nach <i>studium</i>.",
-];
+      const colorBtns = document.querySelectorAll(".color-btn");
+      const activeToolLbl = document.getElementById("activeToolLabel");
 
-/* ═══════════════════════════════════════════════════════════
-   TASK LOGIC (adapted from aufgabe_gerundium.html)
-═══════════════════════════════════════════════════════════ */
-let activeColor = "blue";
-let triesLeft   = 3;
-let triesUsed   = 0;
-let isSolved    = false;
-let reviewMode  = false;
-const hintState = { 1: 0 };
+      /* ==========================================================================
+   4. HILFSFUNKTIONEN
+   ========================================================================== */
+      function feedbackMsg(text, tone) {
+        feedbackEl.textContent = text;
+        feedbackEl.style.color =
+          tone === "good" ? "#166534" : tone === "bad" ? "#991b1b" : "#6b7280";
+      }
 
-function initTask() {
-  // Restore state from saved result
-  if (result) {
-    triesLeft = result.tries_left ?? 3;
-    triesUsed = result.tries_used ?? 0;
-    isSolved  = result.is_solved ?? false;
-  }
+      function updateTriesUI() {
+        const dots = document.querySelectorAll("#task1 .dot");
+        const failedCount = Math.max(0, Math.min(3, 3 - triesLeft));
+        dots.forEach((d, i) => d.classList.toggle("is-on", i < failedCount));
+      }
 
-  buildMarkArea();
-  updateTriesUI();
-  renderHintStack(1);
+      /* ==========================================================================
+   5. SÄTZE RENDERN
+   ========================================================================== */
+      function buildMarkArea() {
+        markArea.innerHTML = "";
 
-  // Restore saved answers
-  if (result && result.answers) {
-    restoreAnswers(result.answers);
-  }
+        sentences.forEach((s) => {
+          const item = document.createElement("div");
+          item.className = "mark-item";
+          item.dataset.sentenceId = s.id;
 
-  if (isSolved || triesLeft === 0) {
-    disableInteraction();
-    if (triesLeft === 0 && !isSolved) {
-      document.getElementById('checkBtn').disabled = true;
-      feedbackMsg("Keine Versuche mehr.", "bad");
-    }
-    if (isSolved) {
-      feedbackMsg("Bereits gelöst! ✓", "good");
-      document.getElementById('checkBtn').textContent = "Weiter";
-    }
-  }
+          // Nummern-Badge
+          const badge = document.createElement("span");
+          badge.className = "sentence-badge";
+          badge.textContent = s.id;
+          item.appendChild(badge);
 
-  // Color buttons
-  document.querySelectorAll('.color-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      if (isSolved || reviewMode) return;
-      document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('is-active'));
-      btn.classList.add('is-active');
-      activeColor = btn.dataset.color;
-      document.getElementById('activeToolLabel').textContent = colorTitles[activeColor] ?? '–';
-    });
-  });
+          // Inhalts-Container
+          const content = document.createElement("div");
+          content.className = "sentence-content";
 
-  document.getElementById('checkBtn').addEventListener('click', () => {
-    if (document.getElementById('checkBtn').textContent.trim() === 'Weiter') return;
-    checkTask();
-  });
+          // Text-Zeile
+          const textLine = document.createElement("span");
 
-  document.getElementById('resultPopupNext').addEventListener('click', closeResultPopup);
-  document.getElementById('resultPopupSolution').addEventListener('click', showSolution);
-  document.getElementById('resultPopup').addEventListener('click', e => {
-    if (e.target.hasAttribute('data-close-popup')) document.getElementById('resultPopupSolution').click();
-  });
-}
+          s.tokens.forEach((tok, idx) => {
+            if (tok.isPunct) {
+              textLine.append(".");
+              return;
+            }
 
-function buildMarkArea() {
-  const markArea = document.getElementById('markArea');
-  markArea.innerHTML = '';
-  sentences.forEach(s => {
-    const item = document.createElement('div');
-    item.className = 'mark-item';
-    item.dataset.sentenceId = s.id;
-    const badge = document.createElement('span');
-    badge.className = 'sentence-badge';
-    badge.textContent = s.id;
-    item.appendChild(badge);
-    const content = document.createElement('div');
-    content.className = 'sentence-content';
-    const textLine = document.createElement('span');
-    s.tokens.forEach((tok, idx) => {
-      if (tok.isPunct) { textLine.append('.'); return; }
-      if (idx > 0) textLine.append(' ');
-      const span = document.createElement('span');
-      span.className = 'word';
-      span.dataset.sentenceId = s.id;
-      span.dataset.tokenIdx = idx;
-      span.dataset.color = '';
-      if (tok.bold) { const b = document.createElement('b'); b.textContent = tok.w; span.appendChild(b); }
-      else span.textContent = tok.w;
-      span.addEventListener('click', () => {
-        if (isSolved || reviewMode) return;
-        if (activeColor === 'clear') span.dataset.color = '';
-        else if (span.dataset.color === activeColor) span.dataset.color = '';
-        else span.dataset.color = activeColor;
-        autoSaveAnswers();
+            if (idx > 0 && !s.tokens[idx - 1]?.isPunct) {
+              if (idx === 0 || true) textLine.append(" ");
+            }
+
+            const span = document.createElement("span");
+            span.className = "word";
+            span.dataset.sentenceId = s.id;
+            span.dataset.tokenIdx = idx;
+            span.dataset.color = "";
+
+            if (tok.bold) {
+              const b = document.createElement("b");
+              b.textContent = tok.w;
+              span.appendChild(b);
+            } else {
+              span.textContent = tok.w;
+            }
+
+            span.addEventListener("click", () => {
+              if (isSolved || reviewMode) return;
+              const current = span.dataset.color;
+              if (activeColor === "clear") {
+                span.dataset.color = "";
+              } else if (current === activeColor) {
+                span.dataset.color = "";
+              } else {
+                span.dataset.color = activeColor;
+              }
+            });
+
+            textLine.appendChild(span);
+          });
+
+          content.appendChild(textLine);
+
+          // Übersetzung
+          const transl = document.createElement("span");
+          transl.className = "sentence-translation";
+          transl.textContent = s.translation;
+          content.appendChild(transl);
+
+          item.appendChild(content);
+          markArea.appendChild(item);
+        });
+      }
+
+      /* ==========================================================================
+   6. FARBAUSWAHL
+   ========================================================================== */
+      colorBtns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          if (isSolved || reviewMode) return;
+          colorBtns.forEach((b) => b.classList.remove("is-active"));
+          btn.classList.add("is-active");
+          activeColor = btn.dataset.color;
+          activeToolLbl.textContent = colorTitles[activeColor] ?? "–";
+        });
       });
-      textLine.appendChild(span);
-    });
-    content.appendChild(textLine);
-    const transl = document.createElement('span');
-    transl.className = 'sentence-translation';
-    transl.textContent = s.translation;
-    content.appendChild(transl);
-    item.appendChild(content);
-    markArea.appendChild(item);
-  });
-}
 
-function restoreAnswers(answers) {
-  sentences.forEach(s => {
-    const sentAnswers = answers[s.id];
-    if (!sentAnswers) return;
-    s.tokens.forEach((tok, idx) => {
-      if (tok.isPunct) return;
-      const saved = sentAnswers.find(a => a.idx === idx);
-      if (!saved || !saved.color) return;
-      const span = document.querySelector(`.word[data-sentence-id="${s.id}"][data-token-idx="${idx}"]`);
-      if (span) span.dataset.color = saved.color;
-    });
-  });
-}
+      /* ==========================================================================
+   7. TIPPS-SYSTEM
+   ========================================================================== */
+      function escapeHtml(str) {
+        return String(str)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;");
+      }
 
-function collectAnswers() {
+      function renderHintStack(taskNumber) {
+        const stack = document.getElementById(`hintStack`);
+        const hints = hintsByTask[taskNumber];
+        if (!stack || !Array.isArray(hints)) return;
+
+        const openedCount = Math.min(hintState[taskNumber] || 0, hints.length);
+        stack.innerHTML = "";
+
+        for (let i = 0; i < openedCount; i++) {
+          const box = document.createElement("div");
+          box.className = "hint-box";
+          box.innerHTML = `
+            <span class="hint-title">${i + 1}. Tipp</span>
+            <span>${escapeHtml(hints[i])}</span>
+          `;
+          stack.appendChild(box);
+        }
+
+        if (openedCount < hints.length) {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "hint hint-btn";
+          btn.dataset.task = String(taskNumber);
+          btn.textContent = `💡 ${openedCount + 1}. Tipp anzeigen`;
+          stack.appendChild(btn);
+        }
+      }
+
+      function revealNextHint(taskNumber) {
+        const hints = hintsByTask[taskNumber];
+        if (!Array.isArray(hints)) return;
+        hintState[taskNumber] = Math.min(
+          (hintState[taskNumber] || 0) + 1,
+          hints.length,
+        );
+        renderHintStack(taskNumber);
+      }
+
+      Object.keys(hintsByTask).forEach((num) => {
+        renderHintStack(num);
+        const stack = document.getElementById(`hintStack`);
+        if (!stack) return;
+        stack.addEventListener("click", (e) => {
+          const btn = e.target.closest(".hint-btn");
+          if (!btn) return;
+          revealNextHint(Number(num));
+        });
+      });
+
+      /* ==========================================================================
+   8. PRÜFEN
+   ========================================================================== */
+      function checkTask() {
+        if (isSolved) return;
+
+        let totalRequired = 0;
+        let totalCorrect = 0;
+        let anyError = false;
+
+        sentences.forEach((s) => {
+          s.tokens.forEach((tok, idx) => {
+            if (tok.isPunct) return;
+            const span = markArea.querySelector(
+              `.word[data-sentence-id="${s.id}"][data-token-idx="${idx}"]`
+            );
+            if (!span) return;
+
+            const markedRole = colorToRole[span.dataset.color] ?? null;
+
+            if (tok.role !== null) {
+              totalRequired++;
+              if (markedRole === tok.role) {
+                totalCorrect++;
+              } else {
+                anyError = true;
+              }
+            } else {
+              if (markedRole !== null) {
+                anyError = true;
+              }
+            }
+          });
+        });
+
+        const isFullSuccess = !anyError && totalCorrect === totalRequired;
+
+        if (isFullSuccess) {
+          isSolved = true;
+          applyStatusToItems(true);
+          feedbackMsg("Alles richtig!", "good");
+          openResultPopup("success");
+        } else {
+          triesLeft--;
+          updateTriesUI();
+
+          if (triesLeft > 0) {
+            feedbackMsg("Das ist noch nicht richtig.", "bad");
+          } else {
+            applyStatusToItems(false);
+            feedbackMsg("Keine Versuche mehr.", "bad");
+            checkBtn.disabled = true;
+            openResultPopup("failure");
+          }
+        }
+      }
+
+      function applyStatusToItems(allCorrect) {
+        sentences.forEach((s) => {
+          const item = markArea.querySelector(
+            `.mark-item[data-sentence-id="${s.id}"]`
+          );
+
+          if (allCorrect) {
+            item.classList.add("is-correct");
+            s.tokens.forEach((tok, idx) => {
+              if (tok.isPunct || tok.role === null) return;
+              const span = markArea.querySelector(
+                `.word[data-sentence-id="${s.id}"][data-token-idx="${idx}"]`
+              );
+              if (span) span.classList.add("is-correct-mark");
+            });
+            return;
+          }
+
+          let sentenceOk = true;
+          s.tokens.forEach((tok, idx) => {
+            if (tok.isPunct) return;
+            const span = markArea.querySelector(
+              `.word[data-sentence-id="${s.id}"][data-token-idx="${idx}"]`
+            );
+            if (!span) return;
+            const correctColor = tok.role ? roleToColor[tok.role] : "";
+            const userColor = span.dataset.color || "";
+            const markedRole = colorToRole[span.dataset.color] ?? null;
+
+            if (tok.role !== null && markedRole !== tok.role) sentenceOk = false;
+            if (tok.role === null && markedRole !== null) sentenceOk = false;
+
+            if (tok.role !== null || userColor !== "") {
+              if (userColor === correctColor) {
+                span.classList.add("is-correct-mark");
+              } else {
+                span.classList.add("is-wrong-mark");
+                attachTooltip(span, tok);
+              }
+            }
+          });
+
+          item.classList.toggle("is-correct", sentenceOk);
+          item.classList.toggle("is-wrong", !sentenceOk);
+        });
+      }
+
+      function attachTooltip(span, tok) {
+        const correctRole = tok.role;
+        const label = correctRole
+          ? colorTitles[roleToColor[correctRole]]
+          : "Nicht markieren";
+
+        span.addEventListener("click", function (e) {
+          e.stopPropagation();
+          document.querySelectorAll(".word-tooltip").forEach((t) => t.remove());
+          const tip = document.createElement("span");
+          tip.className = "word-tooltip";
+          tip.textContent = label;
+          span.appendChild(tip);
+          setTimeout(() => tip.remove(), 2500);
+        });
+      }
+
+      checkBtn.addEventListener("click", () => {
+        if (checkBtn.textContent.trim() === "Weiter") {
+          window.location.href = "#";
+          return;
+        }
+        checkTask();
+      });
+
+      /* ==========================================================================
+   9. POPUP-HANDLING
+   ========================================================================== */
+      function openResultPopup(status) {
+        const isSuccess = status === "success";
+        const mascotEl = document.querySelector(".result-popup__mascot");
+
+        resultPopup.hidden = false;
+        resultPopup.setAttribute("aria-hidden", "false");
+        resultPopupPanel.classList.toggle("is-success", isSuccess);
+        resultPopupPanel.classList.toggle("is-failure", !isSuccess);
+        resultPopupBadge.textContent = isSuccess ? "✓" : "!";
+        resultPopupTitle.textContent = isSuccess
+          ? "Alles richtig gemacht"
+          : "Du hast Fehler gemacht.";
+        if (mascotEl) mascotEl.textContent = isSuccess ? "🎉" : "🔍";
+        document.body.classList.add("popup-open");
+      }
+
+      function closeResultPopup() {
+        resultPopup.hidden = true;
+        resultPopup.setAttribute("aria-hidden", "true");
+        document.body.classList.remove("popup-open");
+      }
+
+      resultPopupNext.addEventListener("click", closeResultPopup);
+
+      resultPopup.addEventListener("click", (e) => {
+        if (e.target.hasAttribute("data-close-popup")) {
+          resultPopupSolution.click();
+        }
+      });
+
+      /* ==========================================================================
+   10. LÖSUNGSMODUS
+   ========================================================================== */
+      resultPopupSolution.addEventListener("click", () => {
+        isSolved = true;
+        reviewMode = true;
+
+        closeResultPopup();
+
+        colorBtns.forEach((b) => {
+          b.disabled = true;
+          b.style.opacity = "0.45";
+        });
+        activeToolLbl.textContent = "–";
+
+        sentences.forEach((s) => {
+          const item = markArea.querySelector(
+            `.mark-item[data-sentence-id="${s.id}"]`
+          );
+
+          let sentenceWasCorrect = true;
+          s.tokens.forEach((tok, idx) => {
+            if (tok.isPunct) return;
+            const span = markArea.querySelector(
+              `.word[data-sentence-id="${s.id}"][data-token-idx="${idx}"]`
+            );
+            if (!span) return;
+            const correctColor = tok.role ? roleToColor[tok.role] : "";
+            const userColor = span.dataset.color || "";
+            if (userColor !== correctColor) sentenceWasCorrect = false;
+          });
+
+          s.tokens.forEach((tok, idx) => {
+            if (tok.isPunct) return;
+            const span = markArea.querySelector(
+              `.word[data-sentence-id="${s.id}"][data-token-idx="${idx}"]`
+            );
+            if (!span) return;
+
+            const correctColor = tok.role ? roleToColor[tok.role] : "";
+            const userColor = span.dataset.color || "";
+
+            if (
+              !span.classList.contains("is-correct-mark") &&
+              !span.classList.contains("is-wrong-mark")
+            ) {
+              if (tok.role !== null || userColor !== "") {
+                if (userColor === correctColor) {
+                  span.classList.add("is-correct-mark");
+                } else {
+                  span.classList.add("is-wrong-mark");
+                  attachTooltip(span, tok);
+                }
+              }
+            }
+          });
+
+          if (item) {
+            item.classList.remove("is-correct", "is-wrong");
+            if (sentenceWasCorrect) {
+              item.classList.add("is-correct");
+            } else {
+              item.classList.add("is-wrong");
+            }
+          }
+        });
+
+        solutionText.innerHTML = `
+          <h3>Lösungsweg:</h3>
+          <ul>
+            ${explanations.map((e) => `<li>${e}</li>`).join("")}
+          </ul>
+        `;
+        solutionText.hidden = false;
+
+        checkBtn.textContent = "Weiter";
+        checkBtn.disabled = false;
+      });
+
+      /* ==========================================================================
+   11. INITIALISIERUNG
+   ========================================================================== */
+
+
+function collectA() {
   const answers = {};
   sentences.forEach(s => {
-    answers[s.id] = s.tokens.map((tok, idx) => {
+    answers[s.id] = s.tokens.map((tok,idx) => {
       if (tok.isPunct) return null;
-      const span = document.querySelector(`.word[data-sentence-id="${s.id}"][data-token-idx="${idx}"]`);
+      const span = markArea.querySelector('.word[data-sentence-id="'+s.id+'"][data-token-idx="'+idx+'"]');
       const color = span ? span.dataset.color : '';
       const correctColor = tok.role ? roleToColor[tok.role] : '';
-      return { idx, text: tok.w, color, correct: color && correctColor ? color === correctColor : (color === '' && correctColor === '' ? null : color === correctColor) };
+      return {idx, text:tok.w, color, correct: color&&correctColor ? color===correctColor : null};
     }).filter(Boolean);
   });
   return answers;
 }
 
-function autoSaveAnswers() {
-  const answers = collectAnswers();
-  _save(student.id, student.task_id, { answers, tries_used: triesUsed, tries_left: triesLeft });
-}
-
-function checkTask() {
-  if (isSolved) return;
-  let totalRequired = 0, totalCorrect = 0, anyError = false;
-  sentences.forEach(s => {
-    s.tokens.forEach((tok, idx) => {
-      if (tok.isPunct) return;
-      const span = document.querySelector(`.word[data-sentence-id="${s.id}"][data-token-idx="${idx}"]`);
-      if (!span) return;
-      const markedRole = colorToRole[span.dataset.color] ?? null;
-      if (tok.role !== null) { totalRequired++; if (markedRole === tok.role) totalCorrect++; else anyError = true; }
-      else if (markedRole !== null) anyError = true;
-    });
-  });
-
-  const isFullSuccess = !anyError && totalCorrect === totalRequired;
-  if (isFullSuccess) {
-    isSolved = true; triesUsed = 3 - triesLeft;
-    applyStatusToItems(true);
-    feedbackMsg('Alles richtig!', 'good');
-    _save(student.id, student.task_id, { answers: collectAnswers(), tries_used: triesUsed, tries_left: triesLeft, is_solved: true });
-    openResultPopup('success');
-  } else {
-    triesLeft--; triesUsed++;
-    updateTriesUI();
-    _save(student.id, student.task_id, { answers: collectAnswers(), tries_used: triesUsed, tries_left: triesLeft, is_solved: false });
-    if (triesLeft > 0) {
-      feedbackMsg('Das ist noch nicht richtig.', 'bad');
-    } else {
-      applyStatusToItems(false);
-      feedbackMsg('Keine Versuche mehr.', 'bad');
-      document.getElementById('checkBtn').disabled = true;
-      openResultPopup('failure');
-    }
+function initTask(student, result) {
+  // Restore state from saved result
+  if (result) {
+    triesLeft = result.tries_left ?? 3;
+    isSolved  = result.is_solved ?? false;
   }
-}
-
-function applyStatusToItems(allCorrect) {
-  sentences.forEach(s => {
-    const item = document.querySelector(`.mark-item[data-sentence-id="${s.id}"]`);
-    if (allCorrect) {
-      item.classList.add('is-correct');
+  buildMarkArea();
+  updateTriesUI();
+  renderHintStack(1);
+  if (result && result.answers) {
+    // Restore saved word markings
+    sentences.forEach(s => {
+      const sentAnswers = (result.answers[s.id] || []);
       s.tokens.forEach((tok, idx) => {
-        if (tok.isPunct || tok.role === null) return;
-        const span = document.querySelector(`.word[data-sentence-id="${s.id}"][data-token-idx="${idx}"]`);
-        if (span) span.classList.add('is-correct-mark');
+        const saved = sentAnswers.find(a => a && a.idx === idx);
+        if (!saved || !saved.color) return;
+        const span = markArea.querySelector('.word[data-sentence-id="'+s.id+'"][data-token-idx="'+idx+'"]');
+        if (span) span.dataset.color = saved.color;
       });
-      return;
-    }
-    let sentenceOk = true;
-    s.tokens.forEach((tok, idx) => {
-      if (tok.isPunct) return;
-      const span = document.querySelector(`.word[data-sentence-id="${s.id}"][data-token-idx="${idx}"]`);
-      if (!span) return;
-      const correctColor = tok.role ? roleToColor[tok.role] : '';
-      const userColor = span.dataset.color || '';
-      const markedRole = colorToRole[span.dataset.color] ?? null;
-      if (tok.role !== null && markedRole !== tok.role) sentenceOk = false;
-      if (tok.role === null && markedRole !== null) sentenceOk = false;
-      if (tok.role !== null || userColor !== '') {
-        if (userColor === correctColor) span.classList.add('is-correct-mark');
-        else { span.classList.add('is-wrong-mark'); attachTooltip(span, tok); }
-      }
     });
-    item.classList.toggle('is-correct', sentenceOk);
-    item.classList.toggle('is-wrong', !sentenceOk);
-  });
+  }
+  if (isSolved) { feedbackMsg('Bereits gelöst! ✓','good'); checkBtn.textContent='Weiter'; }
+  if (triesLeft===0 && !isSolved) { checkBtn.disabled=true; feedbackMsg('Keine Versuche mehr.','bad'); }
 }
-
-function attachTooltip(span, tok) {
-  const label = tok.role ? colorTitles[roleToColor[tok.role]] : 'Nicht markieren';
-  span.addEventListener('click', function(e) {
-    e.stopPropagation();
-    document.querySelectorAll('.word-tooltip').forEach(t => t.remove());
-    const tip = document.createElement('span');
-    tip.className = 'word-tooltip';
-    tip.textContent = label;
-    span.appendChild(tip);
-    setTimeout(() => tip.remove(), 2500);
-  });
-}
-
-function disableInteraction() {
-  document.querySelectorAll('.color-btn').forEach(b => { b.disabled = true; b.style.opacity = '0.45'; });
-  reviewMode = true;
-}
-
-function updateTriesUI() {
-  const dots = document.querySelectorAll('#task1 .dot');
-  const failedCount = Math.max(0, Math.min(3, 3 - triesLeft));
-  dots.forEach((d, i) => d.classList.toggle('is-on', i < failedCount));
-}
-
-function feedbackMsg(text, tone) {
-  const el = document.getElementById('feedback');
-  el.textContent = text;
-  el.style.color = tone === 'good' ? '#166534' : tone === 'bad' ? '#991b1b' : '#6b7280';
-}
-
-function openResultPopup(status) {
-  const isSuccess = status === 'success';
-  const popup = document.getElementById('resultPopup');
-  popup.hidden = false;
-  document.getElementById('resultPopupPanel').classList.toggle('is-success', isSuccess);
-  document.getElementById('resultPopupPanel').classList.toggle('is-failure', !isSuccess);
-  document.getElementById('resultPopupBadge').textContent = isSuccess ? '✓' : '!';
-  document.getElementById('resultPopupTitle').textContent = isSuccess ? 'Alles richtig gemacht' : 'Du hast Fehler gemacht.';
-  document.querySelector('.result-popup__mascot').textContent = isSuccess ? '🎉' : '🔍';
-  document.body.classList.add('popup-open');
-}
-function closeResultPopup() {
-  document.getElementById('resultPopup').hidden = true;
-  document.body.classList.remove('popup-open');
-}
-
-function showSolution() {
-  isSolved = true; reviewMode = true;
-  closeResultPopup();
-  disableInteraction();
-  document.getElementById('activeToolLabel').textContent = '–';
+function autoSave() {
+  const answers = {};
   sentences.forEach(s => {
-    const item = document.querySelector(`.mark-item[data-sentence-id="${s.id}"]`);
-    let ok = true;
-    s.tokens.forEach((tok, idx) => {
-      if (tok.isPunct) return;
-      const span = document.querySelector(`.word[data-sentence-id="${s.id}"][data-token-idx="${idx}"]`);
-      if (!span) return;
-      const correctColor = tok.role ? roleToColor[tok.role] : '';
-      if ((span.dataset.color || '') !== correctColor) ok = false;
-      if (!span.classList.contains('is-correct-mark') && !span.classList.contains('is-wrong-mark')) {
-        if (tok.role !== null || span.dataset.color !== '') {
-          if ((span.dataset.color || '') === correctColor) span.classList.add('is-correct-mark');
-          else { span.classList.add('is-wrong-mark'); attachTooltip(span, tok); }
-        }
-      }
-    });
-    if (item) { item.classList.remove('is-correct','is-wrong'); item.classList.add(ok ? 'is-correct' : 'is-wrong'); }
+    answers[s.id] = s.tokens.map((tok,idx) => {
+      if (tok.isPunct) return null;
+      const span = markArea.querySelector('.word[data-sentence-id="'+s.id+'"][data-token-idx="'+idx+'"]');
+      return {idx, text:tok.w, color: span ? span.dataset.color : ''};
+    }).filter(Boolean);
   });
-  document.getElementById('solutionText').innerHTML = `<h3>Lösungsweg:</h3><ul>${explanations.map(e => `<li>${e}</li>`).join('')}</ul>`;
-  document.getElementById('solutionText').hidden = false;
-  document.getElementById('checkBtn').textContent = 'Weiter';
-  document.getElementById('checkBtn').disabled = false;
+  sbSave(student.id, student.task_id, {answers, tries_used:3-triesLeft, tries_left:triesLeft, is_solved:isSolved});
 }
 
-/* Hint system (identical to aufgabe2) */
-function escapeHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function renderHintStack(taskNumber) {
-  const stack = document.getElementById('hintStack');
-  const hints = hintsByTask[taskNumber];
-  if (!stack || !Array.isArray(hints)) return;
-  const openedCount = Math.min(hintState[taskNumber] || 0, hints.length);
-  stack.innerHTML = '';
-  for (let i = 0; i < openedCount; i++) {
-    const box = document.createElement('div');
-    box.className = 'hint-box';
-    box.innerHTML = `<span class="hint-title">${i + 1}. Tipp</span><span>${escapeHtml(hints[i])}</span>`;
-    stack.appendChild(box);
-  }
-  if (openedCount < hints.length) {
-    const btn = document.createElement('button');
-    btn.type = 'button'; btn.className = 'hint hint-btn'; btn.dataset.task = String(taskNumber);
-    btn.textContent = `💡 ${openedCount + 1}. Tipp anzeigen`;
-    stack.appendChild(btn);
-  }
-}
-function revealNextHint(taskNumber) {
-  const hints = hintsByTask[taskNumber];
-  if (!Array.isArray(hints)) return;
-  hintState[taskNumber] = Math.min((hintState[taskNumber] || 0) + 1, hints.length);
-  renderHintStack(taskNumber);
-}
-document.getElementById('hintStack').addEventListener('click', e => {
-  const btn = e.target.closest('.hint-btn');
-  if (!btn) return;
-  revealNextHint(1);
-});
-
-/* Utils */
-function show(id, display = 'block') { const el = document.getElementById(id); if (el) { el.style.display = display; el.classList.remove('hidden'); } }
-function hide(id) { const el = document.getElementById(id); if (el) { el.style.display = 'none'; el.classList.add('hidden'); } }
-</script>
-
+      // initTask() called by auth layer
+    </script>
+  </div><!-- /taskWrap -->
 <script>
-/* ── Auth & Supabase ── */
-const _U='https://jwvdyuvzapkiivsvkeis.supabase.co',_K='sb_publishable_DiTHFK_HaV9jN40fkLKHDA_PrzS8oKc',_H={'apikey':_K,'Authorization':'Bearer '+_K,'Content-Type':'application/json','Prefer':'return=representation'};
-async function _get(t,q){const r=await fetch(_U+'/rest/v1/'+t+'?'+q,{headers:_H});if(!r.ok)throw new Error(await r.text());return r.json();}
-async function _save(sid,tid,data){
+const SB_URL='https://jwvdyuvzapkiivsvkeis.supabase.co',SB_KEY='sb_publishable_DiTHFK_HaV9jN40fkLKHDA_PrzS8oKc';
+const SB_H={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'};
+async function sbGet(t,q){const r=await fetch(SB_URL+'/rest/v1/'+t+'?'+q,{headers:SB_H});if(!r.ok)throw new Error(await r.text());return r.json();}
+async function sbSave(sid,tid,data){
   try{
-    const ex=await _get('results','student_id=eq.'+sid+'&task_id=eq.'+tid);
+    const ex=await sbGet('results','student_id=eq.'+sid+'&task_id=eq.'+tid);
     const p={student_id:sid,task_id:tid,updated_at:new Date().toISOString(),...data};
-    if(ex&&ex[0])await fetch(_U+'/rest/v1/results?id=eq.'+ex[0].id,{method:'PATCH',headers:_H,body:JSON.stringify(p)});
-    else{p.submitted_at=new Date().toISOString();await fetch(_U+'/rest/v1/results',{method:'POST',headers:_H,body:JSON.stringify(p)});}
+    if(ex&&ex[0])await fetch(SB_URL+'/rest/v1/results?id=eq.'+ex[0].id,{method:'PATCH',headers:SB_H,body:JSON.stringify(p)});
+    else{p.submitted_at=new Date().toISOString();await fetch(SB_URL+'/rest/v1/results',{method:'POST',headers:SB_H,body:JSON.stringify(p)});}
   }catch(e){console.warn('save:',e);}
 }
 window.addEventListener('DOMContentLoaded',async()=>{
   const sid=new URLSearchParams(location.search).get('s');
-  if(!sid){document.getElementById('spinnerOverlay').classList.add('hidden');document.getElementById('noCodeError').style.display='flex';return;}
+  if(!sid){document.getElementById('authSpinner').classList.add('hidden');document.getElementById('authError').style.display='flex';return;}
   try{
-    const rows=await _get('students','code=eq.'+encodeURIComponent(sid));
-    if(!rows||!rows.length){document.getElementById('spinnerOverlay').classList.add('hidden');document.getElementById('noCodeError').style.display='flex';return;}
+    const rows=await sbGet('students','code=eq.'+encodeURIComponent(sid));
+    if(!rows||!rows.length){document.getElementById('authSpinner').classList.add('hidden');document.getElementById('authError').style.display='flex';return;}
     const student=rows[0];
-    const res=await _get('results','student_id=eq.'+student.id+'&task_id=eq.'+student.task_id);
+    const res=await sbGet('results','student_id=eq.'+student.id+'&task_id=eq.'+student.task_id);
     const result=(res&&res[0])?res[0]:{tries_used:0,tries_left:3,is_solved:false,answers:null,teacher_comment:null};
-    document.getElementById('welcomeName').textContent=student.name+' · ';
-    document.getElementById('welcomeBanner').style.display='flex';
-    if(result.teacher_comment){document.getElementById('teacherCommentText').textContent=result.teacher_comment;document.getElementById('teacherCommentBox').style.display='block';}
-    document.getElementById('spinnerOverlay').classList.add('hidden');
-    document.getElementById('taskWrapper').style.display='block';
+    document.getElementById('wbName').textContent=student.name+' ·';
+    document.getElementById('wbTask').textContent='Gerundium & Gerundivum';
+    document.getElementById('welcomeBar').style.display='flex';
+    if(result.teacher_comment){document.getElementById('teacherTxt').textContent=result.teacher_comment;document.getElementById('teacherMsg').style.display='block';}
+    document.getElementById('authSpinner').classList.add('hidden');
+    document.getElementById('taskWrap').style.display='block';
     initTask(student,result);
-  }catch(e){document.getElementById('spinnerOverlay').classList.add('hidden');document.getElementById('noCodeError').style.display='flex';}
+  }catch(e){console.error(e);document.getElementById('authSpinner').classList.add('hidden');document.getElementById('authError').style.display='flex';}
 });
 </script>
 </body>
