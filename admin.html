@@ -533,7 +533,7 @@ CREATE POLICY "allow_all_results" ON results FOR ALL USING (true) WITH CHECK (tr
       <!-- Basis-URL -->
       <div class="setup-box">
         <h3>🌐 Basis-URL für Schüler-Links</h3>
-        <p style="font-size:13px; color:var(--muted); margin-bottom:14px;">Die Basis-URL deines Projekts (Ordner, in dem die HTML-Dateien liegen). Beispiel: <code>https://bando-ops.github.io/lateiin/aufgabe.html</code></p>
+        <p style="font-size:13px; color:var(--muted); margin-bottom:14px;">Die Basis-URL deines Projekts (Ordner, in dem die HTML-Dateien liegen). Beispiel: <code>https://lateinportal.github.io/lateiin/aufgabe.html</code></p>
         <div class="field" style="max-width:500px;">
           <label>Basis-URL</label>
           <input type="text" id="cfgBaseUrl" placeholder="https://meineschule.de/latein/aufgabe.html" />
@@ -633,7 +633,7 @@ let supaUrl = '', supaKey = '', baseUrl = '', sb = null;
 window.addEventListener('DOMContentLoaded', () => {
   supaUrl = localStorage.getItem(SUPA_URL_KEY) || 'https://jwvdyuvzapkiivsvkeis.supabase.co';
   supaKey = localStorage.getItem(SUPA_KEY_KEY) || 'sb_publishable_DiTHFK_HaV9jN40fkLKHDA_PrzS8oKc';
-  baseUrl = localStorage.getItem(BASE_URL_KEY) || 'https://bando-ops.github.io/lateiin/aufgabe.html';
+  baseUrl = localStorage.getItem(BASE_URL_KEY) || 'https://lateinportal.github.io/lateiin/aufgabe.html';
 
   if (document.getElementById('cfgUrl')) document.getElementById('cfgUrl').value = supaUrl;
   if (document.getElementById('cfgKey')) document.getElementById('cfgKey').value = supaKey;
@@ -769,7 +769,7 @@ function copySQL() {
 
 /* Builds the correct URL for each task */
 function taskLink(taskId, code) {
-  const base = 'https://bando-ops.github.io/lateiin/';
+  const base = 'https://lateinportal.github.io/lateiin/';
   const files = {
     gerundium:       'aufgabe.html',
     aci:             'aufgabe2.html',
