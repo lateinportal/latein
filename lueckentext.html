@@ -1,0 +1,675 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Lückentext – Lateinische Grammatik</title>
+  <style>
+    /* ── BASIS (identisch mit den anderen Aufgaben) ────────── */
+    :root {
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --blue: #1976d2;
+      --blue-dark: #135aa3;
+      --green: #16a34a;
+      --red: #dc2626;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background: var(--bg); color: var(--text); }
+    body.popup-open { overflow: hidden; }
+    html { scrollbar-gutter: stable; }
+
+    /* ── CODE SCREEN ───────────────────────────────────────── */
+    #codeScreen { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; background: radial-gradient(ellipse at 50% 30%, rgba(25,118,210,0.06) 0%, transparent 65%), var(--bg); }
+    .code-card { width: min(420px,100%); background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 40px 36px; box-shadow: 0 12px 40px rgba(0,0,0,.08); text-align: center; }
+    .code-card .icon { font-size: 48px; margin-bottom: 16px; }
+    .code-card h1 { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+    .code-card p { color: var(--muted); font-size: 14px; margin-bottom: 28px; line-height: 1.5; }
+    .code-input { width: 100%; background: var(--bg); border: 2px solid var(--border); border-radius: 12px; padding: 14px 16px; font-size: 20px; font-weight: 700; text-align: center; letter-spacing: .1em; color: var(--text); outline: none; transition: border-color .15s; text-transform: uppercase; }
+    .code-input:focus { border-color: var(--blue); }
+    .code-input.error { border-color: var(--red); }
+    .btn-enter { margin-top: 16px; width: 100%; background: var(--blue); border: none; border-radius: 12px; padding: 14px; color: #fff; font-size: 16px; font-weight: 700; cursor: pointer; transition: background .15s; }
+    .btn-enter:hover { background: var(--blue-dark); }
+    .code-error { color: var(--red); font-size: 13px; margin-top: 12px; min-height: 18px; }
+    .code-hint { font-size: 12px; color: var(--muted); margin-top: 20px; }
+
+    /* ── WELCOME BANNER ────────────────────────────────────── */
+    #welcomeBanner { background: var(--card); border-bottom: 1px solid var(--border); padding: 10px 20px; display: none; align-items: center; justify-content: space-between; font-size: 14px; }
+    .welcome-name { font-weight: 700; }
+    .welcome-task { color: var(--muted); }
+    #teacherCommentBox { max-width: 1100px; margin: 16px auto 0; padding: 0 18px; display: none; }
+    .teacher-comment { background: #fffbeb; border: 1px solid #fbbf24; border-radius: 12px; padding: 14px 18px; font-size: 14px; color: #78350f; line-height: 1.55; }
+    .teacher-comment strong { display: block; margin-bottom: 4px; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: #b45309; }
+
+    /* ── SPINNER ───────────────────────────────────────────── */
+    .spinner-overlay { position: fixed; inset: 0; background: rgba(246,247,251,.85); display: flex; align-items: center; justify-content: center; z-index: 200; flex-direction: column; gap: 12px; font-size: 14px; color: var(--muted); }
+    .spinner-overlay.hidden { display: none; }
+    .spin { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--blue); border-radius: 50%; animation: spin .7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── PAGE LAYOUT ───────────────────────────────────────── */
+    .page { max-width: 1100px; margin: 28px auto; padding: 0 18px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 22px 24px 28px; }
+    .task-title { margin: 0 0 6px; font-size: 20px; font-weight: 700; line-height: 1.25; }
+    .task-sub { display: block; margin-top: 6px; color: var(--muted); font-weight: 500; font-size: 14px; }
+    .top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+
+    /* ── LÜCKENTEXT ROWS ───────────────────────────────────── */
+    .luecke-list { display: flex; flex-direction: column; gap: 16px; margin: 22px 0 18px; }
+
+    .luecke-row {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 1fr 190px;
+      transition: border-color .14s, background .14s;
+    }
+    .luecke-row.is-correct { border-color: #3bd668; background: #f0fdf4; }
+    .luecke-row.is-wrong   { border-color: #feda31; background: #fffbeb; }
+
+    .luecke-main {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      padding: 16px 18px;
+    }
+
+    /* Nummern-Badge – identisch zu den anderen Aufgaben */
+    .num-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 32px; height: 32px; min-width: 32px;
+      border-radius: 50%; background: #1f2937; color: #fff;
+      font-size: 14px; font-weight: 700;
+      margin-top: 4px; flex-shrink: 0;
+    }
+
+    .luecke-text { font-size: 1.05rem; line-height: 2.8; color: var(--text); flex: 1; }
+
+    /* ── WORD BANK (rechte Spalte) ──────────────────────────── */
+    .luecke-bank {
+      display: flex; flex-direction: column; justify-content: center;
+      gap: 8px; padding: 14px 12px;
+      border-left: 1px solid var(--border);
+      background: #fbfbfd;
+      transition: background .15s, border-color .15s;
+    }
+    .luecke-bank.drag-over { background: rgba(25,118,210,.06); border-left-color: var(--blue); }
+    .bank-label { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 2px; }
+
+    /* ── CHIPS ──────────────────────────────────────────────── */
+    .word-chip {
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 8px;
+      min-height: 36px;
+      padding: 5px 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: grab;
+      text-align: center;
+      color: var(--text);
+      user-select: none;
+      transition: border-color .12s, box-shadow .12s, opacity .15s, transform .1s;
+      white-space: nowrap;
+      box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    }
+    .word-chip:hover { border-color: var(--blue); transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,.1); }
+    .word-chip:active { cursor: grabbing; }
+    .word-chip.dragging { opacity: .35; }
+
+    /* ── BLANKS ─────────────────────────────────────────────── */
+    .luecke-blank {
+      display: inline-flex; align-items: center; justify-content: center;
+      vertical-align: middle;
+      min-width: 130px; min-height: 36px;
+      margin: 0 5px; padding: 3px 6px;
+      border: 2px dashed #c4c9d4;
+      background: #fff;
+      border-radius: 8px;
+      cursor: default;
+      transition: border-color .15s, background .15s;
+    }
+    .luecke-blank.drag-over { border-color: var(--blue); background: rgba(25,118,210,.06); border-style: solid; }
+    .luecke-blank.is-filled { border-style: solid; border-color: #c4c9d4; }
+    .luecke-blank.is-correct { border-color: var(--green) !important; background: rgba(22,163,74,.07) !important; }
+    .luecke-blank.is-wrong   { border-color: #f59e0b !important; background: rgba(245,158,11,.07) !important; }
+    .luecke-blank .word-chip { font-size: 13px; min-height: 30px; padding: 3px 10px; cursor: grab; }
+    .blank-placeholder { display: block; width: 110px; height: 18px; }
+
+    /* ── BOTTOM BAR ─────────────────────────────────────────── */
+    .bottombar { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-top: 18px; flex-wrap: wrap; }
+
+    /* Hint system – identisch zu den anderen Aufgaben */
+    .hint-stack { display: flex; flex-direction: column; gap: 10px; min-width: 260px; max-width: min(100%, 600px); align-self: flex-start; }
+    .hint-box { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; color: #4b5563; line-height: 1.55; }
+    .hint-title { display: block; font-weight: 700; color: #374151; margin-bottom: 8px; }
+    .hint-btn { width: fit-content; border: 1px solid var(--border); background: #fff; border-radius: 12px; padding: 12px 14px; display: flex; gap: 10px; align-items: center; cursor: pointer; font-size: 14px; }
+    .hint-btn:hover { background: #f9f9f9; }
+
+    .right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0; }
+    .btn-group { display: flex; gap: 10px; }
+    .primary { background: var(--blue); border: 1px solid var(--blue); color: #fff; font-weight: 700; border-radius: 10px; padding: 12px 18px; min-width: 110px; cursor: pointer; font-size: 14px; transition: all .14s; }
+    .primary:hover { background: var(--blue-dark); }
+    .primary:disabled { opacity: .55; cursor: not-allowed; }
+    .ghost { border: 1px solid var(--border); background: #fff; border-radius: 10px; padding: 12px 16px; cursor: pointer; color: var(--text); font-size: 14px; font-weight: 600; transition: all .14s; }
+    .ghost:hover { background: #f0f2f5; border-color: #d1d5db; }
+
+    .tries { display: flex; flex-direction: column; align-items: center; width: 110px; font-size: 12px; color: var(--muted); gap: 6px; }
+    .dots { display: flex; gap: 6px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; border: 1px solid var(--border); background: #fff; transition: background .2s; }
+    .dot.is-on { background: #1f2937; border-color: #1f2937; }
+    .feedback { margin: 14px 0 0; color: var(--muted); min-height: 1.2em; font-size: 14px; }
+
+    /* ── RESULT POPUP – identisch zu den anderen Aufgaben ───── */
+    .result-popup { position: fixed; inset: 0; z-index: 50; }
+    .result-popup[hidden] { display: none; }
+    .result-popup__backdrop { position: absolute; inset: 0; background: rgba(17,24,39,.5); }
+    .result-popup__panel { position: relative; z-index: 1; width: min(420px, calc(100% - 32px)); margin: 120px auto 0; border-radius: 28px; padding: 28px 24px 24px; text-align: center; color: #fff; box-shadow: 0 18px 50px rgba(0,0,0,.25); }
+    .result-popup__panel.is-success { background: #76c800; }
+    .result-popup__panel.is-failure { background: #ff983e; }
+    .result-popup__badge { width: 64px; height: 64px; margin: 0 auto 14px; border-radius: 50%; display: grid; place-items: center; font-size: 32px; font-weight: 900; background: rgba(255,255,255,.2); border: 2px solid rgba(255,255,255,.3); }
+    .result-popup__title { margin: 0; font-size: 28px; line-height: 1.1; }
+    .result-popup__mascot { font-size: 64px; margin: 12px 0 18px; }
+    .result-popup__actions { display: flex; flex-direction: column; gap: 10px; }
+    .result-popup__next { font-size: 18px; padding: 14px 22px; border-radius: 12px; }
+    .result-popup__solution { border: none; background: transparent; color: #fff; font-size: 15px; cursor: pointer; }
+
+    /* ── SOLUTION ───────────────────────────────────────────── */
+    .solution-explanation { margin-top: 20px; padding: 20px; color: black; animation: snapIn .4s ease-out; }
+    .solution-explanation h3 { margin-top: 0; font-size: 18px; }
+    .solution-explanation ul { padding-left: 20px; margin-bottom: 0; }
+    .solution-explanation li { margin-bottom: 8px; }
+
+    @keyframes snapIn {
+      0%   { transform: translateY(10px) scale(.985); opacity: .75; }
+      70%  { transform: translateY(-2px) scale(1.01); opacity: 1; }
+      100% { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    @media (max-width: 700px) {
+      .luecke-row { grid-template-columns: 1fr; }
+      .luecke-bank { border-left: none; border-top: 1px solid var(--border); flex-direction: row; flex-wrap: wrap; }
+      .luecke-text { font-size: 15px; }
+      .bottombar { flex-direction: column; align-items: center; }
+      .right { align-items: center; }
+      .hint-stack { width: 100%; align-items: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Spinner -->
+<div class="spinner-overlay" id="spinnerOverlay">
+  <div class="spin"></div>
+  <span>Wird geladen…</span>
+</div>
+
+<!-- Code Screen -->
+<div id="codeScreen" style="display:none;">
+  <div class="code-card">
+    <div class="icon">📚</div>
+    <h1>Aufgabe öffnen</h1>
+    <p>Gib deinen persönlichen Zugangscode ein, den du von deiner Lehrkraft erhalten hast.</p>
+    <input type="text" class="code-input" id="codeInput" placeholder="ABC-123-XYZ" maxlength="11" autocomplete="off" spellcheck="false"/>
+    <button class="btn-enter" onclick="submitCode()">Aufgabe öffnen →</button>
+    <div class="code-error" id="codeError"></div>
+    <p class="code-hint">Keinen Code? Wende dich an deine Lehrkraft.</p>
+  </div>
+</div>
+
+<!-- Welcome Banner -->
+<div id="welcomeBanner">
+  <div>
+    <span class="welcome-name" id="welcomeName"></span>
+    <span class="welcome-task" id="welcomeTask"></span>
+  </div>
+</div>
+
+<!-- Teacher Comment -->
+<div id="teacherCommentBox">
+  <div class="teacher-comment">
+    <strong>💬 Kommentar deiner Lehrkraft</strong>
+    <span id="teacherCommentText"></span>
+  </div>
+</div>
+
+<!-- Task Wrapper -->
+<div id="taskWrapper" style="display:none;">
+<div class="page">
+  <header class="top-nav">
+    <div style="font-size:14px; color:var(--muted);">Latein</div>
+  </header>
+
+  <main class="card">
+    <h1 class="task-title">
+      Ergänze die grammatischen Fachbegriffe.
+      <span class="task-sub">Ziehe die Wörter aus der Ablage in die passenden Lücken. Klicke auf ein Wort in einer Lücke, um es zurückzulegen.</span>
+    </h1>
+
+    <div class="luecke-list" id="lueckeList"></div>
+
+    <div id="solutionText" class="solution-explanation" hidden></div>
+
+    <footer class="bottombar">
+      <div class="hint-stack" id="hintStack"></div>
+      <div class="right">
+        <div class="btn-group">
+          <button id="resetBtn" class="ghost">Zurücksetzen</button>
+          <button id="checkBtn" class="primary">Überprüfen</button>
+        </div>
+        <div class="tries">
+          Versuche:
+          <span class="dots">
+            <span class="dot" id="dot0"></span>
+            <span class="dot" id="dot1"></span>
+            <span class="dot" id="dot2"></span>
+          </span>
+        </div>
+        <p id="feedback" class="feedback" role="status" aria-live="polite"></p>
+      </div>
+    </footer>
+  </main>
+
+  <!-- Result Popup -->
+  <div class="result-popup" id="resultPopup" hidden aria-hidden="true">
+    <div class="result-popup__backdrop" id="popupBackdrop"></div>
+    <div class="result-popup__panel" id="popupPanel" role="dialog" aria-modal="true">
+      <div class="result-popup__badge" id="popupBadge">!</div>
+      <h2 class="result-popup__title" id="popupTitle"></h2>
+      <div class="result-popup__mascot" id="popupMascot"></div>
+      <div class="result-popup__actions">
+        <button type="button" class="primary result-popup__next" id="popupCloseBtn">Weiter</button>
+        <button type="button" class="result-popup__solution" id="popupSolutionBtn">Schau dir die Lösung an.</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div><!-- /taskWrapper -->
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   AUTH LAYER
+═══════════════════════════════════════════════════════════ */
+const SUPA_URL_KEY = 'lk_supa_url';
+const SUPA_KEY_KEY = 'lk_supa_key';
+let supaUrl = localStorage.getItem(SUPA_URL_KEY) || 'https://jwvdyuvzapkiivsvkeis.supabase.co';
+let supaKey = localStorage.getItem(SUPA_KEY_KEY) || 'sb_publishable_DiTHFK_HaV9jN40fkLKHDA_PrzS8oKc';
+let sb = null;
+let currentStudent = null;
+let currentResult  = null;
+
+function initSb() {
+  if (!supaUrl || !supaKey) return;
+  sb = {
+    url: supaUrl.replace(/\/+$/, ''), key: supaKey,
+    h: {'apikey':supaKey,'Authorization':'Bearer '+supaKey,'Content-Type':'application/json','Prefer':'return=representation'},
+    async get(t,q){const r=await fetch(this.url+'/rest/v1/'+t+'?'+q,{headers:this.h});if(!r.ok)throw new Error(await r.text());return r.json();},
+    async upsert(t,d){const h={...this.h,'Prefer':'return=representation,resolution=merge-duplicates'};const r=await fetch(this.url+'/rest/v1/'+t,{method:'POST',headers:h,body:JSON.stringify(d)});if(!r.ok)throw new Error(await r.text());return r.json();},
+    async patch(t,m,d){const q=Object.entries(m).map(([k,v])=>k+'=eq.'+encodeURIComponent(v)).join('&');const r=await fetch(this.url+'/rest/v1/'+t+'?'+q,{method:'PATCH',headers:this.h,body:JSON.stringify(d)});if(!r.ok)throw new Error(await r.text());return r.json();}
+  };
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  initSb();
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('code');
+  if (code) { document.getElementById('codeInput').value = code.toUpperCase(); authenticateCode(code.toUpperCase()); }
+  else { document.getElementById('spinnerOverlay').classList.add('hidden'); document.getElementById('codeScreen').style.display = 'flex'; }
+  document.getElementById('codeInput').addEventListener('keydown', e => { if (e.key==='Enter') submitCode(); });
+});
+
+function submitCode() {
+  const code = document.getElementById('codeInput').value.trim().toUpperCase();
+  if (code) authenticateCode(code);
+}
+
+async function authenticateCode(code) {
+  document.getElementById('spinnerOverlay').classList.remove('hidden');
+  document.getElementById('codeScreen').style.display = 'none';
+  if (!sb) {
+    currentStudent = {id:'demo', name:'Demo-Schüler', code, task_id:'lueckentext'};
+    currentResult  = {id:null, tries_used:0, tries_left:3, is_solved:false, answers:null, teacher_comment:null};
+    startTask(); return;
+  }
+  try {
+    const rows = await sb.get('students', 'code=eq.'+encodeURIComponent(code));
+    if (!rows || !rows.length) {
+      document.getElementById('spinnerOverlay').classList.add('hidden');
+      document.getElementById('codeScreen').style.display = 'flex';
+      document.getElementById('codeInput').classList.add('error');
+      document.getElementById('codeError').textContent = 'Ungültiger Code. Bitte überprüfe die Eingabe.';
+      return;
+    }
+    currentStudent = rows[0];
+    const res = await sb.get('results', 'student_id=eq.'+currentStudent.id+'&task_id=eq.'+currentStudent.task_id);
+    currentResult = (res && res.length) ? res[0] : {id:null, tries_used:0, tries_left:3, is_solved:false, answers:null, teacher_comment:null};
+    startTask();
+  } catch(e) {
+    document.getElementById('spinnerOverlay').classList.add('hidden');
+    document.getElementById('codeScreen').style.display = 'flex';
+    document.getElementById('codeError').textContent = 'Verbindungsfehler: ' + e.message;
+  }
+}
+
+function startTask() {
+  document.getElementById('spinnerOverlay').classList.add('hidden');
+  document.getElementById('welcomeName').textContent = (currentStudent.name||'') + ' · ';
+  document.getElementById('welcomeTask').textContent = 'Lückentext – Grammatik';
+  document.getElementById('welcomeBanner').style.display = 'flex';
+  if (currentResult.teacher_comment) {
+    document.getElementById('teacherCommentText').textContent = currentResult.teacher_comment;
+    document.getElementById('teacherCommentBox').style.display = 'block';
+  }
+  document.getElementById('taskWrapper').style.display = 'block';
+  initTask();
+}
+
+async function saveResult(data) {
+  if (!sb || !currentStudent) return;
+  try {
+    const payload = {student_id:currentStudent.id, task_id:currentStudent.task_id||'lueckentext', updated_at:new Date().toISOString(), ...data};
+    if (currentResult && currentResult.id) {
+      await sb.patch('results', {id:currentResult.id}, payload);
+    } else {
+      payload.submitted_at = new Date().toISOString();
+      const rows = await sb.upsert('results', payload);
+      if (rows && rows[0]) currentResult = rows[0];
+    }
+  } catch(e) { console.warn('Speichern fehlgeschlagen:', e.message); }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TASK DATA
+═══════════════════════════════════════════════════════════ */
+const rows = [
+  {
+    id: "r1",
+    parts: ["Die ", {blank:"r1_b1"}, " (Haupt- oder Namenw\u00f6rter) treten im ", {blank:"r1_b2"}, " (in der Einzahl) und im ", {blank:"r1_b3"}, " (in der Mehrzahl) auf. Der \u00dcberbegriff zu Singular und Plural lautet ", {blank:"r1_b4"}, " (Zahl)."],
+    words: [{id:"r1_w1",label:"Substantive"},{id:"r1_w2",label:"Singular"},{id:"r1_w3",label:"Plural"},{id:"r1_w4",label:"Numerus"}],
+    solution: {r1_b1:"Substantive",r1_b2:"Singular",r1_b3:"Plural",r1_b4:"Numerus"}
+  },
+  {
+    id: "r2",
+    parts: ["Man kann lateinische Substantive \u2013 wie auch deutsche \u2013 ", {blank:"r2_b1"}, " (beugen), d.\u00a0h. in verschiedene ", {blank:"r2_b2"}, " (F\u00e4lle) setzen. In dieser Lektion kommen die Substantive nur im ", {blank:"r2_b3"}, " (1.\u00a0Fall) vor."],
+    words: [{id:"r2_w1",label:"deklinieren"},{id:"r2_w2",label:"Kasus"},{id:"r2_w3",label:"Nominativ"}],
+    solution: {r2_b1:"deklinieren",r2_b2:"Kasus",r2_b3:"Nominativ"}
+  },
+  {
+    id: "r3",
+    parts: ["Jedes lateinische Substantiv ist einer ", {blank:"r3_b1"}, " zugeordnet; wir unterscheiden die ", {blank:"r3_b2"}, " (1.\u00a0Deklination) und die ", {blank:"r3_b3"}, " (2.\u00a0Deklination): Zur a-Deklination geh\u00f6ren Substantive mit der Endung ", {blank:"r3_b4"}, ", zur o-Deklination solche mit der Endung ", {blank:"r3_b5"}, " im Nominativ Singular."],
+    words: [{id:"r3_w1",label:"Deklinationsklasse"},{id:"r3_w2",label:"a-Deklination"},{id:"r3_w3",label:"o-Deklination"},{id:"r3_w4",label:"-a"},{id:"r3_w5",label:"-us"}],
+    solution: {r3_b1:"Deklinationsklasse",r3_b2:"a-Deklination",r3_b3:"o-Deklination",r3_b4:"-a",r3_b5:"-us"}
+  },
+  {
+    id: "r4",
+    parts: ["Jedes lateinische Substantiv hat ein bestimmtes ", {blank:"r4_b1"}, " (grammatisches Geschlecht): ", {blank:"r4_b2"}, " (m) \u2013 m\u00e4nnlich, ", {blank:"r4_b3"}, " (f) \u2013 weiblich, ", {blank:"r4_b4"}, " (n) \u2013 s\u00e4chlich. Die Substantive der a-Deklination sind meist ", {blank:"r4_b5"}, ", die der o-Deklination auf -us meist ", {blank:"r4_b6"}, "."],
+    words: [{id:"r4_w1",label:"Genus"},{id:"r4_w2",label:"Masculinum"},{id:"r4_w3",label:"Femininum"},{id:"r4_w4",label:"Neutrum"},{id:"r4_w5",label:"Feminina"},{id:"r4_w6",label:"Masculina"}],
+    solution: {r4_b1:"Genus",r4_b2:"Masculinum",r4_b3:"Femininum",r4_b4:"Neutrum",r4_b5:"Feminina",r4_b6:"Masculina"}
+  },
+  {
+    id: "r5",
+    parts: ["Da es im Lateinischen keinen ", {blank:"r5_b1"}, " gibt, muss man bei der \u00dcbersetzung entscheiden, ob der bestimmte, der unbestimmte Artikel oder ", {blank:"r5_b2"}, " einzusetzen ist."],
+    words: [{id:"r5_w1",label:"Artikel"},{id:"r5_w2",label:"kein Artikel"}],
+    solution: {r5_b1:"Artikel",r5_b2:"kein Artikel"}
+  }
+];
+
+const hints = [
+  "Achte auf die Kategorie: Geht es um Zahl (Numerus), Fall (Kasus), Deklination oder Genus?",
+  "Die Deklinationsklassen heißen a-Deklination (Endung -a) und o-Deklination (Endung -us).",
+  "Masculinum, Femininum und Neutrum sind die drei Genera; Feminina und Masculina sind ihre Pluralformen."
+];
+
+const solutionTexts = [
+  "Satz 1: Substantive – Singular – Plural – Numerus",
+  "Satz 2: deklinieren – Kasus – Nominativ",
+  "Satz 3: Deklinationsklasse – a-Deklination – o-Deklination – -a – -us",
+  "Satz 4: Genus – Masculinum – Femininum – Neutrum – Feminina – Masculina",
+  "Satz 5: Artikel – kein Artikel"
+];
+
+/* ═══════════════════════════════════════════════════════════
+   TASK LOGIC
+═══════════════════════════════════════════════════════════ */
+function initTask() {
+  let triesLeft   = currentResult ? (currentResult.tries_left ?? 3) : 3;
+  let showResults = false;
+  let assignments = currentResult?.answers ? {...currentResult.answers} : {};
+  let hintsOpened = 0;
+  let isSolved    = currentResult?.is_solved ?? false;
+  let dragWordId=null, dragRowId=null, dragSource=null, dragBlankId=null;
+
+  const listEl     = document.getElementById('lueckeList');
+  const feedbackEl = document.getElementById('feedback');
+  const checkBtn   = document.getElementById('checkBtn');
+  const resetBtn   = document.getElementById('resetBtn');
+  const hintStackEl= document.getElementById('hintStack');
+  const solutionEl = document.getElementById('solutionText');
+
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function getRow(id){ return rows.find(r=>r.id===id); }
+  function getWord(row,wId){ return row&&row.words.find(w=>w.id===wId); }
+  function getAssignedIds(rowId){ const row=getRow(rowId); if(!row)return[]; return Object.keys(assignments).filter(bid=>bid.startsWith(rowId+'_')&&row.words.some(w=>w.id===assignments[bid])).map(bid=>assignments[bid]); }
+  function blankTone(blankId){ const wId=assignments[blankId]; if(!wId||!showResults)return''; const rowId=blankId.replace(/_b\d+$/,''); const row=getRow(rowId); const wordObj=getWord(row,wId); if(!row||!wordObj)return''; return wordObj.label===row.solution[blankId]?'is-correct':'is-wrong'; }
+
+  function render() {
+    listEl.innerHTML = rows.map((row,idx) => {
+      const assigned = getAssignedIds(row.id);
+      const bankWords = row.words.filter(w=>assigned.indexOf(w.id)===-1);
+
+      // row-level status
+      let rowStatus = '';
+      if (showResults) {
+        const allCorrect = Object.keys(row.solution).every(bid => {
+          const wId = assignments[bid];
+          const wordObj = getWord(row, wId);
+          return wordObj && wordObj.label === row.solution[bid];
+        });
+        const anyFilled = Object.keys(row.solution).some(bid => assignments[bid]);
+        if (anyFilled) rowStatus = allCorrect ? 'is-correct' : 'is-wrong';
+      }
+
+      const partsHtml = row.parts.map(p => {
+        if (typeof p === 'string') return '<span>'+esc(p)+'</span>';
+        const blankId = p.blank;
+        const wId = assignments[blankId];
+        const tone = blankTone(blankId);
+        const inner = wId ? makeChip(row.id,wId,true) : '<span class="blank-placeholder"></span>';
+        return '<span class="luecke-blank'+(wId?' is-filled':'')+' '+(tone||'')+'" data-blank="'+blankId+'" data-row="'+row.id+'">'+inner+'</span>';
+      }).join('');
+
+      const bankHtml = bankWords.map(w=>makeChip(row.id,w.id,false)).join('');
+
+      return '<div class="luecke-row '+rowStatus+'">'
+        +'<div class="luecke-main">'
+          +'<div class="num-badge">'+(idx+1)+'</div>'
+          +'<div class="luecke-text">'+partsHtml+'</div>'
+        +'</div>'
+        +'<div class="luecke-bank" data-bank="'+row.id+'">'
+          +'<div class="bank-label">Ablage</div>'
+          +bankHtml
+        +'</div>'
+        +'</div>';
+    }).join('');
+    bindDrag();
+  }
+
+  function makeChip(rowId,wId,inBlank) {
+    const row=getRow(rowId), word=getWord(row,wId);
+    if(!word)return'';
+    const loc=inBlank?' data-in-blank="1"':'';
+    return '<div class="word-chip" draggable="true" data-row="'+rowId+'" data-word="'+wId+'"'+loc+'>'+esc(word.label)+'</div>';
+  }
+
+  function bindDrag() {
+    listEl.querySelectorAll('.word-chip').forEach(chip => {
+      chip.addEventListener('dragstart', onChipDragStart);
+      chip.addEventListener('dragend',   onChipDragEnd);
+      // click on chip in blank → return to bank
+      if (chip.dataset.inBlank) {
+        chip.addEventListener('click', e => {
+          if (isSolved || showResults) return;
+          const blank = chip.closest('.luecke-blank');
+          if (blank) { delete assignments[blank.dataset.blank]; render(); autoSave(); }
+        });
+      }
+    });
+    listEl.querySelectorAll('.luecke-blank').forEach(blank => {
+      blank.addEventListener('dragover',  onBlankDragOver);
+      blank.addEventListener('dragleave', onBlankDragLeave);
+      blank.addEventListener('drop',      onBlankDrop);
+    });
+    listEl.querySelectorAll('.luecke-bank').forEach(bank => {
+      bank.addEventListener('dragover',  onBankDragOver);
+      bank.addEventListener('dragleave', onBankDragLeave);
+      bank.addEventListener('drop',      onBankDrop);
+    });
+  }
+
+  function onChipDragStart(e) {
+    dragWordId=this.getAttribute('data-word'); dragRowId=this.getAttribute('data-row');
+    dragSource=this.getAttribute('data-in-blank')?'blank':'bank';
+    dragBlankId=dragSource==='blank'?(this.closest('.luecke-blank')||{}).getAttribute?.('data-blank'):null;
+    this.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; e.dataTransfer.setData('text/plain',dragWordId);
+  }
+  function onChipDragEnd(){ this.classList.remove('dragging'); }
+  function onBlankDragOver(e){ if(!dragWordId||this.getAttribute('data-row')!==dragRowId)return; e.preventDefault(); e.dataTransfer.dropEffect='move'; this.classList.add('drag-over'); }
+  function onBlankDragLeave(){ this.classList.remove('drag-over'); }
+  function onBlankDrop(e) {
+    e.preventDefault(); this.classList.remove('drag-over');
+    if(!dragWordId||this.getAttribute('data-row')!==dragRowId)return;
+    const targetBlankId=this.getAttribute('data-blank');
+    const currentInTarget=assignments[targetBlankId];
+    if(currentInTarget) delete assignments[targetBlankId];
+    if(dragSource==='blank'&&dragBlankId) delete assignments[dragBlankId];
+    if(currentInTarget&&dragSource==='blank'&&dragBlankId) assignments[dragBlankId]=currentInTarget;
+    assignments[targetBlankId]=dragWordId;
+    dragWordId=dragRowId=dragSource=dragBlankId=null;
+    render(); autoSave();
+  }
+  function onBankDragOver(e){ if(!dragWordId||this.getAttribute('data-bank')!==dragRowId)return; e.preventDefault(); e.dataTransfer.dropEffect='move'; this.classList.add('drag-over'); }
+  function onBankDragLeave(){ this.classList.remove('drag-over'); }
+  function onBankDrop(e) {
+    e.preventDefault(); this.classList.remove('drag-over');
+    if(!dragWordId||this.getAttribute('data-bank')!==dragRowId)return;
+    if(dragSource==='blank'&&dragBlankId) delete assignments[dragBlankId];
+    dragWordId=dragRowId=dragSource=dragBlankId=null;
+    render(); autoSave();
+  }
+
+  function updateDots(used) {
+    const u = used ?? Math.max(0, 3-triesLeft);
+    for(let i=0;i<3;i++) document.getElementById('dot'+i).classList.toggle('is-on', i<u);
+  }
+
+  function setFeedback(text,tone) {
+    feedbackEl.textContent=text;
+    feedbackEl.style.color=tone==='good'?'#166534':tone==='bad'?'#991b1b':'#6b7280';
+  }
+
+  function renderHints() {
+    hintStackEl.innerHTML='';
+    for(let i=0;i<hintsOpened;i++){
+      const box=document.createElement('div'); box.className='hint-box';
+      box.innerHTML='<span class="hint-title">'+(i+1)+'. Tipp</span><span>'+esc(hints[i])+'</span>';
+      hintStackEl.appendChild(box);
+    }
+    if(hintsOpened<hints.length){
+      const btn=document.createElement('button'); btn.type='button'; btn.className='hint-btn';
+      btn.textContent='💡 '+(hintsOpened+1)+'. Tipp anzeigen';
+      btn.addEventListener('click',()=>{ hintsOpened++; renderHints(); });
+      hintStackEl.appendChild(btn);
+    }
+  }
+
+  function autoSave() {
+    saveResult({answers:{...assignments}, tries_used:3-triesLeft, tries_left:triesLeft, is_solved:isSolved});
+  }
+
+  // Restore saved state
+  if (triesLeft < 3) updateDots(3-triesLeft);
+  if (isSolved) { checkBtn.disabled=true; setFeedback('Bereits gelöst! ✓','good'); }
+  if (triesLeft===0 && !isSolved) { checkBtn.disabled=true; setFeedback('Keine Versuche mehr.','bad'); showResults=true; }
+  render(); renderHints();
+
+  // ── CHECK ──────────────────────────────────────────────────
+  checkBtn.addEventListener('click', () => {
+    if(triesLeft<=0||isSolved)return;
+    const allBlanks=[];
+    rows.forEach(row=>Object.keys(row.solution).forEach(b=>allBlanks.push(b)));
+    if(!allBlanks.every(b=>assignments[b])){ setFeedback('Bitte fülle zuerst alle Lücken.','bad'); return; }
+
+    let correct=0;
+    rows.forEach(row=>Object.keys(row.solution).forEach(blankId=>{
+      const wordObj=getWord(row,assignments[blankId]);
+      if(wordObj&&wordObj.label===row.solution[blankId]) correct++;
+    }));
+
+    showResults=true; render();
+
+    if(correct===allBlanks.length){
+      isSolved=true;
+      const triesUsed=Math.max(1,3-triesLeft);
+      updateDots(triesUsed);
+      setFeedback('Alles richtig!','good');
+      checkBtn.disabled=true;
+      saveResult({answers:{...assignments},tries_used:triesUsed,tries_left:triesLeft,is_solved:true});
+      openPopup(true);
+    } else {
+      triesLeft--;
+      updateDots(3-triesLeft);
+      saveResult({answers:{...assignments},tries_used:3-triesLeft,tries_left:triesLeft,is_solved:false});
+      if(triesLeft>0){
+        setFeedback(correct+'/'+allBlanks.length+' richtig. Versuche es nochmal.','bad');
+      } else {
+        setFeedback('Keine Versuche mehr.','bad');
+        checkBtn.disabled=true;
+        saveResult({answers:{...assignments},tries_used:3,tries_left:0,is_solved:false});
+        openPopup(false);
+      }
+    }
+  });
+
+  // ── RESET ──────────────────────────────────────────────────
+  resetBtn.addEventListener('click', () => {
+    triesLeft=3; showResults=false; assignments={}; hintsOpened=0; isSolved=false;
+    checkBtn.disabled=false; solutionEl.hidden=true;
+    updateDots(0); renderHints(); render();
+    setFeedback('Zurückgesetzt.','muted');
+    saveResult({answers:{},tries_used:0,tries_left:3,is_solved:false});
+  });
+
+  // ── POPUP ──────────────────────────────────────────────────
+  function openPopup(success) {
+    document.getElementById('popupPanel').className='result-popup__panel '+(success?'is-success':'is-failure');
+    document.getElementById('popupBadge').textContent=success?'✓':'!';
+    document.getElementById('popupTitle').textContent=success?'Alles richtig gemacht':'Du hast Fehler gemacht.';
+    document.getElementById('popupMascot').textContent=success?'🎉':'🔍';
+    document.getElementById('resultPopup').hidden=false;
+    document.body.classList.add('popup-open');
+  }
+  function closePopup() {
+    document.getElementById('resultPopup').hidden=true;
+    document.body.classList.remove('popup-open');
+  }
+
+  document.getElementById('popupCloseBtn').addEventListener('click', closePopup);
+  document.getElementById('popupBackdrop').addEventListener('click', closePopup);
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') closePopup(); });
+
+  document.getElementById('popupSolutionBtn').addEventListener('click', () => {
+    closePopup();
+    isSolved=true; showResults=true; render();
+    checkBtn.disabled=true;
+    solutionEl.innerHTML='<h3>Lösungsweg:</h3><ul>'+solutionTexts.map(t=>'<li>'+t+'</li>').join('')+'</ul>';
+    solutionEl.hidden=false;
+  });
+}
+</script>
+</body>
+</html>

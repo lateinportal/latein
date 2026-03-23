@@ -508,6 +508,7 @@ CREATE POLICY "allow_all_results" ON results FOR ALL USING (true) WITH CHECK (tr
         <option value="gerundium">Gerundium & Gerundivum markieren</option>
         <option value="aci">AcI-Bestandteile markieren</option>
         <option value="singular_plural">Singular oder Plural (Aufgabe 7)</option>
+        <option value="lueckentext">Lückentext – Grammatik</option>
       </select>
     </div>
     <div class="field">
@@ -565,7 +566,8 @@ const DEFAULT_PW     = 'Latein2025';
 const TASKS = {
   gerundium:       'Gerundium & Gerundivum',
   aci:             'AcI-Bestandteile',
-  singular_plural: 'Singular oder Plural (Aufgabe 7)'
+  singular_plural: 'Singular oder Plural (Aufgabe 7)',
+  lueckentext:     'Lückentext – Grammatik'
 };
 
 let supaUrl = '', supaKey = '', baseUrl = '', sb = null;
@@ -717,6 +719,7 @@ function taskLink(taskId, code) {
     gerundium:       'aufgabe.html',
     aci:             'aufgabe2.html',
     singular_plural: 'aufgabe7.html',
+    lueckentext:     'lueckentext.html',
   };
   const file = files[taskId] || 'aufgabe.html';
   return base + file + '?code=' + code;
