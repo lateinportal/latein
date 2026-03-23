@@ -384,6 +384,7 @@
           <option value="">Alle Status</option>
           <option value="solved">✓ Gelöst</option>
           <option value="progress">In Bearbeitung</option>
+          <option value="failed">✗ Versuche aufgebraucht</option>
           <option value="new">Noch nicht begonnen</option>
         </select>
         <span class="filter-count" id="filterStudentCount"></span>
@@ -932,7 +933,7 @@ function renderStudentTable() {
 
   let filtered = _allStudents.filter(s => {
     const res = _allStudentResults.find(r => r.student_id === s.id);
-    const statusKey = res ? (res.is_solved ? 'solved' : res.tries_used > 0 ? 'progress' : 'new') : 'new';
+    const statusKey = res ? (res.is_solved ? 'solved' : res.tries_left === 0 ? 'failed' : res.tries_used > 0 ? 'progress' : 'new') : 'new';
     if (nameQ && !s.name.toLowerCase().includes(nameQ)) return false;
     if (taskQ && s.task_id !== taskQ) return false;
     if (statusQ && statusKey !== statusQ) return false;
