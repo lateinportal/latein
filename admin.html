@@ -661,6 +661,9 @@ window.addEventListener('DOMContentLoaded', () => {
   else document.getElementById('configBanner').classList.remove('hidden');
 
   if (localStorage.getItem(SESSION_KEY) === '1') showApp();
+  const lpw = document.getElementById('loginPw');
+  if (lpw) lpw.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+  initModalBackdrops();
 });
 
 /* ═══════════════════════════════════════════════════════════
@@ -711,7 +714,7 @@ function doLogin() {
     document.getElementById('loginPw').style.borderColor = 'var(--red)';
   }
 }
-document.getElementById('loginPw').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+// loginPw listener moved to DOMContentLoaded
 
 function doLogout() {
   localStorage.removeItem(SESSION_KEY);
@@ -1126,13 +1129,7 @@ const TASK_DATA = {
     roleToColor: {gerundium:"blue", gerundivum:"yellow"},
     colorLabels:  {blue:"Gerundium", yellow:"Gerundivum"}
   },
-      {id:2, tokens:[{w:"Pater",role:null},{w:"putat",role:"signal"},{w:"filium",role:"subj"},{w:"venire",role:"inf"},{w:"cras",role:null}], translation:"Der Vater glaubt, dass der Sohn morgen kommt."},
-      {id:3, tokens:[{w:"Senatus",role:null},{w:"audit",role:"signal"},{w:"hostes",role:"subj"},{w:"appropinquare",role:"inf"},{w:"urbem",role:null}], translation:"Der Senat hört, dass die Feinde sich der Stadt nähern."},
-      {id:4, tokens:[{w:"Magister",role:null},{w:"credit",role:"signal"},{w:"discipulos",role:"subj"},{w:"laborare",role:"inf"},{w:"diligenter",role:null}], translation:"Der Lehrer glaubt, dass die Schüler fleißig arbeiten."}
-    ],
-    roleToColor: {signal:"pink", subj:"blue", inf:"green"},
-    colorLabels:  {pink:"Signalverb", blue:"Subjektsakkusativ", green:"Infinitiv"}
-  },
+
   singular_plural: {
     words: [
       {id:"oratori",label:"oratori",solution:"sing"},
@@ -1356,9 +1353,12 @@ async function saveComment() {
 ═══════════════════════════════════════════════════════════ */
 function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
 function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-document.querySelectorAll('.modal-backdrop').forEach(el => {
-  el.addEventListener('click', e => { if (e.target === el) el.classList.add('hidden'); });
-});
+// Modal backdrop close on outside click - runs after DOM ready via DOMContentLoaded
+function initModalBackdrops() {
+  document.querySelectorAll('.modal-backdrop').forEach(el => {
+    el.addEventListener('click', e => { if (e.target === el) el.classList.add('hidden'); });
+  });
+}
 
 /* ═══════════════════════════════════════════════════════════
    UTILS
