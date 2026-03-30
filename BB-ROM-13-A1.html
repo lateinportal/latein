@@ -468,13 +468,15 @@
   function closePopup(){resultPopup.hidden=true;document.body.classList.remove("popup-open");}
   function goNext(){
     rowTryCount=0;
-    showResults=false;triesLeft=3;updateDots();setFeedback("","");hintsOpened=0;renderHints();
+    showResults=false;triesLeft=3;setFeedback("","");hintsOpened=0;
     currentRowIdx++;
     if(currentRowIdx>=rows.length){showFinalPopup();return;}
+    saveProgress({tries_left:3, current_row:currentRowIdx});
     checkBtn.textContent="Überprüfen";checkBtn.disabled=false;checkBtn.onclick=null;
-    render();
+    updateDots();renderHints();render();
   }
   function showRowSolution(){
+    saveProgress({tries_left:triesLeft, current_row:currentRowIdx});
     var row=rows[currentRowIdx];
     Object.keys(row.solution).forEach(function(blankId){
       var label=row.solution[blankId];
@@ -529,7 +531,7 @@
 
   // ── INIT ──────────────────────────────────────────────────────────
   function initTask(student,result){
-    if(result && (result.row_status || result.answers)){
+    if(result && (result.row_status || result.answers || result.current_row != null)){
       if(result.row_status)  rowStatus    = result.row_status;
       if(result.row_tries)   rowTriesUsed = result.row_tries;
       if(result.answers)     assignments  = Object.assign({}, result.answers);
@@ -577,12 +579,13 @@
         }
       }
     } else {
-      // Fresh start
+      // Fresh start - save immediately so refresh works
       triesLeft = 3;
       currentRowIdx = 0;
       checkBtn.textContent = "\u00dcberpr\u00fcfen";
       checkBtn.disabled = false;
       checkBtn.onclick = null;
+      saveProgress({current_row:0, tries_left:3});
     }
     showResults = false;
     render(); renderHints(); updateDots();
