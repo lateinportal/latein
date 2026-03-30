@@ -926,6 +926,27 @@ function updateTaskDropdown() {
 
 let _allStudents = [], _allStudentResults = [];
 
+function getResultStatus(res) {
+  if (!res) return 'new';
+  if (res.is_solved) return 'solved';
+  if (res.row_status && Array.isArray(res.row_status)) {
+    var anyDone = res.row_status.some(function(s){ return s !== null; });
+    var allDone = res.row_status.every(function(s){ return s !== null; });
+    if (allDone) return 'failed';
+    if (anyDone) return 'progress';
+  }
+  if (res.tries_left === 0 && !res.is_solved) return 'failed';
+  if (res.tries_used > 0) return 'progress';
+  return 'new';
+}
+function getStatusBadge(res) {
+  var s = getResultStatus(res);
+  if (s === 'solved')   return '<span class="badge green">✓ Gelöst</span>';
+  if (s === 'failed')   return '<span class="badge red">✗ Versuche aufgebraucht</span>';
+  if (s === 'progress') return '<span class="badge yellow">In Bearbeitung</span>';
+  return '<span class="badge gray">Noch nicht begonnen</span>';
+}
+
 async function loadStudents() {
   const tbody = document.getElementById('studentTable');
   if (!sb) { tbody.innerHTML = `<tr><td colspan="6"><div class="empty"><p>Supabase nicht konfiguriert. Gehe zu Einstellungen.</p></div></td></tr>`; return; }
@@ -951,7 +972,7 @@ function renderStudentTable() {
 
   let filtered = _allStudents.filter(s => {
     const res = _allStudentResults.find(r => r.student_id === s.id);
-    const statusKey = res ? (res.is_solved ? 'solved' : res.tries_left === 0 ? 'failed' : res.tries_used > 0 ? 'progress' : 'new') : 'new';
+    const statusKey = getResultStatus(res);
     if (nameQ && !s.name.toLowerCase().includes(nameQ)) return false;
     if (taskQ && s.task_id !== taskQ) return false;
     if (statusQ && statusKey !== statusQ) return false;
@@ -1067,7 +1088,7 @@ function renderResultsTable() {
 
   let filtered = _allResults.filter(r => {
     const stu = stuMap[r.student_id] || {};
-    const statusKey = r.is_solved ? 'solved' : r.tries_left === 0 ? 'failed' : 'progress';
+    const statusKey = getResultStatus(r);
     if (nameQ && !(stu.name||'').toLowerCase().includes(nameQ)) return false;
     if (taskQ && r.task_id !== taskQ) return false;
     if (statusQ && statusKey !== statusQ) return false;
@@ -1091,7 +1112,13 @@ function renderResultsTable() {
         ? '<span class="badge red">Verbraucht</span>'
         : '<span class="badge yellow">In Bearbeitung</span>';
     // Fix: filled dots = tries_used, but if solved on first try → 1 dot filled
-    const triesUsed = r.is_solved ? Math.max(r.tries_used, 1) : r.tries_used;
+    // For stepper tasks, sum up row_tries for total tries used
+    var triesUsed;
+    if (r.row_tries && Array.isArray(r.row_tries)) {
+      triesUsed = r.row_tries.reduce(function(a,b){ return a+(b||0); }, 0);
+    } else {
+      triesUsed = r.is_solved ? Math.max(r.tries_used, 1) : r.tries_used;
+    }
     const dots = [0,1,2].map(i => `<div class="tries-dot${i < triesUsed ? ' used' : ''}"></div>`).join('');
     return `<tr>
       <td><strong>${esc(stu.name||'?')}</strong></td>
@@ -1252,12 +1279,14 @@ async function viewResult(resultId) {
 
     const answers = r.answers || {};
     const taskDef = TASK_DATA[r.task_id];
-    const triesUsed = r.is_solved ? Math.max(r.tries_used, 1) : r.tries_used;
-    const statusBadge = r.is_solved
-      ? '<span class="badge green">✓ Richtig gelöst</span>'
-      : r.tries_left === 0
-        ? '<span class="badge red">Versuche aufgebraucht</span>'
-        : '<span class="badge yellow">In Bearbeitung</span>';
+    // For stepper tasks, sum up row_tries for total tries used
+    var triesUsed;
+    if (r.row_tries && Array.isArray(r.row_tries)) {
+      triesUsed = r.row_tries.reduce(function(a,b){ return a+(b||0); }, 0);
+    } else {
+      triesUsed = r.is_solved ? Math.max(r.tries_used, 1) : r.tries_used;
+    }
+    const statusBadge = getStatusBadge(r);
     const dots = [0,1,2].map(i => `<div class="tries-dot${i < triesUsed ? ' used' : ''}"></div>`).join('');
 
     let html = `<div class="preview-meta">
