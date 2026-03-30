@@ -341,7 +341,9 @@
       chip.addEventListener("dragend",onChipDragEnd);
       chip.addEventListener("click",function(e){
         e.stopPropagation();
-        if(triesLeft<=0||showResults)return;
+        // If button says "Weiter" → go to next row
+    if(checkBtn.textContent.trim()==="Weiter \u2192"&&checkBtn.onclick===null){goNext();return;}
+    if(triesLeft<=0||showResults)return;
         var wordId=chip.getAttribute("data-word"),rowId=chip.getAttribute("data-row"),inBlank=!!chip.getAttribute("data-in-blank");
         var blankEl=inBlank?chip.closest(".luecke-blank"):null,blankId=blankEl?blankEl.getAttribute("data-blank"):null;
         if(_tapWordId===wordId&&_tapRowId===rowId){clearTap();return;}
@@ -365,7 +367,9 @@
       blank.addEventListener("dragleave",onBlankDragLeave);
       blank.addEventListener("drop",onBlankDrop);
       blank.addEventListener("click",function(e){
-        if(triesLeft<=0||showResults)return;
+        // If button says "Weiter" → go to next row
+    if(checkBtn.textContent.trim()==="Weiter \u2192"&&checkBtn.onclick===null){goNext();return;}
+    if(triesLeft<=0||showResults)return;
         if(!_tapWordId)return;
         if(blank.getAttribute("data-row")!==_tapRowId){clearTap();return;}
         var tb=blank.getAttribute("data-blank"),cur=assignments[tb];
@@ -408,6 +412,8 @@
 
   // ── CHECK ─────────────────────────────────────────────────────────
   checkBtn.addEventListener("click",function(){
+    // If button says "Weiter" → go to next row
+    if(checkBtn.textContent.trim()==="Weiter \u2192"&&checkBtn.onclick===null){goNext();return;}
     if(triesLeft<=0||showResults)return;
     var row=rows[currentRowIdx];
     var allBlanks=Object.keys(row.solution);
@@ -420,19 +426,38 @@
       rowStatus[currentRowIdx]="correct";
       renderStepper();
       setFeedback("\u2705 Richtig!","good");
-      checkBtn.disabled=true;
       var isLast=currentRowIdx===rows.length-1;
       ss({answers:Object.assign({},assignments),tries_used:Math.max(1,3-triesLeft),tries_left:triesLeft,is_solved:isLast,row_status:rowStatus.slice()});
+      // Always provide Weiter button even if popup dismissed
+      checkBtn.textContent="Weiter \u2192";
+      checkBtn.disabled=false;
+      checkBtn.onclick=function(){checkBtn.onclick=null;isLast?showFinalPopup():goNext();};
+      checkBtn.textContent="Weiter →";
+      checkBtn.disabled=false;
+      var _cl=!isLast;
+      checkBtn.onclick=function(){checkBtn.onclick=null;_cl?goNext():showFinalPopup();};
       openRowPopup(true,!isLast);
     } else {
       triesLeft--;updateDots();
-      ss({answers:Object.assign({},assignments),tries_used:3-triesLeft,tries_left:triesLeft,is_solved:false,row_tries:rowTriesUsed.slice(),current_row:currentRowIdx,row_status:rowStatus.slice()});
+      ss({answers:Object.assign({},assignments),tries_used:3-triesLeft,tries_left:triesLeft,is_solved:false,row_tries:rowTriesUsed.slice(),tries_left_current:triesLeft,current_row:currentRowIdx,row_status:rowStatus.slice()});
       if(triesLeft>0){setFeedback("\u274C Noch nicht richtig.","bad");showResults=false;render();}
       else{
         rowStatus[currentRowIdx]="wrong";rowTriesUsed[currentRowIdx]=rowTryCount;renderStepper();
-        setFeedback("\u274C Keine Versuche mehr.","bad");checkBtn.disabled=true;
-        ss({answers:Object.assign({},assignments),tries_used:3,tries_left:0,is_solved:false,row_tries:rowTriesUsed.slice(),current_row:currentRowIdx,row_status:rowStatus.slice()});
-        openRowPopup(false,currentRowIdx<rows.length-1);
+        setFeedback("\u274C Keine Versuche mehr.","bad");
+        checkBtn.textContent="Weiter \u2192";
+        checkBtn.disabled=false;
+        checkBtn.onclick=function(){checkBtn.onclick=null;goNext();};
+        ss({answers:Object.assign({},assignments),tries_used:3,tries_left:0,is_solved:false,row_tries:rowTriesUsed.slice(),tries_left_current:triesLeft,current_row:currentRowIdx,row_status:rowStatus.slice()});
+        // Always provide Weiter button even if popup dismissed
+        var isLast2=currentRowIdx===rows.length-1;
+        checkBtn.textContent="Weiter \u2192";
+        checkBtn.disabled=false;
+        checkBtn.onclick=function(){checkBtn.onclick=null;isLast2?showFinalPopup():goNext();};
+        var _hn=currentRowIdx<rows.length-1;
+        checkBtn.textContent="Weiter →";
+        checkBtn.disabled=false;
+        checkBtn.onclick=function(){checkBtn.onclick=null;_hn?goNext():showFinalPopup();};
+        openRowPopup(false,_hn);
       }
     }
   });
@@ -462,7 +487,7 @@
     showResults=false;triesLeft=3;updateDots();setFeedback("","");hintsOpened=0;renderHints();
     currentRowIdx++;
     if(currentRowIdx>=rows.length){showFinalPopup();return;}
-    checkBtn.textContent="\u00dcberpr\u00fcfen";checkBtn.disabled=false;
+    checkBtn.textContent="Überprüfen";checkBtn.disabled=false;checkBtn.onclick=null;
     render();
   }
   function showRowSolution(){
@@ -521,20 +546,52 @@
   // ── INIT ──────────────────────────────────────────────────────────
   function initTask(student,result){
     if(result){
-      if(result.row_status)rowStatus=result.row_status;
-      if(result.row_tries)rowTriesUsed=result.row_tries;
-      if(result.answers)assignments=Object.assign({},result.answers);
-      if(result.current_row!=null){
-        currentRowIdx=Math.min(result.current_row,rows.length-1);
+      if(result.row_status)  rowStatus    = result.row_status;
+      if(result.row_tries)   rowTriesUsed = result.row_tries;
+      if(result.answers)     assignments  = Object.assign({}, result.answers);
+
+      // Which row to resume on
+      if(result.current_row != null){
+        currentRowIdx = Math.min(result.current_row, rows.length-1);
       } else {
-        var firstIncomplete=0;
-        for(var i=0;i<rowStatus.length;i++){if(rowStatus[i]!==null)firstIncomplete=i+1;}
-        currentRowIdx=Math.min(firstIncomplete,rows.length-1);
+        var fi=0;
+        for(var i=0;i<rowStatus.length;i++){ if(rowStatus[i]!==null) fi=i+1; }
+        currentRowIdx = Math.min(fi, rows.length-1);
       }
+
+      // All rows done? Show summary immediately
+      var allDone = rowStatus.every(function(s){ return s!==null; });
+      if(allDone){
+        render(); renderHints(); updateDots();
+        showFinalPopup();
+        return;
+      }
+
+      // Restore tries for current row
+      var rowDone = rowStatus[currentRowIdx] !== null;
+      if(rowDone){
+        // Shouldn't happen if allDone check above is correct, but handle gracefully
+        triesLeft=3; showResults=false;
+        checkBtn.textContent="Überprüfen"; checkBtn.disabled=false; checkBtn.onclick=null;
+      } else {
+        // In-progress row: restore exact tries remaining
+        triesLeft = (result.tries_left_current != null) ? result.tries_left_current : 3;
+        showResults = false;
+        if(triesLeft<=0){
+          // Was on last try, failed - show Weiter
+          checkBtn.textContent="Weiter →";
+          checkBtn.disabled=false;
+          var _i=currentRowIdx;
+          checkBtn.onclick=function(){checkBtn.onclick=null;_i>=rows.length-1?showFinalPopup():goNext();};
+        } else {
+          checkBtn.textContent="Überprüfen"; checkBtn.disabled=false; checkBtn.onclick=null;
+        }
+      }
+    } else {
+      triesLeft=3; showResults=false;
+      checkBtn.textContent="Überprüfen"; checkBtn.disabled=false; checkBtn.onclick=null;
     }
-    triesLeft=3;showResults=false;
-    checkBtn.textContent="\u00dcberpr\u00fcfen";checkBtn.disabled=false;
-    render();renderHints();updateDots();
+    render(); renderHints(); updateDots();
   }
 </script>
 <script>
