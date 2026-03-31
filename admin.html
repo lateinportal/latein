@@ -501,8 +501,16 @@ CREATE TABLE IF NOT EXISTS results (
   is_solved boolean DEFAULT false,
   submitted_at timestamptz DEFAULT now(),
   teacher_comment text,
-  updated_at timestamptz DEFAULT now()
+  updated_at timestamptz DEFAULT now(),
+  row_status jsonb,
+  row_tries jsonb,
+  current_row integer
 );
+
+-- Run this if table already exists:
+-- ALTER TABLE results ADD COLUMN IF NOT EXISTS row_status jsonb;
+-- ALTER TABLE results ADD COLUMN IF NOT EXISTS row_tries jsonb;
+-- ALTER TABLE results ADD COLUMN IF NOT EXISTS current_row integer;
 
 -- Row Level Security (alle Zugriffe erlaubt, da wir self-hosted Auth nutzen)
 ALTER TABLE students ENABLE ROW LEVEL SECURITY;
@@ -1139,7 +1147,7 @@ function renderResultsTable() {
 async function resetTries(resultId, name) {
   if (!confirm(`Versuche für „${name}" wirklich zurücksetzen?`)) return;
   try {
-    await sb.update('results', { id: resultId }, { tries_used: 0, tries_left: 3, is_solved: false, answers: null });
+    await sb.update('results', { id: resultId }, { tries_used: 0, tries_left: 3, is_solved: false, answers: null, row_status: null, row_tries: null, current_row: null });
     loadResults(); loadStudents();
   } catch(e) { alert(e.message); }
 }
@@ -1351,7 +1359,7 @@ async function modalResetTries() {
   const name = btn.dataset.name;
   if (!confirm(`Versuche für „${name}" wirklich zurücksetzen?`)) return;
   try {
-    await sb.update('results', { id }, { tries_used: 0, tries_left: 3, is_solved: false, answers: null });
+    await sb.update('results', { id }, { tries_used: 0, tries_left: 3, is_solved: false, answers: null, row_status: null, row_tries: null, current_row: null });
     closeModal('modalResult');
     loadResults(); loadStudents();
   } catch(e) { alert(e.message); }
