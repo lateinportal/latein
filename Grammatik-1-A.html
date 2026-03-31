@@ -118,7 +118,7 @@
 
 
       .stepper{display:flex;align-items:center;gap:12px;justify-content:center;margin:0 0 14px 0;}
-      .step-btn{width:38px;height:38px;border-radius:50%;border:2px solid var(--border);background:#fff;color:var(--muted);font-size:14px;font-weight:700;cursor:default;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;}
+      .step-btn{width:38px;height:38px;border-radius:50%;border:2px solid var(--border);background:#fff;color:var(--muted);font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;}
       .step-btn.active{border-color:var(--blue);background:var(--blue);color:#fff;}
       .step-btn.done{border-color:#3bd668;background:#3bd668;color:#fff;}
       .step-btn.wrong{border-color:#feda31;background:#feda31;color:#1f2937;}
@@ -249,6 +249,7 @@
     ss(data);
   }
 
+  var _browseIdx=null; // null = current task, number = browsing another row
   var dragWordId=null,dragRowId=null,dragSource=null,dragBlankId=null;
   var _tapWordId=null,_tapRowId=null,_tapFromBlank=null;
 
@@ -273,22 +274,143 @@
 
   // ── STEPPER ───────────────────────────────────────────────────────
 
+
+  function browseRow(idx){
+    _browseIdx=idx;
+    var row=rows[idx];
+    var isCurrent=(idx===currentRowIdx);
+    var isDone=(rowStatus[idx]!==null);
+
+    // Build blanks - read-only if done or not current
+    var readOnly=!isCurrent;
+    var partsHtml=row.parts.map(function(p){
+      if(typeof p==="string") return "<span>"+esc(p)+"</span>";
+      var blankId=p.blank;
+      var wId=assignments[blankId];
+      var tone="";
+      if(isDone&&wId){
+        var wo=getWord(row,wId);
+        tone=wo&&wo.label===row.solution[blankId]?"is-correct":"is-wrong";
+      }
+      var inner=wId
+        ? '<div class="word-chip" style="font-size:13px;width:100%;height:100%;padding:2px 8px;cursor:default;box-shadow:none;margin:0;display:flex;align-items:center;justify-content:center;border:none;border-radius:6px;">'+esc(getWord(row,wId).label)+'</div>'
+        : '<span class="blank-placeholder"></span>';
+      var lupe='';
+      if(isDone&&tone==="is-wrong"&&wId){
+        lupe='<span class="lupe-btn" data-correct="'+esc(row.solution[blankId])+'"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg></span>';
+      }
+      return '<span class="luecke-blank'+(wId?" is-filled":"")+" "+(tone||"")+'" data-blank="'+blankId+'" data-row="'+row.id+'">'+inner+lupe+"</span>";
+    }).join("");
+
+    // Bank: show remaining words if current, show correct solution if done-wrong, empty if future
+    var bankHtml='<div class="bank-label">Ablage</div>';
+    if(isCurrent){
+      var assigned=getAssignedIds(row.id);
+      var bankWords=shuffle(row.words.filter(function(w){return assigned.indexOf(w.id)===-1;}));
+      bankHtml='<div class="bank-label">Ablage</div>'+bankWords.map(function(w){return makeChip(row.id,w.id,false);}).join("");
+    } else if(isDone){
+      // Show correct answers for wrong blanks
+      var anyWrong=Object.keys(row.solution).some(function(bid){
+        var wId=assignments[bid];
+        var wo=wId?getWord(row,wId):null;
+        return !wo||wo.label!==row.solution[bid];
+      });
+      if(rowStatus[idx]==="correct"){
+        bankHtml='<div class="bank-label">Ablage</div><div style="text-align:center;font-size:22px;margin-top:8px;">✅</div>';
+      } else {
+        bankHtml='<div class="bank-label" style="margin-bottom:6px;">Richtige Antworten</div>';
+        Object.keys(row.solution).forEach(function(bid){
+          var wId=assignments[bid];
+          var wo=wId?getWord(row,wId):null;
+          if(!wo||wo.label!==row.solution[bid]){
+            bankHtml+='<div class="word-chip" style="font-size:12px;min-height:30px;padding:2px 8px;cursor:default;background:#f0fdf4;border-color:#3bd668;margin-bottom:4px;">'+esc(row.solution[bid])+'</div>';
+          }
+        });
+      }
+    } else {
+      // Future row - show shuffled words as preview
+      bankHtml='<div class="bank-label">Vorschau</div>'+shuffle(row.words).map(function(w){
+        return '<div class="word-chip" style="font-size:13px;min-height:36px;padding:5px 12px;cursor:default;opacity:0.6;">'+esc(w.label)+'</div>';
+      }).join("");
+    }
+
+    var rowCls="luecke-row"+(rowStatus[idx]==="correct"?" is-correct":rowStatus[idx]==="wrong"?" is-wrong":"");
+    listEl.innerHTML='<div class="'+rowCls+'">'
+      +'<div class="luecke-main"><div class="luecke-text">'+partsHtml+'</div></div>'
+      +'<div class="luecke-bank" data-bank="'+row.id+'">'+bankHtml+'</div>'
+      +'</div>';
+
+    // Bind lupe if any
+    listEl.querySelectorAll(".lupe-btn").forEach(function(b){
+      b.addEventListener("click",function(e){
+        e.stopPropagation();
+        listEl.querySelectorAll(".lupe-tooltip").forEach(function(t){t.remove();});
+        if(b.dataset.open){delete b.dataset.open;return;}
+        var tip=document.createElement("div");
+        tip.className="lupe-tooltip";
+        tip.textContent=b.getAttribute("data-correct");
+        b.dataset.open="1";
+        b.appendChild(tip);
+        setTimeout(function(){document.addEventListener("click",function rem(){tip.remove();delete b.dataset.open;document.removeEventListener("click",rem);},{once:true});},0);
+      });
+    });
+
+    // If current task: also allow interaction (bind drag)
+    if(isCurrent) bindDrag();
+
+    // Update check button
+    if(isCurrent){
+      checkBtn.style.display="";
+      checkBtn.textContent=(triesLeft<=0&&rowStatus[idx]===null)?"Weiter →":"Überprüfen";
+      checkBtn.disabled=(triesLeft<=0||showResults);
+      checkBtn.onclick=null;
+    } else {
+      // Show "Zur Aufgabe" button if not on current
+      checkBtn.style.display="";
+      checkBtn.textContent="← Zur Aufgabe";
+      checkBtn.disabled=false;
+      checkBtn.onclick=function(){
+        checkBtn.onclick=null;
+        _browseIdx=null;
+        checkBtn.style.display="";
+        checkBtn.textContent="Überprüfen";
+        checkBtn.disabled=(triesLeft<=0||showResults);
+        render();
+      };
+    }
+
+    renderStepper();
+  }
+
   function renderStepper(){
     var html="";
     rows.forEach(function(row,idx){
       var cls="step-btn";
-      if(idx===currentRowIdx) cls+=" active";
+      var isActive=(_browseIdx!==null)?idx===_browseIdx:idx===currentRowIdx;
+      if(isActive) cls+=" active";
       else if(rowStatus[idx]==="correct") cls+=" done";
       else if(rowStatus[idx]==="wrong")   cls+=" wrong";
       var label=rowStatus[idx]==="correct"?"✓":rowStatus[idx]==="wrong"?"✕":(idx+1);
-      html+='<div class="'+cls+'">'+label+'</div>';
+      html+='<div class="'+cls+'" data-step="'+idx+'" style="cursor:pointer;">'+label+'</div>';
     });
     stepperEl.innerHTML=html;
+    stepperEl.querySelectorAll("[data-step]").forEach(function(btn){
+      btn.addEventListener("click",function(){
+        var idx=parseInt(this.getAttribute("data-step"));
+        if(idx===currentRowIdx&&_browseIdx===null){
+          return; // already on current task
+        }
+        browseRow(idx);
+      });
+    });
   }
 
 
   // ── RENDER (single row) ───────────────────────────────────────────
   function render(){
+    _browseIdx=null;
+    checkBtn.style.display="";
+    checkBtn.onclick=null;
     var row=rows[currentRowIdx];
     var assigned=getAssignedIds(row.id);
     var bankWords=shuffle(row.words.filter(function(w){return assigned.indexOf(w.id)===-1;}));
