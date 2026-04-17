@@ -5,262 +5,185 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Pontes – Lektion 11 – Perfektbildung</title>
   <style>
-    /* ── BASIS ── */
-    :root {
-      --bg: #f6f7fb;
-      --card: #ffffff;
-      --text: #1f2937;
-      --muted: #6b7280;
-      --border: #e5e7eb;
-      --blue: #1976d2;
-      --blue-dark: #135aa3;
-    }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-    }
-    body.popup-open { overflow: hidden; }
-    html { scrollbar-gutter: stable; }
+    :root { --bg:#f6f7fb; --card:#fff; --text:#1f2937; --muted:#6b7280; --border:#e5e7eb; --blue:#1976d2; --blue-dark:#135aa3; }
+    *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; background:var(--bg); color:var(--text); }
+    body.popup-open { overflow:hidden; }
+    html { scrollbar-gutter:stable; }
 
-    /* ── AUTH ── */
-    .asp { position:fixed; inset:0; background:#f6f7fb; display:flex; align-items:center; justify-content:center; z-index:999; flex-direction:column; gap:14px; font-size:14px; color:var(--muted); }
-    .asp.off { display:none; }
-    .aspin { width:34px; height:34px; border:3px solid #e5e7eb; border-top-color:var(--blue); border-radius:50%; animation:aspin .7s linear infinite; }
-    @keyframes aspin { to { transform:rotate(360deg); } }
-    #ae { display:none; min-height:100vh; align-items:center; justify-content:center; background:#f6f7fb; text-align:center; padding:20px; }
-    #tw { display:none; }
-    #wb { display:none; background:#fff; border-bottom:1px solid #e5e7eb; padding:10px 20px; align-items:center; gap:8px; font-size:14px; }
-    #tm { display:none; max-width:1100px; margin:14px auto 0; padding:0 18px; }
-    .tmb { background:#fffbeb; border:1px solid #fbbf24; border-radius:12px; padding:14px 18px; font-size:14px; color:#78350f; line-height:1.55; }
-    .tmb b { display:block; margin-bottom:4px; font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:#b45309; }
-    #codeScreen { display:none; min-height:100vh; align-items:center; justify-content:center; padding:20px; background:radial-gradient(ellipse at 50% 30%,rgba(25,118,210,0.06) 0%,transparent 65%),var(--bg); }
-    .code-card { width:min(420px,100%); background:#fff; border:1px solid var(--border); border-radius:20px; padding:40px 36px; box-shadow:0 12px 40px rgba(0,0,0,.08); text-align:center; }
-    .code-card .icon { font-size:48px; margin-bottom:16px; }
-    .code-card h1 { font-size:22px; font-weight:700; margin-bottom:8px; color:var(--text); }
-    .code-card p { color:var(--muted); font-size:14px; margin-bottom:28px; line-height:1.5; }
-    .code-input { width:100%; background:var(--bg); border:2px solid var(--border); border-radius:12px; padding:14px 16px; font-size:20px; font-weight:700; text-align:center; letter-spacing:.1em; color:var(--text); outline:none; transition:border-color .15s; text-transform:uppercase; font-family:inherit; }
-    .code-input:focus { border-color:var(--blue); }
-    .code-input.error { border-color:#dc2626; }
-    .btn-enter { margin-top:16px; width:100%; background:var(--blue); border:none; border-radius:12px; padding:14px; color:#fff; font-size:16px; font-weight:700; cursor:pointer; transition:background .15s; font-family:inherit; }
-    .btn-enter:hover { background:var(--blue-dark); }
-    .code-error { color:#dc2626; font-size:13px; margin-top:12px; min-height:18px; }
-    .code-hint { font-size:12px; color:var(--muted); margin-top:20px; }
+    /* AUTH */
+    .asp{position:fixed;inset:0;background:#f6f7fb;display:flex;align-items:center;justify-content:center;z-index:999;flex-direction:column;gap:14px;font-size:14px;color:var(--muted);}
+    .asp.off{display:none;}
+    .aspin{width:34px;height:34px;border:3px solid #e5e7eb;border-top-color:var(--blue);border-radius:50%;animation:aspin .7s linear infinite;}
+    @keyframes aspin{to{transform:rotate(360deg);}}
+    #ae{display:none;min-height:100vh;align-items:center;justify-content:center;background:#f6f7fb;text-align:center;padding:20px;}
+    #tw{display:none;}
+    #wb{display:none;background:#fff;border-bottom:1px solid #e5e7eb;padding:10px 20px;align-items:center;gap:8px;font-size:14px;}
+    #tm{display:none;max-width:1100px;margin:14px auto 0;padding:0 18px;}
+    .tmb{background:#fffbeb;border:1px solid #fbbf24;border-radius:12px;padding:14px 18px;font-size:14px;color:#78350f;line-height:1.55;}
+    .tmb b{display:block;margin-bottom:4px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#b45309;}
+    #codeScreen{display:none;min-height:100vh;align-items:center;justify-content:center;padding:20px;background:radial-gradient(ellipse at 50% 30%,rgba(25,118,210,0.06) 0%,transparent 65%),var(--bg);}
+    .code-card{width:min(420px,100%);background:#fff;border:1px solid var(--border);border-radius:20px;padding:40px 36px;box-shadow:0 12px 40px rgba(0,0,0,.08);text-align:center;}
+    .code-card .icon{font-size:48px;margin-bottom:16px;}
+    .code-card h1{font-size:22px;font-weight:700;margin-bottom:8px;}
+    .code-card p{color:var(--muted);font-size:14px;margin-bottom:28px;line-height:1.5;}
+    .code-input{width:100%;background:var(--bg);border:2px solid var(--border);border-radius:12px;padding:14px 16px;font-size:20px;font-weight:700;text-align:center;letter-spacing:.1em;color:var(--text);outline:none;transition:border-color .15s;text-transform:uppercase;font-family:inherit;}
+    .code-input:focus{border-color:var(--blue);}
+    .code-input.error{border-color:#dc2626;}
+    .btn-enter{margin-top:16px;width:100%;background:var(--blue);border:none;border-radius:12px;padding:14px;color:#fff;font-size:16px;font-weight:700;cursor:pointer;transition:background .15s;font-family:inherit;}
+    .btn-enter:hover{background:var(--blue-dark);}
+    .code-error{color:#dc2626;font-size:13px;margin-top:12px;min-height:18px;}
+    .code-hint{font-size:12px;color:var(--muted);margin-top:20px;}
 
-    /* ── LAYOUT ── */
-    .page { max-width:800px; margin:28px auto; padding:0 18px; }
-    .card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:22px 24px; }
-    .task-title { font-size:20px; font-weight:650; line-height:1.25; margin-bottom:14px; }
-    .task-sub { display:block; margin-top:6px; color:var(--muted); font-weight:500; font-size:14px; }
+    /* LAYOUT */
+    .page{max-width:800px;margin:28px auto;padding:0 18px;}
+    .outer-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 24px 28px;}
+    .task-title{font-size:20px;font-weight:650;line-height:1.25;margin-bottom:14px;}
+    .task-sub{display:block;margin-top:6px;color:var(--muted);font-weight:500;font-size:14px;}
 
-    /* ── MATCHING GRID ── */
-    .match-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin: 20px 0;
-    }
-    .match-col { display:flex; flex-direction:column; gap:8px; }
+    /* MATCHING CARDS */
+    .match-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:20px 0 16px;}
+    .match-col{display:flex;flex-direction:column;gap:8px;}
+    .mc-card{padding:11px 16px;border-radius:8px;border:1.5px solid var(--border);background:#fff;font-size:14px;font-weight:600;text-align:center;cursor:pointer;color:var(--text);user-select:none;min-height:44px;display:flex;align-items:center;justify-content:center;transition:border-color .15s,background .15s,box-shadow .15s;}
+    .mc-card:hover{border-color:#b0b0aa;box-shadow:0 2px 6px rgba(0,0,0,.06);}
+    .mc-card.is-correct{border-color:#3bd668!important;background:#f0fdf4!important;color:#166534!important;cursor:default;}
+    .mc-card.is-wrong{border-color:#feda31!important;background:#fffbeb!important;}
 
-    .match-item {
-      padding: 12px 16px;
-      border-radius: 10px;
-      border: 1.5px solid var(--border);
-      background: #fff;
-      font-size: 14px;
-      font-weight: 600;
-      text-align: center;
-      cursor: pointer;
-      color: var(--text);
-      user-select: none;
-      min-height: 46px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: border-color .15s, background .15s, transform .1s, box-shadow .15s;
-      position: relative;
-    }
-    .match-item:hover { border-color: #b0b0aa; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
-    .match-item.selected {
-      border-color: var(--blue);
-      background: rgba(25,118,210,.07);
-      box-shadow: 0 0 0 3px rgba(25,118,210,.18);
-    }
-    .match-item.paired { cursor: pointer; }
-    .match-item.is-correct {
-      border-color: #3bd668 !important;
-      background: #f0fdf4 !important;
-      cursor: default;
-    }
-    .match-item.is-wrong {
-      border-color: #feda31 !important;
-      background: #fffbeb !important;
-    }
+    /* BOTTOMBAR */
+    .bottombar{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-top:10px;flex-wrap:wrap;}
+    .right{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0;}
+    .hint-stack{display:flex;flex-direction:column;gap:10px;align-self:flex-start;min-width:220px;max-width:min(100%,600px);}
+    .hint-box{background:white;border:1px solid var(--border);border-radius:12px;padding:16px 18px;color:#4b5563;line-height:1.55;}
+    .hint-title{display:block;font-weight:700;color:#374151;margin-bottom:8px;}
+    .hint-btn{width:fit-content;border:1px solid var(--border);background:#fff;border-radius:12px;padding:12px 14px;display:flex;gap:10px;align-items:center;font-size:14px;cursor:pointer;font-family:inherit;}
+    .hint-btn:hover{background:#f9f9f9;}
+    .tries{display:flex;flex-direction:column;align-items:center;font-size:12px;color:var(--muted);gap:6px;}
+    .dots{display:flex;gap:6px;}
+    .dot{width:10px;height:10px;border-radius:50%;border:1px solid var(--border);background:#fff;transition:background .2s;}
+    .dot.used{background:#1f2937;border-color:#1f2937;}
+    .primary{background:var(--blue);border:1px solid var(--blue);color:#fff;font-weight:700;border-radius:10px;padding:12px 22px;font-size:14px;cursor:pointer;transition:background .15s;font-family:inherit;}
+    .primary:hover{background:var(--blue-dark);}
+    .primary:disabled{opacity:.55;cursor:not-allowed;}
+    .feedback{border-radius:10px;padding:11px 16px;font-size:14px;margin-top:14px;display:none;}
+    .feedback.error{display:block;background:#fffbeb;color:#92400e;border:1px solid #fbbf24;}
+    .feedback.success{display:block;background:#f0fdf4;color:#166534;border:1px solid #3bd668;}
 
-    /* pair colors */
-    .match-item[data-pair="0"].paired { background:#FDEFD8; border-color:#E8923A; color:#7A4010; }
-    .match-item[data-pair="1"].paired { background:#F5F0D0; border-color:#C8A830; color:#6B5000; }
-    .match-item[data-pair="2"].paired { background:#DDD8F0; border-color:#7A6EC0; color:#3A2880; }
-    .match-item[data-pair="3"].paired { background:#D8EAF8; border-color:#4A90C0; color:#1A4870; }
-    .match-item[data-pair="4"].paired { background:#D8F0E8; border-color:#3AAA78; color:#0A5838; }
-    .match-item[data-pair="5"].paired { background:#F0D8E8; border-color:#C06090; color:#700040; }
-    .match-item[data-pair="6"].paired { background:#E8F0D8; border-color:#6A9A30; color:#2A5000; }
+    /* SOLUTION */
+    .solution-box{background:#fbfbfd;border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-top:18px;font-size:14px;line-height:1.75;display:none;}
+    .solution-box h3{font-size:15px;font-weight:700;margin-bottom:10px;}
+    .solution-box p{margin-bottom:8px;color:var(--muted);}
+    .solution-box ul{padding-left:18px;color:var(--muted);}
+    .solution-box li{margin-bottom:5px;}
 
-    /* ── BOTTOMBAR ── */
-    .bottombar { display:flex; align-items:center; justify-content:space-between; gap:14px; margin-top:18px; flex-wrap:wrap; }
-    .tries { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--muted); }
-    .dot { width:10px; height:10px; border-radius:50%; border:1.5px solid var(--border); display:inline-block; transition:background .2s; }
-    .dot.used { background:#E8923A; border-color:#E8923A; }
-    .primary { background:var(--blue); border:1px solid var(--blue); color:#fff; font-weight:700; border-radius:10px; padding:12px 22px; font-size:14px; cursor:pointer; transition:background .15s; font-family:inherit; }
-    .primary:hover { background:var(--blue-dark); }
-    .primary:disabled { opacity:.55; cursor:not-allowed; }
+    /* POPUP */
+    .result-popup{position:fixed;inset:0;z-index:50;}
+    .result-popup[hidden]{display:none;}
+    .result-popup__backdrop{position:absolute;inset:0;background:rgba(17,24,39,.5);}
+    .result-popup__panel{position:relative;z-index:1;width:min(420px,calc(100% - 32px));margin:120px auto 0;border-radius:28px;padding:28px 24px 24px;text-align:center;color:#fff;box-shadow:0 18px 50px rgba(0,0,0,.25);}
+    .result-popup__panel.is-success{background:#76c800;}
+    .result-popup__panel.is-failure{background:#ff983e;}
+    .result-popup__badge{width:64px;height:64px;margin:0 auto 14px;border-radius:50%;display:grid;place-items:center;font-size:32px;font-weight:900;background:rgba(255,255,255,.2);border:2px solid rgba(255,255,255,.3);}
+    .result-popup__title{margin:0;font-size:28px;line-height:1.1;}
+    .result-popup__mascot{font-size:64px;margin:12px 0 18px;}
+    .result-popup__actions{display:flex;flex-direction:column;gap:10px;}
+    .result-popup__close-btn{font-size:16px;padding:14px 22px;border-radius:12px;width:100%;}
+    .result-popup__solution-btn{border:none;background:transparent;color:#fff;font-size:15px;cursor:pointer;font-family:inherit;}
+    .result-popup__solution-btn:hover{text-decoration:underline;}
 
-    /* ── FEEDBACK ── */
-    .feedback { border-radius:10px; padding:11px 16px; font-size:14px; margin-top:14px; display:none; }
-    .feedback.error { display:block; background:#fffbeb; color:#92400e; border:1px solid #fbbf24; }
-    .feedback.success { display:block; background:#f0fdf4; color:#166534; border:1px solid #3bd668; }
-
-    /* ── SOLUTION BOX ── */
-    .solution-box {
-      background:#fbfbfd;
-      border:1px solid var(--border);
-      border-radius:12px;
-      padding:18px 20px;
-      margin-top:16px;
-      font-size:14px;
-      line-height:1.75;
-      display:none;
-    }
-    .solution-box h3 { font-size:15px; font-weight:700; margin-bottom:10px; color:var(--text); }
-    .solution-box p { margin-bottom:8px; color:var(--muted); }
-    .solution-box ul { padding-left:18px; color:var(--muted); }
-    .solution-box li { margin-bottom:4px; }
-
-    /* ── POPUP ── */
-    .result-popup { position:fixed; inset:0; z-index:50; }
-    .result-popup[hidden] { display:none; }
-    .result-popup__backdrop { position:absolute; inset:0; background:rgba(17,24,39,.5); }
-    .result-popup__panel {
-      position:relative; z-index:1;
-      width:min(420px,calc(100% - 32px));
-      margin:120px auto 0; border-radius:28px;
-      padding:28px 24px 24px; text-align:center;
-      color:#fff; box-shadow:0 18px 50px rgba(0,0,0,.25);
-    }
-    .result-popup__panel.is-success { background:#76c800; }
-    .result-popup__panel.is-failure { background:#ff983e; }
-    .result-popup__badge { width:64px; height:64px; margin:0 auto 14px; border-radius:50%; display:grid; place-items:center; font-size:32px; font-weight:900; background:rgba(255,255,255,.2); border:2px solid rgba(255,255,255,.3); }
-    .result-popup__title { margin:0; font-size:28px; line-height:1.1; }
-    .result-popup__mascot { font-size:64px; margin:12px 0 18px; }
-    .result-popup__actions { display:flex; flex-direction:column; gap:10px; }
-    .result-popup__close-btn { font-size:16px; padding:14px 22px; border-radius:12px; width:100%; }
-    .result-popup__solution-btn { border:none; background:transparent; color:#fff; font-size:15px; cursor:pointer; font-family:inherit; }
-    .result-popup__solution-btn:hover { text-decoration:underline; }
-
-    @media(max-width:560px) {
-      .match-grid { grid-template-columns:1fr; }
-      .bottombar { flex-direction:column; align-items:center; }
+    @media(max-width:560px){
+      .match-grid{grid-template-columns:1fr;}
+      .bottombar{flex-direction:column;align-items:center;}
+      .right{align-items:center;}
+      .hint-stack{width:100%;}
     }
   </style>
 </head>
 <body>
 
-<!-- Spinner -->
-<div class="asp" id="as"><div class="aspin"></div><span>Wird geladen…</span></div>
+<div class="asp" id="as"><div class="aspin"></div><span>Wird geladen\u2026</span></div>
 
-<!-- Code Screen -->
 <div id="codeScreen">
   <div class="code-card">
-    <div class="icon">📚</div>
-    <h1>Aufgabe öffnen</h1>
-    <p>Gib deinen persönlichen Zugangscode ein, den du von deiner Lehrkraft erhalten hast.</p>
+    <div class="icon">\U0001f4da</div>
+    <h1>Aufgabe \u00f6ffnen</h1>
+    <p>Gib deinen pers\u00f6nlichen Zugangscode ein, den du von deiner Lehrkraft erhalten hast.</p>
     <input type="text" class="code-input" id="codeInput" placeholder="ABC-123-XYZ" maxlength="11" autocomplete="off" spellcheck="false"/>
-    <button class="btn-enter" id="codeBtn">Aufgabe öffnen →</button>
+    <button class="btn-enter" id="codeBtn">Aufgabe \u00f6ffnen \u2192</button>
     <div class="code-error" id="codeError"></div>
     <p class="code-hint">Keinen Code? Wende dich an deine Lehrkraft.</p>
   </div>
 </div>
 
-<!-- No access -->
 <div id="ae">
   <div style="max-width:340px;text-align:center;">
-    <div style="font-size:48px;margin-bottom:14px;">🔒</div>
+    <div style="font-size:48px;margin-bottom:14px;">\U0001f512</div>
     <h2 style="font-size:20px;font-weight:700;color:#1f2937;margin-bottom:8px;">Kein Zugang</h2>
-    <p style="color:#6b7280;font-size:14px;line-height:1.6;">Kein gültiger Link. Bitte wende dich an deine Lehrkraft.</p>
+    <p style="color:#6b7280;font-size:14px;line-height:1.6;">Kein g\u00fcltiger Link. Bitte wende dich an deine Lehrkraft.</p>
   </div>
 </div>
 
-<!-- Welcome bar -->
 <div id="wb">
   <span id="wbn" style="font-weight:700;color:#1f2937;"></span>
-  <span style="color:#6b7280;margin-left:4px;">Pontes – Lektion 11 – Perfektbildung</span>
+  <span style="color:#6b7280;margin-left:4px;">Pontes \u2013 Lektion 11 \u2013 Perfektbildung</span>
 </div>
+<div id="tm"><div class="tmb"><b>\U0001f4ac Kommentar deiner Lehrkraft</b><span id="tmt"></span></div></div>
 
-<!-- Teacher comment -->
-<div id="tm"><div class="tmb"><b>💬 Kommentar deiner Lehrkraft</b><span id="tmt"></span></div></div>
-
-<!-- Task wrapper -->
 <div id="tw">
 <div class="page">
-  <main class="card">
-
+  <main class="outer-card">
     <h1 class="task-title">
       Ordne die Verbformen den Arten der Perfektbildung zu.
-      <span class="task-sub">Verbinde die passenden Paare – tippe zuerst links, dann rechts.</span>
+      <span class="task-sub">Tippe ein Wort links an, dann die passende Kategorie rechts \u2013 oder umgekehrt.</span>
     </h1>
-
     <div class="match-grid">
-      <div class="match-col" id="leftCol"></div>
-      <div class="match-col" id="rightCol"></div>
+      <div class="match-col" id="left-col"></div>
+      <div class="match-col" id="right-col"></div>
     </div>
-
     <div class="feedback" id="feedback"></div>
-
     <div class="bottombar">
-      <div class="tries">
-        Versuche:
-        <span class="dot" id="dot0"></span>
-        <span class="dot" id="dot1"></span>
-        <span class="dot" id="dot2"></span>
+      <div class="hint-stack" id="hintStack"></div>
+      <div class="right">
+        <button class="primary" id="checkBtn" onclick="check()">Überprüfen</button>
+        <div class="tries">Versuche:
+          <div class="dots">
+            <div class="dot" id="d1"></div>
+            <div class="dot" id="d2"></div>
+            <div class="dot" id="d3"></div>
+          </div>
+        </div>
       </div>
-      <button class="primary" id="checkBtn">Überprüfen</button>
     </div>
-
-    <div class="solution-box" id="solutionBox">
-      <h3>Lösung</h3>
-      <p>Das Perfekt kann im Lateinischen auf verschiedene Arten gebildet werden. Man erkennt die Art an der Veränderung des Verbstamms:</p>
+    <div class="solution-box" id="loesung">
+      <h3>L\u00f6sung</h3>
+      <p>Das Perfekt kann im Lateinischen auf verschiedene Arten gebildet werden:</p>
       <ul>
-        <li><em>ascendi</em> → <strong>Stammperfekt</strong>: Perfektstamm = Präsensstamm (ascend-).</li>
-        <li><em>servavi</em> → <strong>v-Perfekt</strong>: Stamm + <em>-v-</em> (serva- + v + i).</li>
-        <li><em>scripsi</em> → <strong>s-Perfekt</strong>: Stamm + <em>-s-</em>, oft mit Lautveränderung (scrib- + s → scrips-).</li>
-        <li><em>dedi</em> → <strong>Reduplikationsperfekt</strong>: Anlaut des Stammes wird verdoppelt.</li>
-        <li><em>veni</em> → <strong>Dehnungsperfekt</strong>: Stammvokal wird gedehnt (ven- → vēn-).</li>
-        <li><em>monui</em> → <strong>u-Perfekt</strong>: Stamm + <em>-u-</em> (mone- + u + i).</li>
-        <li><em>potui</em> → <strong>esse, posse, ire</strong>: unregelmäßige Verben mit eigenen Perfektformen.</li>
+        <li><em>ascendi</em> \u2192 <strong>Stammperfekt</strong>: Perfektstamm = Pr\u00e4sensstamm (ascend-).</li>
+        <li><em>servavi</em> \u2192 <strong>v-Perfekt</strong>: Stamm + <em>-v-</em> (serva- + v + i).</li>
+        <li><em>scripsi</em> \u2192 <strong>s-Perfekt</strong>: Stamm + <em>-s-</em>, oft mit Lautver\u00e4nderung.</li>
+        <li><em>dedi</em> \u2192 <strong>Reduplikationsperfekt</strong>: Anlaut des Stammes wird verdoppelt.</li>
+        <li><em>veni</em> \u2192 <strong>Dehnungsperfekt</strong>: Stammvokal wird gedehnt (ven- \u2192 v\u0113n-).</li>
+        <li><em>monui</em> \u2192 <strong>u-Perfekt</strong>: Stamm + <em>-u-</em> (mone- + u + i).</li>
+        <li><em>potui</em> \u2192 <strong>esse, posse, ire</strong>: unregelm\u00e4\u00dfige Verben mit eigenen Perfektformen.</li>
       </ul>
     </div>
-
   </main>
 
-  <!-- Result popup -->
   <div class="result-popup" id="resultPopup" hidden>
     <div class="result-popup__backdrop" id="popupBackdrop"></div>
     <div class="result-popup__panel" id="popupPanel">
-      <div class="result-popup__badge" id="popupBadge">✓</div>
+      <div class="result-popup__badge" id="popupBadge">\u2713</div>
       <h2 class="result-popup__title" id="popupTitle"></h2>
       <div class="result-popup__mascot" id="popupMascot"></div>
       <div class="result-popup__actions">
-        <button type="button" class="primary result-popup__close-btn" id="popupCloseBtn">Zurück zu Trello</button>
-        <button type="button" class="result-popup__solution-btn" id="popupSolutionBtn">Schau dir die Lösung an.</button>
+        <button type="button" class="primary result-popup__close-btn" id="popupCloseBtn">Zur\u00fcck zu Trello</button>
+        <button type="button" class="result-popup__solution-btn" id="popupSolutionBtn">Schau dir die L\u00f6sung an.</button>
       </div>
     </div>
   </div>
 </div>
-</div><!-- /tw -->
+</div>
 
 <script>
-/* ── DATA ── */
 const PAIRS = [
   { left: 'ascendi',  right: 'Stammperfekt' },
   { left: 'servavi',  right: 'v-Perfekt' },
@@ -270,236 +193,239 @@ const PAIRS = [
   { left: 'monui',    right: 'u-Perfekt' },
   { left: 'potui',    right: 'esse, posse, ire' },
 ];
+const COLORS = [
+  { bg:'#FDEFD8', border:'#E8923A', text:'#7A4010' },
+  { bg:'#F5F0D0', border:'#C8A830', text:'#6B5000' },
+  { bg:'#DDD8F0', border:'#7A6EC0', text:'#3A2880' },
+  { bg:'#D8EAF8', border:'#4A90C0', text:'#1A4870' },
+  { bg:'#D8F0E8', border:'#3AAA78', text:'#0A5838' },
+  { bg:'#F0D8E8', border:'#C06090', text:'#700040' },
+  { bg:'#E8F0D8', border:'#6A9A30', text:'#2A5000' },
+];
+const HINTS = [
+  'Das Perfekt zeigt eine abgeschlossene Handlung in der Vergangenheit. Man erkennt die Perfektart an der Veränderung des Verbstamms.',
+  'Tipp: Schau auf die Endung! -vi \u2192 v-Perfekt, -ui \u2192 u-Perfekt, -si \u2192 s-Perfekt. Gleicher Stamm \u2192 Stammperfekt. Anlautverdopplung \u2192 Reduplikation. Gedehnter Stammvokal \u2192 Dehnungsperfekt.',
+];
 
-/* ── STATE ── */
-var triesLeft = 3;
-var isSolved  = false;
-var selectedLeft  = null; // index into PAIRS
-var selectedRight = null; // index into PAIRS (solution index, not display order)
-var assignments = {};     // leftIdx → rightIdx (solution indices)
-var rightOrder  = [];     // display order of right column (solution indices, shuffled)
+let selectedLeftIdx = null, selectedRightIdx = null;
+let rightOrder = [];
+let pairOf = {};
+let attempts = 0;
+let done = false;
+let hintsOpened = 0;
 
-/* ── SHUFFLE ── */
 function shuffle(arr) {
-  var a = arr.slice();
-  for (var i = a.length - 1; i > 0; i--) {
-    var j = Math.floor(Math.random() * (i + 1));
-    var t = a[i]; a[i] = a[j]; a[j] = t;
+  const a = [...arr];
+  for (let i = a.length-1; i>0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
   }
   return a;
 }
 
-/* ── RENDER ── */
-function render() {
-  var leftCol  = document.getElementById('leftCol');
-  var rightCol = document.getElementById('rightCol');
-  leftCol.innerHTML  = '';
-  rightCol.innerHTML = '';
+function applyColor(el, idx) {
+  const col = COLORS[idx % COLORS.length];
+  el.style.background  = col.bg;
+  el.style.borderColor = col.border;
+  el.style.color       = col.text;
+}
 
-  PAIRS.forEach(function(pair, li) {
-    var el = document.createElement('div');
-    el.className = 'match-item';
+function leftIdxForRight(ri) {
+  return Object.keys(pairOf).find(k => pairOf[k] === ri);
+}
+
+/* RENDER – exact original logic */
+function renderAll() {
+  const leftCol  = document.getElementById('left-col');
+  const rightCol = document.getElementById('right-col');
+  leftCol.innerHTML = rightCol.innerHTML = '';
+
+  PAIRS.forEach((pair, li) => {
+    const el = document.createElement('div');
+    el.className = 'mc-card';
     el.textContent = pair.left;
-    var ri = assignments[li];
-    if (ri !== undefined) {
-      el.dataset.pair = li;
-      el.classList.add('paired');
-      if (isSolved) el.classList.add('is-correct');
-    }
-    if (selectedLeft === li) el.classList.add('selected');
-    el.addEventListener('click', function() { onClickLeft(li); });
+    if (pairOf[li] !== undefined || selectedLeftIdx === li) applyColor(el, li);
+    if (done && pairOf[li] === li) el.classList.add('is-correct');
+    el.onclick = () => onClickLeft(li);
     leftCol.appendChild(el);
   });
 
-  rightOrder.forEach(function(ri) {
-    var el = document.createElement('div');
-    el.className = 'match-item';
+  rightOrder.forEach((ri) => {
+    const el = document.createElement('div');
+    el.className = 'mc-card';
     el.textContent = PAIRS[ri].right;
-    // Find which left is paired with this right
-    var pairedLeft = null;
-    Object.keys(assignments).forEach(function(k) {
-      if (assignments[k] === ri) pairedLeft = parseInt(k);
-    });
-    if (pairedLeft !== null) {
-      el.dataset.pair = pairedLeft;
-      el.classList.add('paired');
-      if (isSolved) el.classList.add('is-correct');
-    }
-    if (selectedRight === ri) el.classList.add('selected');
-    el.addEventListener('click', function() { onClickRight(ri); });
+    const li = leftIdxForRight(ri);
+    if (li !== undefined) applyColor(el, parseInt(li));
+    else if (selectedRightIdx === ri) applyColor(el, ri);
+    if (done && parseInt(li) === ri) el.classList.add('is-correct');
+    el.onclick = () => onClickRight(ri);
     rightCol.appendChild(el);
   });
 }
 
-/* ── CLICK HANDLERS ── */
+/* CLICK HANDLERS – exact original logic */
 function onClickLeft(li) {
-  if (isSolved || triesLeft <= 0) return;
-  // If already paired → unpair
-  if (assignments[li] !== undefined) {
-    delete assignments[li];
-    selectedLeft = li;
-    selectedRight = null;
-    render(); return;
+  if (done) return;
+  if (pairOf[li] !== undefined) {
+    delete pairOf[li]; selectedLeftIdx = li; selectedRightIdx = null; renderAll(); return;
   }
-  if (selectedLeft === li) { selectedLeft = null; render(); return; }
-  selectedLeft = li;
-  if (selectedRight !== null) { connectPair(li, selectedRight); return; }
-  render();
+  if (selectedLeftIdx === li) { selectedLeftIdx = null; renderAll(); return; }
+  selectedLeftIdx = li;
+  if (selectedRightIdx !== null) { connectPair(li, selectedRightIdx); return; }
+  renderAll();
 }
 
 function onClickRight(ri) {
-  if (isSolved || triesLeft <= 0) return;
-  // Find if this right is already paired
-  var existingLeft = null;
-  Object.keys(assignments).forEach(function(k) {
-    if (assignments[k] === ri) existingLeft = parseInt(k);
-  });
-  if (existingLeft !== null) {
-    delete assignments[existingLeft];
-    selectedRight = ri;
-    selectedLeft = null;
-    render(); return;
+  if (done) return;
+  const existingLeft = leftIdxForRight(ri);
+  if (existingLeft !== undefined) {
+    delete pairOf[existingLeft]; selectedRightIdx = ri; selectedLeftIdx = null; renderAll(); return;
   }
-  if (selectedRight === ri) { selectedRight = null; render(); return; }
-  selectedRight = ri;
-  if (selectedLeft !== null) { connectPair(selectedLeft, ri); return; }
-  render();
+  if (selectedRightIdx === ri) { selectedRightIdx = null; renderAll(); return; }
+  selectedRightIdx = ri;
+  if (selectedLeftIdx !== null) { connectPair(selectedLeftIdx, ri); return; }
+  renderAll();
 }
 
 function connectPair(li, ri) {
-  // Remove any existing pair for this left
-  if (assignments[li] !== undefined) delete assignments[li];
-  // Remove any existing pair for this right
-  Object.keys(assignments).forEach(function(k) {
-    if (assignments[k] === ri) delete assignments[k];
-  });
-  assignments[li] = ri;
-  selectedLeft  = null;
-  selectedRight = null;
-  render();
+  if (pairOf[li] !== undefined) delete pairOf[li];
+  const prevLeft = leftIdxForRight(ri);
+  if (prevLeft !== undefined) delete pairOf[prevLeft];
+  pairOf[li] = ri;
+  const rightPos = rightOrder.indexOf(ri);
+  if (li !== rightPos) {
+    const displaced = rightOrder[li];
+    rightOrder[li] = ri;
+    rightOrder[rightPos] = displaced;
+  }
+  selectedLeftIdx = selectedRightIdx = null;
+  renderAll();
 }
 
-/* ── CHECK ── */
-function initTask(student, result) {
-  if (result && result.answers) {
-    assignments = Object.assign({}, result.answers);
-    // Ensure rightOrder is consistent with existing assignments
+/* CHECK – original logic + our popup/save */
+function check() {
+  if (done) return;
+  if (Object.keys(pairOf).length < PAIRS.length) {
+    showFeedback('error', 'Bitte verbinde zuerst alle Paare.'); return;
   }
-  if (result && result.tries_left != null) triesLeft = result.tries_left;
-  if (result && result.is_solved) isSolved = true;
+  attempts++;
   updateDots();
-  if (isSolved) {
-    document.getElementById('checkBtn').disabled = true;
-    setFeedback('success', '✅ Bereits gelöst!');
-    document.getElementById('solutionBox').style.display = 'block';
-  }
-  if (triesLeft <= 0 && !isSolved) {
-    showSolution();
-    document.getElementById('checkBtn').textContent = 'Weiter →';
-    document.getElementById('checkBtn').disabled = false;
-    document.getElementById('checkBtn').onclick = function() { goTrello(); };
-  }
-  render();
-}
-
-document.getElementById('checkBtn').addEventListener('click', function checkHandler() {
-  if (isSolved || triesLeft <= 0) return;
-  var allPaired = Object.keys(assignments).length === PAIRS.length;
-  if (!allPaired) { setFeedback('error', 'Verbinde zuerst alle Paare.'); return; }
-
-  var correct = PAIRS.every(function(_, li) { return assignments[li] === li; });
-
-  triesLeft--;
-  updateDots();
-
+  const correct = PAIRS.every((_, li) => pairOf[li] === li);
   if (correct) {
-    isSolved = true;
-    document.getElementById('checkBtn').disabled = true;
-    ss({answers: Object.assign({}, assignments), tries_used: 3-triesLeft, tries_left: triesLeft, is_solved: true});
-    openPopup(true);
+    done = true;
+    document.getElementById('feedback').style.display = 'none';
+    ss({ answers: saveState(), tries_used: attempts, tries_left: 3-attempts, is_solved: true });
+    openResultPopup('success');
+    document.getElementById('loesung').style.display = 'block';
   } else {
-    ss({answers: Object.assign({}, assignments), tries_used: 3-triesLeft, tries_left: triesLeft, is_solved: false});
-    if (triesLeft > 0) {
-      setFeedback('error', '❌ Noch nicht richtig. Versuch es nochmal!');
+    ss({ answers: saveState(), tries_used: attempts, tries_left: 3-attempts, is_solved: false });
+    if (attempts >= 3) {
+      done = true;
+      pairOf = {};
+      PAIRS.forEach((_, i) => { pairOf[i] = i; });
+      rightOrder = PAIRS.map((_, i) => i);
+      renderAll();
+      showFeedback('success', 'Hier ist die richtige Lösung.');
+      document.getElementById('loesung').style.display = 'block';
+      openResultPopup('failure');
     } else {
-      setFeedback('error', '❌ Keine Versuche mehr.');
-      openPopup(false);
+      showFeedback('error', 'Das ist noch nicht richtig. Versuch es nochmal!');
     }
   }
-});
-
-function showSolution() {
-  // Force correct pairs
-  for (var i = 0; i < PAIRS.length; i++) assignments[i] = i;
-  rightOrder = PAIRS.map(function(_, i) { return i; });
-  // Mark all as correct visually
-  document.querySelectorAll('.match-item').forEach(function(el) {
-    el.classList.remove('is-wrong');
-    el.classList.add('is-correct');
-  });
-  render();
-  document.getElementById('solutionBox').style.display = 'block';
 }
 
-function setFeedback(type, msg) {
-  var el = document.getElementById('feedback');
-  el.className = 'feedback ' + type;
-  el.textContent = msg;
-}
-
-function updateDots() {
-  var used = 3 - triesLeft;
-  for (var i = 0; i < 3; i++) {
-    var d = document.getElementById('dot' + i);
-    if (d) d.classList.toggle('used', i < used);
-  }
-}
-
-/* ── POPUP ── */
-function openPopup(success) {
-  var panel  = document.getElementById('popupPanel');
-  var badge  = document.getElementById('popupBadge');
-  var title  = document.getElementById('popupTitle');
-  var mascot = document.getElementById('popupMascot');
-  var closeBtn = document.getElementById('popupCloseBtn');
-  var solBtn   = document.getElementById('popupSolutionBtn');
-
-  panel.className  = 'result-popup__panel ' + (success ? 'is-success' : 'is-failure');
-  badge.textContent  = success ? '✓' : '!';
-  title.textContent  = success ? 'Alles richtig gemacht!' : 'Leider falsch.';
-  mascot.textContent = success ? '🎉' : '🔍';
-  closeBtn.textContent = success ? 'Zurück zu Trello' : 'Schließen';
-
-  closeBtn.onclick = function() {
-    closePopup();
-    if (!success) showSolution();
-  };
-  solBtn.onclick = function() {
-    closePopup();
-    showSolution();
-  };
-
+/* POPUP */
+function openResultPopup(status) {
+  const ok = status === 'success';
+  document.getElementById('popupPanel').className  = 'result-popup__panel ' + (ok ? 'is-success' : 'is-failure');
+  document.getElementById('popupBadge').textContent  = ok ? '\u2713' : '!';
+  document.getElementById('popupTitle').textContent  = ok ? 'Alles richtig gemacht!' : 'Du hast Fehler gemacht.';
+  document.getElementById('popupMascot').textContent = ok ? '\uD83C\uDF89' : '\uD83D\uDD0D';
+  const closeBtn = document.getElementById('popupCloseBtn');
+  const solBtn   = document.getElementById('popupSolutionBtn');
+  closeBtn.textContent = ok ? 'Zur\u00fcck zu Trello' : 'Schlie\u00dfen';
+  closeBtn.onclick = () => { closeResultPopup(); if (!ok) document.getElementById('loesung').style.display='block'; };
+  solBtn.onclick   = () => { closeResultPopup(); document.getElementById('loesung').style.display='block'; };
   document.getElementById('resultPopup').hidden = false;
   document.body.classList.add('popup-open');
 }
-
-function closePopup() {
+function closeResultPopup() {
   document.getElementById('resultPopup').hidden = true;
   document.body.classList.remove('popup-open');
 }
-
-function goTrello() { /* Zurück zu Trello */ }
-
-document.getElementById('popupBackdrop').addEventListener('click', function() {
-  closePopup();
-  showSolution();
+document.getElementById('popupBackdrop').addEventListener('click', () => {
+  closeResultPopup();
+  document.getElementById('loesung').style.display = 'block';
 });
 
-/* ── INIT ── */
-rightOrder = shuffle(PAIRS.map(function(_, i) { return i; }));
-</script>
+/* HINTS */
+function renderHints() {
+  const stack = document.getElementById('hintStack');
+  stack.innerHTML = '';
+  for (let i = 0; i < hintsOpened; i++) {
+    const box = document.createElement('div');
+    box.className = 'hint-box';
+    box.innerHTML = '<span class="hint-title">\uD83D\uDCA1 '+(i+1)+'. Tipp</span><span>'+HINTS[i]+'</span>';
+    stack.appendChild(box);
+  }
+  if (hintsOpened < HINTS.length) {
+    const btn = document.createElement('button');
+    btn.className = 'hint-btn';
+    btn.textContent = '\uD83D\uDCA1 '+(hintsOpened+1)+'. Tipp anzeigen';
+    btn.onclick = () => { hintsOpened++; renderHints(); };
+    stack.appendChild(btn);
+  }
+}
 
-<!-- AUTH SCRIPT -->
+function showFeedback(type, msg) {
+  const el = document.getElementById('feedback');
+  el.className = 'feedback ' + type;
+  el.textContent = msg;
+}
+function updateDots() {
+  for (let i=1; i<=3; i++) {
+    const d = document.getElementById('d'+i);
+    if (d) d.classList.toggle('used', i <= attempts);
+  }
+}
+
+/* STATE SAVE/RESTORE */
+function saveState() {
+  return { pairOf: Object.assign({}, pairOf), rightOrder: rightOrder.slice() };
+}
+function loadState(saved) {
+  if (!saved) return;
+  if (saved.pairOf)    { pairOf = {}; Object.keys(saved.pairOf).forEach(k => { pairOf[parseInt(k)] = saved.pairOf[k]; }); }
+  if (saved.rightOrder) rightOrder = saved.rightOrder.slice();
+}
+
+/* initTask – called by auth */
+function initTask(student, result) {
+  if (result && result.answers) {
+    loadState(result.answers);
+  } else {
+    rightOrder = shuffle(PAIRS.map((_,i) => i));
+  }
+  if (result && result.tries_used) {
+    attempts = result.tries_used;
+    updateDots();
+  }
+  if (result && result.is_solved) {
+    done = true;
+    document.getElementById('checkBtn').disabled = true;
+    showFeedback('success', '\u2705 Bereits gel\u00f6st!');
+    document.getElementById('loesung').style.display = 'block';
+  } else if (attempts >= 3) {
+    done = true;
+    pairOf = {}; PAIRS.forEach((_,i) => { pairOf[i]=i; });
+    rightOrder = PAIRS.map((_,i) => i);
+    showFeedback('success', 'Hier ist die richtige L\u00f6sung.');
+    document.getElementById('loesung').style.display = 'block';
+  }
+  renderAll();
+  renderHints();
+}
+</script>
 <script>
 var _S=null,_R=null;
 var SU='https://jwvdyuvzapkiivsvkeis.supabase.co',SK='sb_publishable_DiTHFK_HaV9jN40fkLKHDA_PrzS8oKc',SH={'apikey':SK,'Authorization':'Bearer '+SK,'Content-Type':'application/json','Prefer':'return=representation'};
@@ -517,9 +443,7 @@ function startCommentPoll(){
     if(!_S)return;
     sg('results','student_id=eq.'+_S.id+'&task_id=eq.'+_S.task_id).then(function(res){
       if(!res||!res[0])return;
-      var c=res[0].teacher_comment;
-      var el=document.getElementById('tmt');
-      var box=document.getElementById('tm');
+      var c=res[0].teacher_comment,el=document.getElementById('tmt'),box=document.getElementById('tm');
       if(c&&el){el.textContent=c;if(box)box.style.display='block';}
     }).catch(function(){});
   },60000);
@@ -531,14 +455,14 @@ function doAuth(sid){
     if(!rows||!rows.length){
       document.getElementById('as').classList.add('off');
       var ci=document.getElementById('codeInput');
-      if(ci){ci.classList.add('error');document.getElementById('codeError').textContent='Ungültiger Code.';document.getElementById('codeScreen').style.display='flex';}
+      if(ci){ci.classList.add('error');document.getElementById('codeError').textContent='Ung\u00fcltiger Code.';document.getElementById('codeScreen').style.display='flex';}
       else{document.getElementById('ae').style.display='flex';}
       return;
     }
     _S=rows[0];
     sg('results','student_id=eq.'+_S.id+'&task_id=eq.'+_S.task_id).then(function(res){
       _R=(res&&res[0])?res[0]:{tries_used:0,tries_left:3,is_solved:false,answers:null,teacher_comment:null};
-      document.getElementById('wbn').textContent=_S.name+' ·';
+      document.getElementById('wbn').textContent=_S.name+' \u00b7';
       document.getElementById('wb').style.display='flex';
       if(_R.teacher_comment){document.getElementById('tmt').textContent=_R.teacher_comment;document.getElementById('tm').style.display='block';}
       document.getElementById('as').classList.add('off');
@@ -550,22 +474,16 @@ function doAuth(sid){
 }
 window.addEventListener('load',function(){
   var sid=new URLSearchParams(location.search).get('s');
-  if(sid){
-    doAuth(sid.toUpperCase());
-  }else{
+  if(sid){doAuth(sid.toUpperCase());}
+  else{
     document.getElementById('as').classList.add('off');
     document.getElementById('codeScreen').style.display='flex';
     document.getElementById('codeBtn').addEventListener('click',function(){
       var code=document.getElementById('codeInput').value.trim().toUpperCase();
       if(code)doAuth(code);
     });
-    document.getElementById('codeInput').addEventListener('keydown',function(e){
-      if(e.key==='Enter')document.getElementById('codeBtn').click();
-    });
-    document.getElementById('codeInput').addEventListener('input',function(){
-      this.classList.remove('error');
-      document.getElementById('codeError').textContent='';
-    });
+    document.getElementById('codeInput').addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('codeBtn').click();});
+    document.getElementById('codeInput').addEventListener('input',function(){this.classList.remove('error');document.getElementById('codeError').textContent='';});
   }
 });
 </script>
